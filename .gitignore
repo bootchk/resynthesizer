@@ -1,0 +1,17 @@
+# lkk 2011
+# git configuration: files to ignore for all time in all clones of this repository
+
+# You can also make this user specific:
+# Copy this file to ~/.gitignore
+# then: git config --global core.excludesfile ~/.gitignore
+# OR edit the file pointed to by the core.excludesfile variable in ~/.gitconfig
+
+# Ignore editor backup files
+*~
+
+# Ignore Python byte compiled files
+*.pyc
+
+# Ignore logs
+*.log
+

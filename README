@@ -1,0 +1,54 @@
+GIMP Resynthesizer Plugin Suite
+===============================
+
+  Copyright 2000 2008  Paul Francis Harrison
+  Copyright 2002  Laurent Despeyroux
+  Copyright 2002  David Rodríguez García
+  Copyright 2009 Rob Antonishen
+  Copyright 2010-2011  Lloyd Konneker <bootch@nc.rr.com>
+
+
+This package is a set of plugins for use with the Gimp program.
+The package includes:
+
+- resynthesizer plugin engine (without a GUI)
+- resynthesizer-gui plugin control panel for the engine
+- various Python language plugins that call the resynthesizer engine
+
+It builds with autotools.  Many of the build files (Makefile.am, configure.in, etc.) were hacked from the gimp-plugin-template 2.2.0.
+
+To build and install it, just ...
+
+  ./autogen.sh
+	./configure
+	make
+	make install
+
+Note the default gcc flags seem to be: -g -O2 -Wall.
+To optimize more, pass the CFLAGS (perogative of the builder to alter compilation):
+
+make CFLAGS=-O3
+
+
+Building on other platforms
+===========================
+
+(On the darkside OS, who hijacked a common word for fenestration)
+
+I use MinGW and MSYS
+(Use mingw-get to download gnu build tools perl, automake etc.)
+However it doesn't install plugins properly.
+You will need to copy files to the proper Gimp plugin install directory,
+typically from:
+c:\MSYS\1.0\usr\local\lib\gimp\2.0\plug-ins 
+to:
+c:\users\yourname\.gimp-2.6\plug-ins
+
+
+
+Version
+=======
+
+Version 1.0 derives from version 0.16 maintained by the original author.
+
+See the NEWS file.
