@@ -282,6 +282,11 @@ def main():
   parameters = "50, 1, 1"
   runtest('wander', 'healgray', test, parameters, True)
   
+  # Heal a grayscale w alpha
+  test = "pdb.python_fu_heal_selection"
+  parameters = "50, 0, 1"
+  runtest('ufo-input-w-alpha-gray', 'healalphagray', test, parameters, True)
+  
   # Heal transparency outward
   test = "pdb.python_fu_heal_transparency"
   parameters = "50, 2" # pixels of context width, outward
@@ -315,7 +320,7 @@ def main():
   # !!! Very slow
   test = "pdb.python_fu_enlarge_resynthesized"
   parameters = "2"
-  runtest('ufo-input', 'enlarge', test, parameters, False)
+  runtest('ufo-input-small', 'enlarge', test, parameters, False)
   
   # TODO a much harder test with many layers and alpha channels
 
