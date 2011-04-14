@@ -327,10 +327,10 @@ prepare_target_sources()
 {
   guint x;
   guint y;
+  Coordinates null_coords = {-1, -1};
   
   new_coordmap(&source_of, image.width, image.height);
   
-  Coordinates null_coords = {-1, -1};
   for(y=0; y<image.height; y++)
     for(x=0; x<image.width; x++) 
       {
@@ -530,6 +530,7 @@ prepare_corpus_points ()
   
   corpus_points_size = 0;
   
+  {
   guint x;
   guint y;
   
@@ -548,6 +549,7 @@ prepare_corpus_points ()
         g_array_append_val(corpus_points, coords);
       }
     }
+  }
   // Size is checked by caller. 
 }
 
@@ -647,6 +649,7 @@ prepare_sorted_offsets(void)
   sorted_offsets_size = 2*2*width*height; 
   sorted_offsets = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), sorted_offsets_size); /* Reserve */
   
+  {
   gint x;
   gint y;
   
@@ -656,6 +659,7 @@ prepare_sorted_offsets(void)
       Coordinates coords = {x,y};
       g_array_append_val(sorted_offsets, coords);
       }
+  }
   g_array_sort(sorted_offsets, (gint (*)(const void*, const void*)) lessCartesian);
   
   /* lkk An experiment to sort the offsets in row major order for better memory 
@@ -724,9 +728,12 @@ try_point(
     } 
     else  
     {
-      const Pixelel * __restrict__ corpus_pixel = pixmap_index(&corpus, off_point);
+      const Pixelel * corpus_pixel;
+      const Pixelel * image_pixel;
+      
+      corpus_pixel = pixmap_index(&corpus, off_point);
       // ! Note the target values come not from target_points, but the smaller copy neighbour_values
-      const Pixelel  * __restrict__ image_pixel = neighbour_values[i];
+      image_pixel = neighbour_values[i];
       #ifndef VECTORIZED
       /* If not the target point (its own 0th neighbor).
       !!! On the first pass, the target point as its own 0th neighbor has no meaningful, unbiased value.
@@ -745,6 +752,8 @@ try_point(
           sum += map_diff_table[256u + image_pixel[j] - corpus_pixel[j]];
       }
       #else
+      const Pixelel * __restrict__ corpus_pixel = pixmap_index(&corpus, off_point);
+      const Pixelel  * __restrict__ image_pixel = neighbour_values[i];
       #define MMX_INTRINSICS_RESYNTH
       #include "resynth-vectorized.h"
       #endif
@@ -887,10 +896,13 @@ new_neighbor(
   neighbours[index] = offset;
   set_neighbor_state(index, neighbor_point);
   // !!! Copy the whole Pixel, all the pixelels
+  
+  {
   BppType k;
   for (k=0; k<total_bpp; k++)
     // c++ neighbour_values[n_neighbours][k] = data.at(neighbor_point)[k];
     neighbour_values[index][k] = pixmap_index(&image, neighbor_point)[k];
+  }
 }
 
 
@@ -909,8 +921,9 @@ void prepare_neighbors(
   Parameters *parameters // IN
   ) 
 {
-  n_neighbours = 0;
   guint j;
+  
+  n_neighbours = 0; // global
   
   for(j=0; j<sorted_offsets_size; j++)
   {
@@ -982,6 +995,7 @@ static guint repetition_params[MAX_PASSES][2];
 static void
 prepare_repetition_parameters()
 { 
+  guint i;
   guint n = target_points_size;
   
   /* First pass over all points  */
@@ -990,7 +1004,6 @@ prepare_repetition_parameters()
   total_targets = n;
   
   /* Second pass over all points, subsequent passes over declining numbers at an exponential rate. */
-  guint i;
   for (i=1; i<MAX_PASSES; i++) 
   {
     repetition_params[i][0] = 0;    /* Start index of iteration. Not used, starts at 0 always, see the loop. */
@@ -1032,7 +1045,11 @@ synthesize(
   )
 {
   guint target_index;
+  Coordinates position;
+  gboolean is_perfect_match;
   guint repeatCountBetters = 0;
+  
+  
   /* ALT: count progress once at start of pass countTargetTries += repetition_params[pass][1]; */
   reset_color_change();
   
@@ -1050,7 +1067,7 @@ synthesize(
       #endif
     }
     
-    Coordinates position = g_array_index(target_points, Coordinates, target_index);
+    position = g_array_index(target_points, Coordinates, target_index);
      
     /*
     This means we are about to give it a value (and a source),
@@ -1069,7 +1086,7 @@ synthesize(
     from the source that gave the previous best, and should be a good starting best.
     */
     best = G_MAXUINT; /* A very large positive number.  Was: 1<<30 */       
-    gboolean is_perfect_match = FALSE;
+    is_perfect_match = FALSE;
     latestBettermentKind = NO_BETTERMENT;
     
     /*
@@ -1081,7 +1098,9 @@ synthesize(
     On subsequent passes, it has a source and thus its source is the first corpus point to be tried again,
     and that will set best to a low value!!!
     */
+    {
     guint neighbor_index;
+    
     for(neighbor_index=0; neighbor_index<n_neighbours && best != 0; neighbor_index++)
       // If the neighbor is in the target (not the context) and has a source in the corpus
       if ( has_source_neighbor(neighbor_index) ) {
@@ -1107,6 +1126,7 @@ synthesize(
         *intmap_index(&tried, corpus_point) = target_index;
       }
       // Else the neighbor is not in the target (has no source) so we can't use the heuristic 1.
+    }
       
     if ( ! is_perfect_match )
     {
@@ -1141,9 +1161,12 @@ synthesize(
         repeatCountBetters++;   /* feedback for termination. */
         integrate_color_change(position); /* Stats. Must be before we store the new color values. */
         /* Save the new color values (!!! not the alpha) for this target point */
-        BppType j;
-        for(j=FIRST_PIXELEL_INDEX; j<color_end_bip; j++)  // For all color pixelels (channels)
-          pixmap_index(&image, position)[j] = pixmap_index(&corpus, best_point)[j];  // Overwrite prior with new color
+        {
+          BppType j;
+          
+          for(j=FIRST_PIXELEL_INDEX; j<color_end_bip; j++)  // For all color pixelels (channels)
+            pixmap_index(&image, position)[j] = pixmap_index(&corpus, best_point)[j];  // Overwrite prior with new color
+        }
         set_source(position, best_point); /* Remember new source */
       } /* else same source for target */
     } /* else match is same or worse */
@@ -1182,6 +1205,7 @@ static void run(
 {
   static GimpParam values[2];   /* Gimp return values. !!! Allow 2: status and error message. */
   Parameters parameters;
+  guint pass;
   
   GimpDrawable *drawable = NULL;
   GimpDrawable *corpus_drawable = NULL; 
@@ -1411,7 +1435,6 @@ static void run(
   print_processor_time();
   progress(_("Resynthesizer: synthesizing"));
 
-  guint pass;
   for (pass=0; pass<MAX_PASSES; pass++)
   {
     guint betters = synthesize(pass, &parameters, drawable);

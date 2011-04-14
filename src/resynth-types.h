@@ -63,7 +63,7 @@ static inline CompareResult
 to_sort_result
   (gboolean value)
 {
-  return (value ? -1 : 1);  // equality not a case
+  return ( (value == 1) ? -1 : 1);  // equality not a case
 }
 
 /* !!! Note you can't use the not operator (!) on a CompareResult */

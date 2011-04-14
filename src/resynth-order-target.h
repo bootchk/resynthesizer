@@ -175,6 +175,7 @@ Used if the target is a donut, with context inside and outside.
 void orderTargetPointsRandomSqueeze()
 {
   guint i;
+  pointVector target_temp;
   
   Coordinates center = get_center(target_points, target_points_size);
   
@@ -189,17 +190,18 @@ void orderTargetPointsRandomSqueeze()
   g_array_sort(target_points, (gint (*)(const void*, const void*)) moreInward);
   
   // Copy target_points vector
-  pointVector target_temp;
   target_temp = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), target_points_size);
   
   for(i=0; i<target_points_size; i++)
     g_array_index(target_temp, Coordinates, i) = g_array_index(target_points, Coordinates, i);
   
   // Shuffle back into the original
+  {
   guint pointCount = target_points_size;
-  i = 0;
   gint frontIndex = 0;
   gint backIndex = pointCount-1;
+  
+  i = 0;
   while (TRUE) 
     {
     // Copy from front.
@@ -215,6 +217,7 @@ void orderTargetPointsRandomSqueeze()
     backIndex--;
     if ( i>= pointCount) break;
     }
+  }
   
   target_points_from_offsets(center); // offsets => coordinates
   randomizeBandsTargetPoints();

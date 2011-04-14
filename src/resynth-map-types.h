@@ -75,9 +75,8 @@ new_pixmap(
   map->height = height;
   map->depth = depth;
   // guint size = width * height * depth;
-  //map->data = g_array_sized_new (FALSE, TRUE, sizeof(Pixelel), size);
-  guint size = width * height;
-  map->data = g_array_sized_new (FALSE, TRUE, depth, size);
+  // map->data = g_array_sized_new (FALSE, TRUE, sizeof(Pixelel), size);
+  map->data = g_array_sized_new (FALSE, TRUE, depth, width * height);
 }
 
 
@@ -92,8 +91,7 @@ new_intmap(
   map->width = width;
   map->height = height;
   map->depth = sizeof(guint);   // Not used
-  guint size = width * height;
-  map->data = g_array_sized_new (FALSE, TRUE, sizeof(guint), size);
+  map->data = g_array_sized_new (FALSE, TRUE, sizeof(guint), width * height);
 }
 
 /* Create dynamic 2-D array of Coordinates. */
@@ -107,8 +105,7 @@ new_coordmap(
   map->width = width;
   map->height = height;
   map->depth = sizeof(Coordinates);   // Not used
-  guint size = width * height;
-  map->data = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), size);
+  map->data = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), width * height);
 }
   
 /* Create dynamic 2-D array of guchar. */
@@ -275,6 +272,7 @@ pixmap_to_drawable(
   gimp_pixel_rgn_init(&region, drawable, 0,0, width, height, TRUE, TRUE);
   img = g_malloc(size);
   
+  {
   guint i;
   guint j;
   
@@ -282,6 +280,7 @@ pixmap_to_drawable(
     for(j=0; j<pixelel_count; j++)  // Iterate over Pixelels
       img[i*pixelel_count+j] = 
         g_array_index(map.data, Pixelel, i*map.depth+pixelel_offset+j);
+  }
         
   /* Send seq of Pixelels to Gimp. */
   gimp_pixel_rgn_set_rect(&region, img, 0,0, width, height);
@@ -330,6 +329,7 @@ pixmap_from_drawable(
   */
   gimp_pixel_rgn_get_rect(&region, img, x,y, width,height);
 
+  {
   guint i;
   guint j;
   
@@ -338,6 +338,8 @@ pixmap_from_drawable(
     for(j=0; j<pixelel_count_to_copy; j++)  /* Count can be different from strides. */
         g_array_index(map.data, Pixelel, i*map.depth+pixelel_offset+j)  /* Stride is depth of pixmap. */
           = img[i*drawable->bpp+j];   /* Stride is bpp */
+  }
+  
   g_free(img);
 }
 
