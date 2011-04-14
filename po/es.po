@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: resynthesizer 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-13 20:48-0400\n"
+"POT-Creation-Date: 2011-04-14 16:24-0400\n"
 "PO-Revision-Date: 2011-04-11 06:37-0400\n"
 "Last-Translator: bootch <bootch@nc.rr.com>\n"
 "Language-Team: Spanish\n"
@@ -24,46 +24,46 @@ msgstr "Hacer tiles, themas, texturas, etc."
 msgid "_Resynthesize..."
 msgstr "_Resintetiza..."
 
-#: ../src/resynthesizer.c:1216
+#: ../src/resynthesizer.c:1246
 msgid "Incompatible image mode."
 msgstr ""
 
-#: ../src/resynthesizer.c:1239
+#: ../src/resynthesizer.c:1269
 msgid "Resynthesizer failed to get parameters."
 msgstr ""
 
-#: ../src/resynthesizer.c:1256
+#: ../src/resynthesizer.c:1286
 msgid ""
 "The input texture and output image must have the same number of color "
 "channels."
 msgstr ""
 
 #. Maps need the same base type. Formerly needed the same bpp.
-#: ../src/resynthesizer.c:1275
+#: ../src/resynthesizer.c:1305
 msgid "The input and output maps must have the same mode"
 msgstr ""
 
-#: ../src/resynthesizer.c:1280
+#: ../src/resynthesizer.c:1310
 msgid "The input map should be the same size as the input texture image"
 msgstr ""
 
-#: ../src/resynthesizer.c:1285
+#: ../src/resynthesizer.c:1315
 msgid "The output map should be the same size as the output image"
 msgstr ""
 
-#: ../src/resynthesizer.c:1388
+#: ../src/resynthesizer.c:1418
 msgid ""
 "The texture source is empty. Does any selection include non-transparent "
 "pixels?"
 msgstr ""
 
-#: ../src/resynthesizer.c:1392
+#: ../src/resynthesizer.c:1422
 msgid ""
 "The output layer is empty. Does any selection have visible pixels in the "
 "active layer?"
 msgstr ""
 
-#: ../src/resynthesizer.c:1406
+#: ../src/resynthesizer.c:1436
 #, fuzzy
 msgid "Resynthesizer: synthesizing"
 msgstr "Resintetizador: sintetizando"
