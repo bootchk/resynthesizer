@@ -308,12 +308,9 @@ def main():
   runtest('ufo-input', 'uncrop', test, parameters, False)
 
   # Fill resynthesized pattern
-  # TODO rewrite .scm in Python.  The tested script is not part of this distribution
-  # so keep it out of the test suite until it is.
-  #
-  # test = "pdb.script_fu_resynthesize_pattern_fill"
-  # parameters = " 'Maple Leaves' "
-  # runtest('ufo-input', 'fillpattern', test, parameters, False)
+  test = "pdb.python_fu_fill_pattern_resynth"
+  parameters = " 'Maple Leaves' "
+  runtest('ufo-input', 'fillpattern', test, parameters, True)
 
   # Enlarge with resynthesis
   # Enlarge factor = 2

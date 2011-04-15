@@ -193,7 +193,8 @@ scripts = \
 	plugin-uncrop.py	\
 	plugin-render-texture.py	\
 	plugin-map-style.py	\
-	plugin-heal-transparency.py
+	plugin-heal-transparency.py \
+	plugin-resynth-fill-pattern.py
 
 pluginexec_SCRIPTS = $(scripts)
 EXTRA_DIST = $(scripts)

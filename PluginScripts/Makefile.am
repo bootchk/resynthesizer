@@ -13,10 +13,9 @@ scripts = \
 	plugin-uncrop.py	\
 	plugin-render-texture.py	\
 	plugin-map-style.py	\
-	plugin-heal-transparency.py
+	plugin-heal-transparency.py \
+	plugin-resynth-fill-pattern.py
 	
-## This is work in progress, a .scm script being converted to Python
-##	plugin-resynth-fill-pattern.py	\
 
 pluginexec_SCRIPTS = $(scripts)
 

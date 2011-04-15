@@ -4,7 +4,6 @@ GIMP Resynthesizer Plugin Suite
   Copyright 2000 2008  Paul Francis Harrison
   Copyright 2002  Laurent Despeyroux
   Copyright 2002  David Rodríguez García
-  Copyright 2009 Rob Antonishen
   Copyright 2010-2011  Lloyd Konneker <bootch@nc.rr.com>
 
 
@@ -13,16 +12,87 @@ The package includes:
 
 - resynthesizer plugin engine (without a GUI)
 - resynthesizer-gui plugin control panel for the engine
-- various Python language plugins that call the resynthesizer engine
+- various plugins (in Python language) that call the resynthesizer engine
 
-It builds with autotools.  Many of the build files (Makefile.am, configure.in, etc.) were hacked from the gimp-plugin-template 2.2.0.
+Version
+=======
 
-To build and install it, just ...
+Version 1.0 derives from version 0.16 maintained by the original author.
+
+See the NEWS file.
+
+Installing
+==========
+
+These are instructions for most users who received a pre-built distribution (with resynthesizer.exe and resynthesizer-gui.exe already compiled).
+
+1.  Remove any older versions (see below.)
+
+2.  Copy all files to your home gimp directory for plugins:
+
+~/.gimp-2.6/plug-ins (Linux)
+c:\Doc...Settings\username\gimp-2.6\plug-ins (Windows)
+
+
+Removing older versions
+=======================
+
+You should manually remove these older versions before installing this package.  They probably do NOT still work, and are duplicates at best.
+
+Author Paul Harrison
+
+- smart-remove.scm   Enhance>Smart remove object  
+- smart-enlarge.scm  Enhance>Smart enlarge        
+- smart-sharpen.scm  Enhance>Smart sharpen       
+- resynthesizer.exe  Map>Resynthesize
+
+Author L. Konneker
+
+- smart-remove.scm          Enhance>Heal selection (patch)
+- plugin-map-style.scm      Map>Style
+- plugin-render-texture.scm Render>Texture 
+- uncrop-gimp-plugin.scm    Enhance>Uncrop
+
+Author Rob Antonishen:
+
+- resynth-pattern-fill.scm  Edit>Fill with resynthesized pattern
+
+They might be found in the usual places:
+
+Linux
+
+~/.gimp-2.x/plug-ins (.exe and .py)
+~/.gimp-2.x/scripts  (.scm)
+/usr/share/gimp/2.0/scripts (.scm)
+/usr/local/lib/gimp/2.0/plugins (.exe and .py)
+
+Windows
+
+c:\Program Files\GIMP-2.0\lib\gimp\2.0\plug-ins (.exe and .py)
+c:\Program Files\GIMP-2.0\share\gimp\2.0\plug-ins (.scm)
+c:\Doc...Settings\username\gimp-2.6\plug-ins  (.exe and .py)
+c:\Doc...Settings\username\gimp-2.6\scripts  (.scm)
+
+
+Dependencies
+============
+
+This discusses dependencies within the package (a concern of users, not of a builder.) Resynthesizer.exe is the base plugin.  All other plugins only depend on it as the engine.  All other plugins are optional.  Resynthesizer-gui.exe is the control panel for the engine, offering the "Map>Resynthesize" menu item.  Without it, all other plugins will still work.
+
+
+Building on Linux
+=================
+
+It builds with GNU build tools.  Many of the build files (Makefile.am, configure.in, etc.) were hacked from the gimp-plugin-template 2.2.0.
+
+To build and install a clean distribution, just ...
 
   ./autogen.sh
 	./configure
 	make
 	make install
+
+It installs to the shared Gimp directories.
 
 Note the default gcc flags seem to be: -g -O2 -Wall.
 To optimize more, pass the CFLAGS (perogative of the builder to alter compilation):
@@ -35,20 +105,16 @@ Building on other platforms
 
 (On the darkside OS, who hijacked a common word for fenestration)
 
-I use MinGW and MSYS
+I use MinGW and MSYS.
 (Use mingw-get to download gnu build tools perl, automake etc.)
 However it doesn't install plugins properly.
 You will need to copy files to the proper Gimp plugin install directory,
 typically from:
-c:\MSYS\1.0\usr\local\lib\gimp\2.0\plug-ins 
+
+c:\MSYS\1.0\usr\local\lib\gimp\2.0\plug-ins
 to:
-c:\users\yourname\.gimp-2.6\plug-ins
+c:\Doc...Settings\yourname\.gimp-2.6\plug-ins
 
 
 
-Version
-=======
 
-Version 1.0 derives from version 0.16 maintained by the original author.
-
-See the NEWS file.

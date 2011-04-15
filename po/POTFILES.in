@@ -9,5 +9,5 @@ PluginScripts/plugin-uncrop.py
 PluginScripts/plugin-render-texture.py
 PluginScripts/plugin-map-style.py
 PluginScripts/plugin-heal-transparency.py
+PluginScripts/plugin-resynth-fill-pattern.py
 
-# work in progress PluginScripts/plugin-resynth-fill-pattern.py
