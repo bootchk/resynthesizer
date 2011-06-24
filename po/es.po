@@ -1,0 +1,228 @@
+# Spanish translations for resynthesizer package.
+# Copyright (C) 2011 THE resynthesizer'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the resynthesizer package.
+# bootch <bootch@nc.rr.com>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: resynthesizer 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-04-14 16:24-0400\n"
+"PO-Revision-Date: 2011-04-11 06:37-0400\n"
+"Last-Translator: bootch <bootch@nc.rr.com>\n"
+"Language-Team: Spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../src/resynth-gui.c:141
+msgid "Make tiles, apply themes, render texture, remove features, etc."
+msgstr "Hacer tiles, themas, texturas, etc."
+
+#: ../src/resynth-gui.c:146
+msgid "_Resynthesize..."
+msgstr "_Resintetiza..."
+
+#: ../src/resynthesizer.c:1246
+msgid "Incompatible image mode."
+msgstr ""
+
+#: ../src/resynthesizer.c:1269
+msgid "Resynthesizer failed to get parameters."
+msgstr ""
+
+#: ../src/resynthesizer.c:1286
+msgid ""
+"The input texture and output image must have the same number of color "
+"channels."
+msgstr ""
+
+#. Maps need the same base type. Formerly needed the same bpp.
+#: ../src/resynthesizer.c:1305
+msgid "The input and output maps must have the same mode"
+msgstr ""
+
+#: ../src/resynthesizer.c:1310
+msgid "The input map should be the same size as the input texture image"
+msgstr ""
+
+#: ../src/resynthesizer.c:1315
+msgid "The output map should be the same size as the output image"
+msgstr ""
+
+#: ../src/resynthesizer.c:1418
+msgid ""
+"The texture source is empty. Does any selection include non-transparent "
+"pixels?"
+msgstr ""
+
+#: ../src/resynthesizer.c:1422
+msgid ""
+"The output layer is empty. Does any selection have visible pixels in the "
+"active layer?"
+msgstr ""
+
+#: ../src/resynthesizer.c:1436
+#, fuzzy
+msgid "Resynthesizer: synthesizing"
+msgstr "Resintetizador: sintetizando"
+
+#: ../PluginScripts/plugin-heal-selection.py:42
+msgid "You must first select a region to heal."
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:157
+msgid "Heal the selection from surroundings as if using the heal tool."
+msgstr "Inventar seleccion como el tool"
+
+#: ../PluginScripts/plugin-heal-selection.py:162
+msgid "_Heal selection..."
+msgstr "Sintetiza seleccion..."
+
+#: ../PluginScripts/plugin-heal-selection.py:167
+#: ../PluginScripts/plugin-heal-transparency.py:82
+msgid "Context sampling width (pixels):"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:168
+msgid "Sample from:"
+msgstr "Invento de:"
+
+#: ../PluginScripts/plugin-heal-selection.py:168
+msgid "All around"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:168
+msgid "Sides"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:168
+msgid "Above and below"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:169
+#: ../PluginScripts/plugin-heal-transparency.py:83
+msgid "Filling order:"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:169
+#: ../PluginScripts/plugin-heal-transparency.py:83
+msgid "Random"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:170
+#: ../PluginScripts/plugin-heal-transparency.py:84
+msgid "Inwards towards center"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-selection.py:170
+#: ../PluginScripts/plugin-heal-transparency.py:84
+msgid "Outwards from center"
+msgstr ""
+
+#: ../PluginScripts/plugin-resynth-sharpen.py:94
+msgid "Sharpen image by synthesis."
+msgstr ""
+
+#: ../PluginScripts/plugin-resynth-sharpen.py:99
+#, fuzzy
+msgid "Sharpen by synthesis..."
+msgstr "_Resintetiza..."
+
+#: ../PluginScripts/plugin-resynth-sharpen.py:103
+msgid "Sharpening:"
+msgstr ""
+
+#: ../PluginScripts/plugin-resynth-enlarge.py:92
+msgid "Enlarge image and synthesize to sharpen."
+msgstr ""
+
+#: ../PluginScripts/plugin-resynth-enlarge.py:97
+msgid "Enlarge & sharpen..."
+msgstr ""
+
+#: ../PluginScripts/plugin-resynth-enlarge.py:102
+msgid "Scale by:"
+msgstr ""
+
+#: ../PluginScripts/plugin-uncrop.py:86
+msgid "A layer must be active, not a channel."
+msgstr ""
+
+#: ../PluginScripts/plugin-uncrop.py:142
+msgid ""
+"Enlarge image by synthesizing a border that matches the edge, maintaining "
+"perspective.  Works best for small enlargement of natural edges. Undo a Crop "
+"instead, if possible! "
+msgstr ""
+
+#: ../PluginScripts/plugin-uncrop.py:147
+msgid "Uncrop..."
+msgstr ""
+
+#: ../PluginScripts/plugin-uncrop.py:152
+msgid "Percent enlargement"
+msgstr ""
+
+#: ../PluginScripts/plugin-render-texture.py:183
+msgid ""
+"Create a new image with texture from the current image or selection. "
+"Optionally, create image edges suited for further, seamless tiling. "
+msgstr ""
+
+#: ../PluginScripts/plugin-render-texture.py:188
+msgid "_Texture..."
+msgstr ""
+
+#. Spinner is digital and linear, slider is analog but exponential
+#: ../PluginScripts/plugin-render-texture.py:194
+msgid "Ratio of size of new image to source selection"
+msgstr ""
+
+#: ../PluginScripts/plugin-render-texture.py:195
+msgid "Make new image edges suitable for seamless tiling"
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:281
+msgid "The style source cannot be of mode INDEXED"
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:376
+msgid ""
+"Transfer style (color and surface) from a chosen source to the active layer. "
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:381
+msgid "Style..."
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:386
+msgid "Source of style:"
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:387
+msgid "Percent transfer:"
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:388
+msgid "Map by:"
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:388
+msgid "Color and brightness"
+msgstr ""
+
+#: ../PluginScripts/plugin-map-style.py:388
+msgid "Brightness only"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-transparency.py:72
+msgid ""
+"Removes alpha channel by synthesis.  Fill outward for edges, inward for "
+"holes."
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-transparency.py:77
+msgid "Heal transparency..."
+msgstr ""

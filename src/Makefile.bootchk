@@ -1,0 +1,66 @@
+CC = gcc
+# CC = g++
+
+GIMPTOOL = gimptool-2.0
+
+GIMP_LDFLAGS=`$(GIMPTOOL) --libs`
+GIMP_CFLAGS=`$(GIMPTOOL) --cflags`
+
+#lkk added -ftree-vectorize -ftree-vectorizer-verbose=3
+# -fdump-tree-vect -fdump-tree-vect-details
+#lkk added -msse then msse2
+#lkk added  -flax-vector-conversions for fast and loose vector conversions but it doesn't help
+#lkk added -march=pentium3 -mcpu=pentium3
+# lkk added -Wall  for all warnings, note -pedantic not work for c++
+# lkk added -std=c99
+#CFLAGS=$(GIMP_CFLAGS) -O3 -fno-common -ffast-math -frename-registers -msse2
+CFLAGS=$(GIMP_CFLAGS) -g -O3  -fno-common -ffast-math -frename-registers -msse3 -D_GLIBCXX_DEBUG -Winline
+# -O3 -msse2 -mtune=native
+# -ftree-vectorizer-verbose=3
+#  -D_GLIBCXX_DEBUG to use error checking version of libstdc++
+
+# lkk removed this, incompatible with pg?  -fomit-frame-pointer
+
+# lkk added -pg for profiling, -g for debugging info
+LDFLAGS=$(GIMP_LDFLAGS) -lm -g
+
+
+all: resynth resynth-gui
+	@echo
+	@echo 'Now type "make install" to install resynthesizer'
+	@echo 
+
+install: resynth smart-enlarge.scm smart-remove.scm
+	$(GIMPTOOL) --install-bin resynth
+	$(GIMPTOOL) --install-script smart-enlarge.scm
+	$(GIMPTOOL) --install-script smart-remove.scm
+	@echo
+	@echo After restarting the Gimp you should find the
+	@echo following items in the pop-up image menu:
+	@echo
+	@echo "  * Filters/Map/Resynthesize"
+	@echo "  * Filters/Enhance/Smart enlarge"
+	@echo "  * Filters/Enhance/Smart sharpen"
+	@echo "  * Filters/Enhance/Smart remove selection"
+	@echo
+	
+installlocal: resynth resynth-gui
+	cp resynth ~/.gimp-2.6/plug-ins
+	cp resynth-gui ~/.gimp-2.6/plug-ins
+
+resynthwin.exe: resynth.c
+	i586-mingw32msvc-gcc resynth.c -o resynthwin.exe
+
+  
+#engine
+resynth: resynth.c
+	$(CC) -Wextra $(CFLAGS) -o $@ resynth.c $(LDFLAGS)
+
+#GUI
+resynth-gui: resynth-gui.c
+	$(CC) -Wextra $(CFLAGS) -o resynth-gui resynth-gui.c $(LDFLAGS)
+
+	
+clean:
+	-rm -f *~ *.o core resynth resynth-gui resynth2 resynth3
+

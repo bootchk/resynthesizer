@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<gimp-help xmlns:template="http://developer.gimp.org/plug-in-template/help">
+  <help-item template:id="plug-in-template" ref="index.html" />
+</gimp-help>

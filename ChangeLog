@@ -1,0 +1,82 @@
+ChangeLog for the resynthesizer
+
+
+2010 Lloyd Konneker bootch@nc.rr.com
+
+	version 1.0 (Many, major changes.)
+	
+	* Functional changes:
+	
+	  * handling of alpha channels: 
+	  Don't use transparent corpus, and don't match alpha channels.
+	  Note we synthesize color of target pixels, but don't match alphas,
+	  and don't synthesize an alpha value.
+	
+	  * flexible incoming alpha channels: any, some, or no drawables can have alpha
+	  Formerly, they needed the same bpp, but now alpha agnostic.
+	  
+	  * eliminated constraint in resynth-gui.h (in the GUI logic) on texture layer bpp must match target: 
+	  (allow alpha mismatch.)
+	 
+	  * use the selection channel instead of the inverted selection channel for the corpus: confusing.  Put onus
+	  on calling plugins to arrange new images with their own selections.
+	  
+	  * expand the range of values for use_border parameter: allow directional resynthesizing.  
+	  This makes the algorithm slightly 'parametric' in the statistical sense:  it has a model of in and out.
+	  The result is that artifacts sometimes creep into the target from the context.  
+	  That can be good or bad in the user's view.
+	  TODO Note the control panel is the original and doesn't offer a choice of directionality.
+	
+	  * use g_rand_int_range() : equally distributed random numbers, improvement over rand()%MAX
+	
+	  * use a fixed random seed instead of time() : repeatable, especially for testing.
+	  TODO make the seed a parameter, for now hard-coded in the code.  Should be a hash of input file?
+	
+	* Bugs:
+	
+	  * fix bug in handling partial selection (mask e.g. between 0 and 255)
+	
+	  * fix bug in determining intersection of selection with layer (the Gimp API changed)
+	
+	* Administrative
+	
+	  * major restructuring so functions are shorter texts
+	
+    * Added comments
+	
+	  * Gnu/Gimp standards:
+	    * rewrite in C from C++: mainly the Bitmap and Vector classes
+	    * Gnu style
+	    * downgrade from C99
+	    
+	  * break into several smaller files, some shared with control gui plugin
+	  
+	  * separate engine plugin from control gui plugin
+	  
+	  * testResynth.py: testsuite
+	  
+	  * moved many magic numbers to resynth-constants.h, altered MAX_WEIGHT and BEST_MAX
+
+	* Performance (never achieved significant gains?)
+	  
+	  * interleave the mask channel with the color channels: memory locality for performance sometimes better?
+	
+	  * repetitions/passes: feedback to determine how many passes, and parameterize the passes
+	
+	  * trypoint() [VECTORIZED] MMX vectorized inner-most loop: performance the same, so optionally compiled
+	
+	* rewrote frontend plugins in Python (were Scheme)
+	  * Smart remove object -> Enhance>Heal selection..., fixing a bug in passing corpus layer
+	  * Smart enlarge -> Enhance>Enlarge & sharpen...
+	  * Smart sharpen -> Enhance>Sharpen by resynthesis...
+	  * TODO Fill with Pattern resynth
+	  
+	* wrote frontend plugins in Python
+	  * Uncrop
+	  * Map>Style
+	  * Render>Texture
+	  * Heal transparency
+	  
+2008 Paul Harrison et al
+  * version 0.16
+

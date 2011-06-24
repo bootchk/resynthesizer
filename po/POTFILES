@@ -1,0 +1,10 @@
+	../src/resynth-gui.c \
+	../src/resynthesizer.c \
+	../PluginScripts/plugin-heal-selection.py \
+	../PluginScripts/plugin-resynth-sharpen.py \
+	../PluginScripts/plugin-resynth-enlarge.py \
+	../PluginScripts/plugin-uncrop.py \
+	../PluginScripts/plugin-render-texture.py \
+	../PluginScripts/plugin-map-style.py \
+	../PluginScripts/plugin-heal-transparency.py \
+	../PluginScripts/plugin-resynth-fill-pattern.py
