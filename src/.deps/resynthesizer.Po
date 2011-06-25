@@ -205,8 +205,9 @@ resynthesizer.o: resynthesizer.c ../config.h plugin-intl.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/bits/stdio.h /usr/include/bits/stdio2.h resynth-constants.h \
- resynth-parameters.h resynth-types.h resynth-map-types.h resynth-stats.h \
- resynth-order-target.h resynth-pdb.h
+ resynth-parameters.h resynth-types.h resynth-map-types.h \
+ matchWeighting.h resynth-stats.h resynth-order-target.h imageFormat.h \
+ passes.h synthesize.h refiner.h resynth-pdb.h
 
 ../config.h:
 
@@ -714,8 +715,18 @@ resynth-types.h:
 
 resynth-map-types.h:
 
+matchWeighting.h:
+
 resynth-stats.h:
 
 resynth-order-target.h:
+
+imageFormat.h:
+
+passes.h:
+
+synthesize.h:
+
+refiner.h:
 
 resynth-pdb.h:

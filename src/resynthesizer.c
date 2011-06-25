@@ -101,17 +101,7 @@ Leave it commented for development and testing, to enable assertions.
 
 /* See below for more includes. */
 
-/* 
-Lookup tables for the statistical function.
-For unvectorized, table size is doubled, for negative and positive signed differences,
-and a difference is offset by 256 to enter this table.
-!!! diff_table is unsigned short, typically 16-bit, no less than 16-bit by C standard.
-*/
-static gushort diff_table[512];
-static guint map_diff_table[512];
-#ifdef VECTORIZED
-static gushort diff_table2[256];
-#endif
+#include "matchWeighting.h"
 
 
 /* 
@@ -224,9 +214,6 @@ tBettermentKind latestBettermentKind;
 guint bettermentStats[MAX_BETTERMENT_KIND];
 
 
-
-
-
 /* 
 Macro to cleanup for abort. 
 Return value is already PDB_ERROR.
@@ -276,7 +263,6 @@ get_has_value(Coordinates coords)
 {
   return (* bytemap_index(&has_value, coords));
 }
-
 
 static inline void
 prepare_has_value()
@@ -565,12 +551,6 @@ random_corpus_point ()
 }
 
 
-static double 
-neglog_cauchy(double x) 
-{
-    return log(x*x+1.0);
-}
-
 
 /*
 Is point in the source image or wrapped into it.
@@ -789,100 +769,6 @@ try_point(
 
 
 
-static void
-progress(gchar * message)
-{
-  gimp_progress_init(message);
-  gimp_progress_update(0.0);
-#ifdef DEBUG
-  /* To console.  On Windows, it annoyingly opens a console.  
-  On Unix it dissappears unless console already open.
-  */
-  g_printf(message);  
-  g_printf("\n");
-#endif
-}
-
-
-
-/* Return count of color channels, exclude alpha and any other channels. */
-static guint
-count_color_channels(GimpDrawable *drawable)
-{
-  GimpImageType type = gimp_drawable_type(drawable->drawable_id);
-  switch(type)
-  {
-    case GIMP_RGB_IMAGE:
-    case GIMP_RGBA_IMAGE:
-      return 3;
-    case GIMP_GRAY_IMAGE:
-    case GIMP_GRAYA_IMAGE:
-      return 1;
-    default:
-      g_assert(FALSE);
-  }
-  return 0;
-}
-
-/*
-Return whether drawables have the same base type.
-*/
-static gboolean
-equal_basetypes(
-  GimpDrawable *first_drawable,
-  GimpDrawable *second_drawable
-  )
-{
-  /* !!! Not drawable->bpp minus one if alpha, because there  might be other channels. */
-  return (count_color_channels(first_drawable) == count_color_channels(second_drawable));
-}
-
-
-/* 
-Lookup tables for function of pixel differences.
-Weight Pixel differences by a statistical distribution: cauchy (not gaussian, see thesis.)
-Table is [0, 511]
-Pixel difference is [-255, 255].
-Symmetrical, inverted bell with min at index 256, max at 1 (-255 + 256) and 511 (+255 + 256)
-diff_table[0] is extraordinary: used to hold a limiting MAX,
-since the most negative pixel difference of -255 looks up diff_table[1].
-Original code used diff_table[0] for a MAX instead of a constant.
-*/
-void 
-make_diff_table(
-  gfloat autism, 
-  gfloat map_weight
-  ) 
-{
-  gint i;
-  
-  for(i=-256; i<256; i++) 
-  {
-      gdouble value = neglog_cauchy(i/256.0/autism) 
-                     / neglog_cauchy(1.0/autism) * (float)MAX_WEIGHT;
-      diff_table[256+i] = (gushort)value;
-      // Note guint: multiplying by MAP_MULTIPLIER carries gushort into guint
-      map_diff_table[256+i] = (guint)(i*i*map_weight*MAP_MULTIPLIER);
-  }
-}
-
-
-
-#ifdef VECTORIZED
-/* Calculating absolute value of pixel difference so table is only [0,255] */
-void make_diff_table2(float autism, float map_weight) 
-{
-  gint i;
-  
-  for(i=0;i<256;i++)
-  {
-    double value = neglog_cauchy(i/256.0/autism) 
-                     / neglog_cauchy(1.0/autism) * (float)MAX_WEIGHT;
-    diff_table2[i] = (gushort) value;
-  }
-}
-#endif
-
 
 
 /* Create a neighbor.  Initialize: offset, status, and pixel. */
@@ -957,61 +843,57 @@ void prepare_neighbors(
 }
 
 
-
-/*
-Prepare parameters of repetition (passes over the target.)
-The algorithm repeats synthesis because very early synthesized points
-might be wild guesses, more or less random colors,
-especially if the context is far away.
-
-Repeat over full target, then repeat over smaller prefix of target, etc.
-If synthesizing directionally (target_points ordered instead of random)
-then later passes do not cover the target uniformly.
-Instead, later passes repeat a prefix, which when directionally ordered,
-means repeating target points near the context.
-It could be argued that this is good, since those points
-are often a transition and need the most work to produce a good result.
-
-The original code just lengthened target_points vector by duplicating a prefix:
-  for(int n=target_points_size;n>0;) {
-    n = n*3/4; // <- note magic number... the more passes, the higher the quality, maybe
-    for(int i=0;i<n;i++)
-      target_points.push_back(target_points[i]);
-  }
-and just iterated over the target_point vector, either forward or back:
-for(int i=target_points_size-1;i>=0;i--) { // do a fraction, then more, etc. then all
-for(int i=0; i<=int(target_points_size-1); i++) {  // do all, then repeat a fraction, etc.
-
-The new code is nearly the same as the original except:
--the second pass resynthesizes all points.
--the number of passes is limited to 6
-
-TODO experiments on other ways of repeating synthesis.
-*/
-
-#define MAX_PASSES 6
-static guint repetition_params[MAX_PASSES][2];
+/* Adaption */
 
 static void
-prepare_repetition_parameters()
-{ 
-  guint i;
-  guint n = target_points_size;
-  
-  /* First pass over all points  */
-  repetition_params[0][0] = 0;  
-  repetition_params[0][1] = n;
-  total_targets = n;
-  
-  /* Second pass over all points, subsequent passes over declining numbers at an exponential rate. */
-  for (i=1; i<MAX_PASSES; i++) 
-  {
-    repetition_params[i][0] = 0;    /* Start index of iteration. Not used, starts at 0 always, see the loop. */
-    repetition_params[i][1] = n;    /* End index of iteration. */
-    total_targets += n;
-    n = (guint) n*3/4;
-  }
+progress(gchar * message)
+{
+  gimp_progress_init(message);
+  gimp_progress_update(0.0);
+#ifdef DEBUG
+  /* To console.  On Windows, it annoyingly opens a console.  
+  On Unix it dissappears unless console already open.
+  */
+  g_printf(message);  
+  g_printf("\n");
+#endif
 }
+
+
+
+/* Return count of color channels, exclude alpha and any other channels. */
+static guint
+count_color_channels(GimpDrawable *drawable)
+{
+  GimpImageType type = gimp_drawable_type(drawable->drawable_id);
+  switch(type)
+  {
+    case GIMP_RGB_IMAGE:
+    case GIMP_RGBA_IMAGE:
+      return 3;
+    case GIMP_GRAY_IMAGE:
+    case GIMP_GRAYA_IMAGE:
+      return 1;
+    default:
+      g_assert(FALSE);
+  }
+  return 0;
+}
+
+
+/*
+Return whether drawables have the same base type.
+*/
+static gboolean
+equal_basetypes(
+  GimpDrawable *first_drawable,
+  GimpDrawable *second_drawable
+  )
+{
+  /* !!! Not drawable->bpp minus one if alpha, because there  might be other channels. */
+  return (count_color_channels(first_drawable) == count_color_channels(second_drawable));
+}
+
 
 
 /* 
@@ -1029,150 +911,6 @@ post_results_to_gimp(GimpDrawable *drawable)
 }
 
 
-
-
-
-
-/*
-The heart of the algorithm.
-Called repeatedly: many passes over the data.
-*/
-static guint
-synthesize(
-  guint pass,
-  Parameters *parameters, // IN,
-  GimpDrawable *drawable  // IN for ANIMATE
-  )
-{
-  guint target_index;
-  Coordinates position;
-  gboolean is_perfect_match;
-  guint repeatCountBetters = 0;
-  
-  
-  /* ALT: count progress once at start of pass countTargetTries += repetition_params[pass][1]; */
-  reset_color_change();
-  
-  for(target_index=0; target_index<repetition_params[pass][1]; target_index++) 
-  {
-    countTargetTries += 1;  /* ALT count progress at each target point. */
-    if ((target_index&4095) == 0) 
-    {
-      /* Progress over all passes, not just within this pass.
-      Towards the maximum expected tries, but we might omit latter passes.
-      */
-      gimp_progress_update((float)countTargetTries/total_targets);
-      #ifdef ANIMATE
-        post_results_to_gimp(drawable);
-      #endif
-    }
-    
-    position = g_array_index(target_points, Coordinates, target_index);
-     
-    /*
-    This means we are about to give it a value (and a source),
-    but also means that below, we put offset (0,0) in vector of neighbors !!!
-    i.e. this makes a target point it's own neighbor (with a source in later passes.)
-    */
-    set_has_value(&position, TRUE);  
-    
-    prepare_neighbors(position, parameters);
-    
-    /*
-    Repeat a pixel even if found an exact match last pass, because neighbors might have changed.
-    
-    On passes after the first, we don't explicitly start with best of the previous match,
-    but since a pixel is it's own first neighbor, the first best calculated will a be
-    from the source that gave the previous best, and should be a good starting best.
-    */
-    best = G_MAXUINT; /* A very large positive number.  Was: 1<<30 */       
-    is_perfect_match = FALSE;
-    latestBettermentKind = NO_BETTERMENT;
-    
-    /*
-    Heuristic 1, try neighbors of sources of neighbors of target pixel.
-    
-    Subtle: The target pixel is its own first neighbor (offset 0,0).
-    It also has_value (since we set_has_value() above, but it really doesn't have color on the first pass.)
-    On the first pass, it has no source.
-    On subsequent passes, it has a source and thus its source is the first corpus point to be tried again,
-    and that will set best to a low value!!!
-    */
-    {
-    guint neighbor_index;
-    
-    for(neighbor_index=0; neighbor_index<n_neighbours && best != 0; neighbor_index++)
-      // If the neighbor is in the target (not the context) and has a source in the corpus
-      if ( has_source_neighbor(neighbor_index) ) {
-        /*
-        Coord arithmetic: corpus source minus neighbor offset.
-        corpus_point is a pixel in the corpus with opposite offset to corpus source of neighbor
-        as target position has to this target neighbor.
-        !!! Note corpus_point is raw coordinate into corpus: might be masked.
-        !!! It is not an index into unmasked corpus_points.
-        */
-        Coordinates corpus_point = subtract_points(neighbour_source[neighbor_index], neighbours[neighbor_index]);
-        
-        /* !!! Must clip corpus_point before further use, its only potentially in the corpus. */
-        if (clippedOrMaskedCorpus(corpus_point)) continue;
-        if (*intmap_index(&tried, corpus_point) == target_index) continue;  /* Heuristic 2 */
-        is_perfect_match = try_point(corpus_point, NEIGHBORS_SOURCE);
-        if ( is_perfect_match ) break;  // Break neighbors loop
-        
-        /*
-        !!! Remember we tried corpus pixel point for target point target_index.
-        Heuristic 2: all target neighbors with values might come from the same corpus locus.
-        */
-        *intmap_index(&tried, corpus_point) = target_index;
-      }
-      // Else the neighbor is not in the target (has no source) so we can't use the heuristic 1.
-    }
-      
-    if ( ! is_perfect_match )
-    {
-      /* Try random source points from the corpus */
-      gint j;
-      for(j=0; j<parameters->trys; j++)
-      {
-        is_perfect_match = try_point(random_corpus_point(), RANDOM_CORPUS);
-        if ( is_perfect_match ) break;  /* Break loop over random corpus points */
-        /* Not set tried(point) because that heuristic rarely works for random source. */
-      }
-    }
-    
-    store_betterment_stats(latestBettermentKind);
-    /* DEBUG dump_target_resynthesis(position); */
-    
-    /*
-    Store best match.
-    Compared to match from a previous pass:
-     The best match may be no better.
-     The best match may be the same source point.
-     The best match may be the same color from a different source point.
-     The best match may be the same source but a better match because the patch changed.
-    These are all independent.
-    We distinguish some of these cases: only store a better matching, new source.
-    */
-    if (latestBettermentKind != NO_BETTERMENT )
-    {
-      /* if source different from previous pass */
-      if ( ! equal_points(get_source_of(position), best_point) ) 
-      {
-        repeatCountBetters++;   /* feedback for termination. */
-        integrate_color_change(position); /* Stats. Must be before we store the new color values. */
-        /* Save the new color values (!!! not the alpha) for this target point */
-        {
-          BppType j;
-          
-          for(j=FIRST_PIXELEL_INDEX; j<color_end_bip; j++)  // For all color pixelels (channels)
-            pixmap_index(&image, position)[j] = pixmap_index(&corpus, best_point)[j];  // Overwrite prior with new color
-        }
-        set_source(position, best_point); /* Remember new source */
-      } /* else same source for target */
-    } /* else match is same or worse */
-  } /* end for each target pixel */
-  return repeatCountBetters;
-}
 
 
 static void
@@ -1194,7 +932,79 @@ detach_drawables(
 }
 
 
-/* Main */
+
+
+#include "imageFormat.h"
+
+
+// Engine
+#include "passes.h"
+#include "synthesize.h"
+#include "refiner.h"
+
+/*
+The engine.
+Independent of platform, calling app, and graphics libraries.
+*/
+
+static int
+engine(
+  Parameters parameters,
+  GimpDrawable *targetDrawable  // FIXME
+  )
+{
+  // target prep
+  prepare_target_points(parameters.use_border); // Uses image_mask
+  #ifdef ANIMATE
+  clear_target_pixels(color_end_bip);  // For debugging, blacken so new colors sparkle
+  #endif
+  free_map(&image_mask); // Assert no more references to image_mask.
+  prepare_target_sources();
+  
+  // source prep
+  prepare_corpus_points();
+
+  /* 
+  Rare user error: all pixels transparent (which we ignore.)
+  This error NOT occur if selection does not intersect, since then we use the whole drawable.
+  */
+  if (!corpus_points_size )
+  {
+    return 1;
+  }
+  if ( !target_points_size ) 
+  {
+    return 2;
+  }
+  
+  // prep unrelated to images
+  prepare_sorted_offsets(); // Depends on image size
+  make_diff_table(parameters.autism, parameters.map_weight);
+ 
+  // Now we need a prng, before order_target_points
+  /* Originally: srand(time(0));   But then testing is non-repeatable. 
+  TODO the seed should be a hash of the input or a user parameter.
+  Then it would be repeatable, but changeable by the user.
+  */
+  prng = g_rand_new_with_seed(1198472);
+  
+  order_target_points(&parameters);
+  prepare_tried();  // Must follow prepare_corpus
+  
+  /* Preparations done, begin actual synthesis */
+  print_processor_time();
+  progress(_("Resynthesizer: synthesizing"));
+
+  refiner(targetDrawable, parameters);
+  return 0; // Success
+}
+
+
+
+/* 
+Plugin main.
+This adapts the texture synthesis engine to a Gimp plugin.
+*/
 
 static void run(
   const gchar *     name,
@@ -1205,7 +1015,6 @@ static void run(
 {
   static GimpParam values[2];   /* Gimp return values. !!! Allow 2: status and error message. */
   Parameters parameters;
-  guint pass;
   
   GimpDrawable *drawable = NULL;
   GimpDrawable *corpus_drawable = NULL; 
@@ -1217,12 +1026,6 @@ static void run(
   gimp_message_set_handler(1); // To console instead of GUI
   start_time = clock();
   #endif
-  
-  /* Originally: srand(time(0));   But then testing is non-repeatable. 
-  TODO the seed should be a hash of the input or a user parameter.
-  Then it would be repeatable, but changeable by the user.
-  */
-  prng = g_rand_new_with_seed(1198472);
   
   // internationalization i18n
   // Note these constants are defined in the build environment.
@@ -1316,126 +1119,36 @@ static void run(
     }
   }
 
-  /* Set flags for presence of alpha channels. */
-  is_alpha_image = gimp_drawable_has_alpha(drawable->drawable_id);
-  is_alpha_corpus = gimp_drawable_has_alpha(parameters.corpus_id);
-  
   /* 
   The engine should not be run interactively so no need to store last values. 
   I.E. the meaning of "last" is "last values set by user interaction".
   */
-    
-  /*
-  Dynamic counts and indexes of pixelels.  Depends on the in drawables.
-  !!! These are the same for target and corpus, even if the in drawables differ in alphas.
-  !!! See resynth_types.h.
-  bpp means bytes per pixel
-  bip means byte index in pixel
-  !!! Note the end is not the index of the last, but the index after the last
   
-  [0]                         mask pixelel
-  [1,color_end_bip)           image color pixelels, up to 3 (RGB)
-  optional alpha byte         
-  [map_start_bip, total_bpp)  map color pixelels
-  optional map alpha byte     !!! discard
-  [0, total_bpp)              entire pixel
+  // Image adaption requires format indices
+  prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
   
-  [1, color_end_bip)  color pixelels compared
-  [map_start_bip, map_end_bip)      map pixelels compared
-  
-  Examples:
-  RGBA with RGB maps                RGB with GRAY maps                RGB with no maps
-  0 Mask (selection)                M                                 M
-  1 R FIRST_PIXELEL_INDEX           R FIRST_PIXELEL_INDEX             R
-  2 G                               G                                 G
-  3 B                               B                                 B
-  4 A alpha_bip, color_end_bip      W color_end_bip, map_start_bip   4  color_end, map_start, map_end, total
-  5 R map_start_bip                5  map_end_bip, total_bpp
-  6 G
-  7 B
-  8   map_end_bip, total_bpp
-  
-  !!! alpha_bip is undefined unless is_alpha_corpus or is_alpha_image
-  
-  TODO Possibly pad pixel to size 8 for memory alignment, especially if vectorized.
-  */
-  
-  /* !!! Not drawable->bpp because it includes other channels. */
-  /* Don't compare alpha */
-  img_match_bpp = count_color_channels(drawable);
-    
-  /* Index of first color pixelel: 1, follows mask, use constant FIRST_PIXELEL_INDEX */
-  color_end_bip   = FIRST_PIXELEL_INDEX + img_match_bpp;
-  
-  if ( is_alpha_image || is_alpha_corpus )
-  {
-    /* Allocate a pixelel for alpha. */
-    alpha_bip = color_end_bip;
-    map_start_bip = 1 + color_end_bip;
-  }
-  else
-    /* alpha_bip is undefined. */
-    map_start_bip = color_end_bip;
-   
-  /* Count pixelels to compare in maps. */
-  if ( with_map )
-  {
-    /* 
-    Either, none, or both maps can have alpha, but it is discarded. 
-    Both maps must have same count color pixelels, checked earlier. 
-    */
-    map_match_bpp = count_color_channels(map_in_drawable);
-  }
-  else
-    map_match_bpp =0;
-   
-  map_end_bip   = map_start_bip + map_match_bpp;
-  total_bpp  = map_end_bip;  
-  g_assert( total_bpp <= MAX_RESYNTH_BPP);
-  
-  /* target/context prep */
+  /* target/context adaption */
   fetch_image_mask_map(drawable, &image, total_bpp, &image_mask, MASK_TOTALLY_SELECTED, 
     map_out_drawable, map_start_bip);
-  prepare_target_points(parameters.use_border); // This uses image_mask
-  #ifdef ANIMATE
-  clear_target_pixels(color_end_bip);  // For debugging, blacken so new colors sparkle
-  #endif
-  free_map(&image_mask); // Assert no more references to image_mask.
-  prepare_target_sources();
   
-  /*  corpus prep */
+  /*  corpus adaption */
   fetch_image_mask_map(corpus_drawable, &corpus, total_bpp, &corpus_mask, MASK_TOTALLY_SELECTED, 
       map_in_drawable, map_start_bip);
   free_map(&corpus_mask);
-  prepare_corpus_points();
-
-  /* 
-  Rare user error: all pixels transparent (which we ignore.)
-  This error NOT occur if selection does not intersect, since then we use the whole drawable.
-  */
-  if (!corpus_points_size )
+  
+  // Done with adaption: now main image data in canonical pixmaps, etc.
+  int result = engine(parameters, drawable);
+  if (result == 1)
   {
     ERROR_RETURN(_("The texture source is empty. Does any selection include non-transparent pixels?"));
   }
-  if ( !target_points_size ) 
+  else if  (result == 2 )
   {
     ERROR_RETURN(_("The output layer is empty. Does any selection have visible pixels in the active layer?"));
   }
+  // else must be 0, success
   
-  prepare_sorted_offsets();
-  make_diff_table(parameters.autism, parameters.map_weight);
-  #ifdef VECTORIZED
-  make_diff_table2(parameters.autism, parameters.map_weight);
-  #endif
-  order_target_points(&parameters);
-  prepare_tried();  // Must follow prepare_corpus
-  prepare_repetition_parameters();
-  
-  /* Preparations done, begin actual synthesis */
-  print_processor_time();
-  progress(_("Resynthesizer: synthesizing"));
-
-  #include synthEngine.h
+  // Normal post-process adaption follows
 
   /* dump_target_points(); */ /* detailed debugging. */
   print_post_stats();
