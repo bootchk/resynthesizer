@@ -268,7 +268,7 @@ void order_target_points(
         orderTargetPointsRandomSqueeze();   // randomized bands, concentric squeezing in and out a donut
         break;
     default:
-        gimp_message("Parameter use_border out of range."); // Critical, no i18n
+        // FIXME no gimp: gimp_message("Parameter use_border out of range."); // Critical, no i18n
         g_assert(FALSE);
   }
 }

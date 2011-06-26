@@ -26,18 +26,7 @@ In earlier versions, this was mostly c++ vector and operators on it.
 */
 
 
-typedef guint8 Pixelel;
 
-/*
-Coordinates class
-
-!!! These are signed ints, can represent offsets or positive coordinates 
-Similar to GdkPoint.
-*/
-typedef struct {
-    gint x;
-    gint y;
-} Coordinates;
 
 
 gboolean 
@@ -45,6 +34,8 @@ equal_points(const Coordinates a, const Coordinates b)
 {
   return (a.x == b.x) && (a.y == b.y); 
 }
+
+
 
 /*
 Compare funcs for sorting.

@@ -14,7 +14,7 @@ It is debatable whether third and subsequent passes should continue to refine ev
 
 static void 
 refiner(
-  GimpDrawable *drawable,
+  // GimpDrawable *drawable,  // ANIMATE
   Parameters parameters
   ) {
   guint pass;
@@ -24,7 +24,9 @@ refiner(
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
-    guint betters = synthesize(pass, &parameters, drawable, repetition_params);
+    guint betters = synthesize(pass, &parameters, 
+      // drawable, // ANIMATE
+      repetition_params);
   
     print_pass_stats(pass, repetition_params[pass][1], betters);
   

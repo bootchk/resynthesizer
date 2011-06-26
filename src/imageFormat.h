@@ -4,7 +4,7 @@ Image format (RGB, RGBA, Grey, etc.)
 Currently setting global flag variables.
 */
 
-static void
+void
 prepareImageFormatIndices(
   GimpDrawable *targetDrawable,
   GimpDrawable *sourceDrawable,

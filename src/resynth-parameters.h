@@ -51,19 +51,7 @@ static GimpParamDef resynth_paramdefs[] =
 };
   
 
-struct ParametersStruct {
-  gint h_tile, v_tile; /* c++ was bool */
-  gint use_border;   /* c++ was bool */
-  
-  gint32 corpus_id, input_map_id, output_map_id;
 
-  gdouble map_weight;
-  gdouble autism;
-  gint32 neighbours, trys;
-};
-
-
-typedef struct ParametersStruct Parameters;
 
 /* Restore the last parameters used, get from GIMP. */
 static gboolean 

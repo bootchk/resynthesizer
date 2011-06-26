@@ -629,7 +629,7 @@ resynth-gui.o: resynth-gui.c ../config.h plugin-intl.h \
  /usr/local/include/gimp-2.0/libgimp/gimpgradientselectbutton.h \
  /usr/local/include/gimp-2.0/libgimp/gimppaletteselectbutton.h \
  /usr/local/include/gimp-2.0/libgimp/gimppatternselectbutton.h \
- /usr/local/include/gimp-2.0/libgimp/gimpzoompreview.h \
+ /usr/local/include/gimp-2.0/libgimp/gimpzoompreview.h map.h engine.h \
  resynth-constants.h resynth-parameters.h resynth-gui.h
 
 ../config.h:
@@ -2045,6 +2045,10 @@ plugin-intl.h:
 /usr/local/include/gimp-2.0/libgimp/gimppatternselectbutton.h:
 
 /usr/local/include/gimp-2.0/libgimp/gimpzoompreview.h:
+
+map.h:
+
+engine.h:
 
 resynth-constants.h:
 

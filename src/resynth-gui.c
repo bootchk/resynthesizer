@@ -37,6 +37,10 @@
 #include <libgimp/gimpui.h>
 
 /* Shared with engine */
+#include "map.h"
+#include "engine.h" // For type Parameters
+
+/* Shared with engine plugin. */
 #include "resynth-constants.h"
 #include "resynth-parameters.h"
 

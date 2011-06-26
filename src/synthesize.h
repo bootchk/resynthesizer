@@ -6,7 +6,7 @@ static guint
 synthesize(
   guint pass,
   Parameters *parameters, // IN,
-  GimpDrawable *drawable,  // IN for ANIMATE
+  // GimpDrawable *drawable,  // IN for ANIMATE
   TRepetionParameters repetition_params
   )
 {

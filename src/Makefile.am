@@ -8,7 +8,8 @@ bin_PROGRAMS = resynthesizer resynthesizer-gui
 bindir = $(GIMP_LIBDIR)/plug-ins
 
 resynthesizer_SOURCES = \
-  resynthesizer.c
+  resynthesizer.c \
+  engine.c
   
 # lkk 2011 These are 'sources' but not compiled, just included
 #  resynth-pdb.h \
