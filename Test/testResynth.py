@@ -61,7 +61,7 @@ testdir = './'
 tmpdir = tempfile.mkdtemp()
 
 indir = testdir + 'in_images/'
-referencedir = testdir + 'reference_out_images/'
+referencedir = testdir + 'reference_out_images_rand/'
 
 test_summary = ""
 

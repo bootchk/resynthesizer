@@ -85,7 +85,31 @@ Leave it commented for development and testing, to enable assertions.
 // !!! Engine is independent of GIMP, not: #include <libgimp/gimp.h>
 // FIXME work in progress eliminating Glib types
 // #include <glib/gprintf.h>
-#include "glibProxy.h"
+
+#define SYNTH_USE_GLIB TRUE
+
+/*
+On platform Linux, used Glib grand so results are consistent across test invocations
+On platform OSX (when using stdc but not Glib), use stdc rand()
+*/
+#ifdef SYNTH_USE_GLIB 
+  // Use Glib prng for testing against test suite prior generated using Glib
+  #include <glib/grand.h> 
+#else
+  // Use PRNG in glibProxy
+  #define g_rand_new_with_seed(s) s_rand_new_with_seed(s)
+  #define g_rand_int_range(r,u,l) s_rand_int_range(r,u,l)
+#endif
+
+
+#ifdef SYNTH_USE_GLIB
+  // Use glib via gimp.h
+  #include <libgimp/gimp.h>
+#else
+  #include <stddef.h>   // size_t
+  #include "glibProxy.h"
+  #include <math.h> // atan2(), log()
+#endif
 
 /* Shared with resynth-gui, engine plugin, and engine */
 #include "resynth-constants.h"
@@ -93,6 +117,7 @@ Leave it commented for development and testing, to enable assertions.
 // True header files
 #include "map.h"
 #include "mapIndex.h"
+#include "engineParams.h"
 #include "engine.h"
 
 /* Source not compiled separately. Is separate to reduce file sizes and later, coupling. */
@@ -179,7 +204,7 @@ but what the user sees is not what we might be matching against, is that what us
 gboolean is_alpha_image = FALSE;
 gboolean is_alpha_corpus = FALSE;
 
-clock_t start_time;
+// clock_t start_time;
 
 GRand *prng;
 
@@ -846,6 +871,8 @@ void prepare_neighbors(
 /*
 The engine.
 Independent of platform, calling app, and graphics libraries.
+
+Temporarily, uses globals set by adapters.
 */
 
 int

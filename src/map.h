@@ -64,10 +64,20 @@ new_coordmap(
   guint
   );
   
-extern
-void
+extern void
 set_bytemap(
   Map*,
   guchar
+  );
+
+extern void 
+invert_bytemap(
+  Map* map
+  );
+  
+extern void
+interleave_mask(
+  Map *pixmap,
+  Map *mask
   );
   

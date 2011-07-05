@@ -72,13 +72,17 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 // Bring in alternative code: experimental, debugging, etc.
 // #define ANIMATE    // Animate image while processing, for debugging.
 // #define DEBUG
+
+#define ADAPT_SIMPLE TRUE // Adapt engine to a simpler interface. 
+// For using resynthesizer plugin for testing only.
+
 /*
 Uncomment this before release.  I'm not sure if it the build environment
 defines it on the command line to gcc.
 Also, uncomment when using splint.
 Leave it commented for development and testing, to enable assertions.
 */
-#define G_DISABLE_ASSERT      // To disable g_assert macro, uncomment this.
+// #define G_DISABLE_ASSERT      // To disable g_assert macro, uncomment this.
 
 #include "../config.h" // GNU buildtools local configuration
 #include "plugin-intl.h" // i18n macros
@@ -95,6 +99,7 @@ No definitions of non in-line functions or data.
 */
 #include "map.h"
 #include "mapIndex.h"
+#include "engineParams.h"
 #include "engine.h"
 
 /* Source included, not compiled separately. Is separate to reduce file sizes and later, coupling. */
@@ -207,7 +212,13 @@ detach_drawables(
     gimp_drawable_detach(in_map);
 }
 
-
+// FIXME
+// #include "engine.h"
+#ifdef ADAPT_SIMPLE
+  #include "imageBuffer.h"
+  #include "adaptSimple.h"
+  #include "adaptGimpSimple.h"
+#endif
 
 /* 
 Plugin main.
@@ -332,17 +343,34 @@ static void run(
   I.E. the meaning of "last" is "last values set by user interaction".
   */
   
-  // Image adaption requires format indices
-  prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
+  #ifdef ADAPT_SIMPLE
+    /* Adapt Gimp to an engine with a simpler interface. */
+    setDefaultParams(&parameters);
+    ImageBuffer imageBuffer;
+    ImageBuffer maskBuffer;
+    
+    // Image adaption requires format indices
+    prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
+    // g_printf("Here2\n");
+    adaptGimpToSimple(drawable, &imageBuffer, &maskBuffer);  // From Gimp to simple
+    g_printf("Here3\n");
+    adaptSimpleAPI(&imageBuffer, &maskBuffer);        // From simple to existing engine API
+    
+  #else
+    // Image adaption requires format indices
+    prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
+    
+    /* target/context adaption */
+    fetch_image_mask_map(drawable, &image, total_bpp, &image_mask, MASK_TOTALLY_SELECTED, 
+      map_out_drawable, map_start_bip);
+    
+    /*  corpus adaption */
+    fetch_image_mask_map(corpus_drawable, &corpus, total_bpp, &corpus_mask, MASK_TOTALLY_SELECTED, 
+        map_in_drawable, map_start_bip);
+    free_map(&corpus_mask);
+    // !!! Note the engine yet uses image_mask 
+  #endif
   
-  /* target/context adaption */
-  fetch_image_mask_map(drawable, &image, total_bpp, &image_mask, MASK_TOTALLY_SELECTED, 
-    map_out_drawable, map_start_bip);
-  
-  /*  corpus adaption */
-  fetch_image_mask_map(corpus_drawable, &corpus, total_bpp, &corpus_mask, MASK_TOTALLY_SELECTED, 
-      map_in_drawable, map_start_bip);
-  free_map(&corpus_mask);
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
   int result = engine(parameters);
@@ -361,8 +389,26 @@ static void run(
 
   /* dump_target_points(); */ /* detailed debugging. */
   // print_post_stats();
-    
-  post_results_to_gimp(drawable); /* Update Gimp image from local pixmap */
+  
+  // Update Gimp image from local pixmap
+  // Note this works even for test harness where ADAPT_SIMPLE
+  // but then it does NOT test returning results in buffer.
+  
+  /* 
+  TODO to test that antiAdaptImage works need more here:
+  But antiAdaptImage has already been tested once on the incoming side.
+  So no compelling need to test it again here.
+  #ifdef ADAPT_SIMPLE   
+    antiAdaptImage(
+      ImageBuffer * imageBuffer,              // OUT image: target or corpus drawable
+      Map          *pixmap,             // IN NON-rowpadded pixmap
+      guint        offset,              // IN Offset in destination pixel
+      guint        pixelel_count        // IN count pixelels to move
+      )
+    postBufferToGimp(foo)   // Not written yet
+  #else
+  */
+  post_results_to_gimp(drawable); 
   
   /* Clean up */
   detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable);

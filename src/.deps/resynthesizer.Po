@@ -205,8 +205,13 @@ resynthesizer.o: resynthesizer.c ../config.h plugin-intl.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/bits/stdio.h /usr/include/bits/stdio2.h resynth-constants.h \
- map.h mapIndex.h engine.h adaptGimp.h resynth-parameters.h imageFormat.h \
- resynth-pdb.h
+ map.h mapIndex.h engineParams.h engine.h adaptGimp.h \
+ resynth-parameters.h imageFormat.h imageBuffer.h adaptSimple.h \
+ /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/endian.h \
+ /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
+ /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/sys/sysmacros.h /usr/include/alloca.h \
+ /usr/include/bits/stdlib.h adaptGimpSimple.h resynth-pdb.h
 
 ../config.h:
 
@@ -712,6 +717,8 @@ map.h:
 
 mapIndex.h:
 
+engineParams.h:
+
 engine.h:
 
 adaptGimp.h:
@@ -719,5 +726,31 @@ adaptGimp.h:
 resynth-parameters.h:
 
 imageFormat.h:
+
+imageBuffer.h:
+
+adaptSimple.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/sys/types.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/bits/select.h:
+
+/usr/include/sys/sysmacros.h:
+
+/usr/include/alloca.h:
+
+/usr/include/bits/stdlib.h:
+
+adaptGimpSimple.h:
 
 resynth-pdb.h:

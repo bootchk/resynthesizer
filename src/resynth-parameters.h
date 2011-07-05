@@ -62,16 +62,7 @@ get_last_parameters(
   ) 
 {
   /* Defaults in case this is our first run */
-  param->corpus_id = -1;
-  param->input_map_id = -1;
-  param->output_map_id = -1;
-  param->v_tile = TRUE;
-  param->h_tile = TRUE;
-  param->use_border = 1;    // lkk was true, now is an enum
-  param->map_weight = 0.5;
-  param->autism = 0.117; /* 30/256 */
-  param->neighbours = 30;
-  param->trys = 200;
+  setDefaultParams(param);
  
   if ( ! gimp_get_data(plugin_name, param))
     /* No data was stored previously, not an exception. */

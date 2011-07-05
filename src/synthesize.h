@@ -22,6 +22,8 @@ synthesize(
   for(target_index=0; target_index<repetition_params[pass][1]; target_index++) 
   {
     countTargetTries += 1;  /* ALT count progress at each target point. */
+    
+    #ifdef PROGRESS
     if ((target_index&4095) == 0) 
     {
       /* Progress over all passes, not just within this pass.
@@ -32,6 +34,7 @@ synthesize(
         post_results_to_gimp(drawable);
       #endif
     }
+    #endif
     
     position = g_array_index(target_points, Coordinates, target_index);
      

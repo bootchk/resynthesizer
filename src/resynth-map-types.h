@@ -127,6 +127,51 @@ set_bytemap(
     }
 }
 
+void 
+invert_bytemap(
+  Map* map
+  )
+{
+  guint y;
+  guint x;
+  
+  for (y=0; y<map->height; y++)
+    for (x=0; x<map->width; x++)
+    {
+      Coordinates coords = {x,y};
+      // Ones complement: bitwise negation
+      *bytemap_index(map, coords) = ~ *bytemap_index(map, coords);
+    }
+}
 
+
+/*
+This was formerly in adaptGimp.h.
+But it is pure, doesn't refer to GIMP, and is needed by engine.
+It is a binary operation on pixmaps.
+*/
+
+/*
+Interleave one pixelel of mask pixmap into pixelels of pixmap.
+
+lkk Mask bytemap was separate.  I interleaved them for better memory locality.
+And the map pixmap was interleaved with the color pixmap, so why not the mask too.
+*/
+void
+interleave_mask(
+  Map *pixmap,
+  Map *mask
+  )
+{
+  guint i;
+  
+  guint size = pixmap->height * pixmap->width;
+  g_assert( size == mask->height * mask->width);  /* Same dimensions. */
+
+  for (i=0; i < size; i++)
+    /* Copy one byte */
+    g_array_index(pixmap->data, Pixelel, i*pixmap->depth + MASK_PIXELEL_INDEX) =
+          g_array_index(mask->data, Pixelel, i*mask->depth);
+}
 
 

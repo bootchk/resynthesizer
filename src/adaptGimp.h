@@ -1,5 +1,5 @@
 /*
-Adapt texture synthesis engine to Gimp.
+Adapt GIMP plugin to texture synthesis engine.
 
 Functions to read and write pixmaps and bytemaps from and to Gimp.
 */
@@ -9,7 +9,7 @@ Functions to read and write pixmaps and bytemaps from and to Gimp.
 
 /*
 Blit (copy a sub-rect) of source map to destination map.
-Here, the entire element of the map is copied.
+Here, the entire pixel element of the map is copied.
 
 original c++ code, which only copied a byte:
     for(gint y=0;y<temp_mask.height;y++)
@@ -241,31 +241,8 @@ fetch_mask(
     }
 }
 
-/*
-Interleave one pixelel of mask pixmap into pixelels of pixmap.
-
-lkk Mask bytemap was separate.  I interleaved them for better memory locality.
-And the map pixmap was interleaved with the color pixmap, so why not the mask too.
-*/
-static void
-interleave_mask(
-  Map *pixmap,
-  Map *mask
-  )
-{
-  guint i;
-  
-  guint size = pixmap->height * pixmap->width;
-  g_assert( size == mask->height * mask->width);  /* Same dimensions. */
-
-  for (i=0; i < size; i++)
-    /* Copy one byte */
-    g_array_index(pixmap->data, Pixelel, i*pixmap->depth + MASK_PIXELEL_INDEX) =
-          g_array_index(mask->data, Pixelel, i*mask->depth);
-}
 
 
-// FIXME called by resynthesizer adapter
 void 
 fetch_image_and_mask(
   GimpDrawable *drawable, // IN
@@ -300,7 +277,6 @@ e.g.
 Max of eight pixelels.
 Note we prepend the mask byte.
 */
-// FIXME called by resynthesizer adapter
 void
 fetch_image_mask_map(
   GimpDrawable *image_drawable,     // IN image: target or corpus drawable

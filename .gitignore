@@ -15,3 +15,6 @@
 # Ignore logs
 *.log
 
+# Ignore object files
+*.o
+

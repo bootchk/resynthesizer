@@ -3,13 +3,21 @@
 ## lkk 2011
 ## Note the two .c files are 'main.c' files and many .h files are not just declarations but definitions, that is, not pure header files.
 
-bin_PROGRAMS = resynthesizer resynthesizer-gui
+bin_PROGRAMS = resynthesizer synth
+
+## Temporarily stop making:
+## resynthesizer-gui
 
 bindir = $(GIMP_LIBDIR)/plug-ins
 
 resynthesizer_SOURCES = \
   resynthesizer.c \
-  engine.c
+  engineParams.c \
+  engine.c \
+  glibProxy.c
+
+# lkk Note glibProxy.c not needed for resynthesizer for GIMP
+# but IS needed when using GIMP as a test harness to the standalone engine
   
 # lkk 2011 These are 'sources' but not compiled, just included
 #  resynth-pdb.h \
@@ -20,7 +28,16 @@ resynthesizer_SOURCES = \
 #  resynth-order-target.h
 
 resynthesizer_gui_SOURCES = \
-  resynth-gui.c
+  resynth-gui.c \
+  engineParams.c
+
+# Standalone engine i.e. library
+synth_SOURCES = \
+  synth.c \
+  engine.c \
+  glibProxy.c \
+  engineParams.c
+  
   
 #  resynth-gui.h \
 #  resynth-parameters.c \
