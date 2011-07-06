@@ -50,7 +50,12 @@ Using ANSI c rand().
 Note GRand type is passed, but not used,
 since rand() keeps its own internal data.
 */
+
+// When using this proxy with GIMP (for testing the proxy)
+// We can't redefine certain structs (although we can redefine most other things.)
+#ifndef SYNTH_USE_GLIB
 typedef void GRand;
+#endif
 
 GRand *
 s_rand_new_with_seed(guint seed);
@@ -76,13 +81,26 @@ which can be accessed (read and write) by appropriate casting
 with ordinary array indexing syntax.
 The indirection through the GArray struct is NOT needed.
 */
+
+#ifndef SYNTH_USE_GLIB
 typedef struct _GArray
 {
   gchar *data;
   guint len;
-  guint reserved_count;
-  size_t element_size;
 } GArray;
+#endif
+
+// We can always redefine this struct because it is private to glib.
+typedef struct _GRealArray
+{
+  guint8 *data;
+  guint   len;
+  guint   alloc;
+  guint   elt_size;
+  guint   zero_terminated : 1;
+  guint   clear : 1;
+  gint    ref_count;
+} GRealArray;
 
 
 #define g_array_index(a,t,i)      (((t*) (void *) (a)->data) [(i)])

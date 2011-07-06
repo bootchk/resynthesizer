@@ -73,8 +73,8 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 // #define ANIMATE    // Animate image while processing, for debugging.
 // #define DEBUG
 
-#define ADAPT_SIMPLE TRUE // Adapt engine to a simpler interface. 
-// For using resynthesizer plugin for testing only.
+#include "buildSwitches.h"
+
 
 /*
 Uncomment this before release.  I'm not sure if it the build environment
@@ -97,6 +97,10 @@ Leave it commented for development and testing, to enable assertions.
 True header files: types, function prototypes, and in-line functions only.
 No definitions of non in-line functions or data.
 */
+// FIXME need to include glibProxy.h here so everything else uses glibless Map?
+#ifdef USE_GLIB_PROXY
+	#include "glibProxy.h"
+#endif
 #include "map.h"
 #include "mapIndex.h"
 #include "engineParams.h"
@@ -161,6 +165,7 @@ count_color_channels(GimpDrawable *drawable)
   return 0;
 }
 
+// Func to set pixelel indices
 #include "imageFormat.h"
 
 /*
@@ -371,6 +376,9 @@ static void run(
     // !!! Note the engine yet uses image_mask 
   #endif
   
+  // After possible adaption, check size again
+  g_assert(image.width * image.height); // Image is not empty
+  g_assert(corpus.width * corpus.height); // Corpus is not empty
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
   int result = engine(parameters);

@@ -1,5 +1,5 @@
-resynthesizer.o: resynthesizer.c ../config.h plugin-intl.h \
- /usr/include/libintl.h /usr/include/features.h \
+resynthesizer.o: resynthesizer.c buildSwitches.h ../config.h \
+ plugin-intl.h /usr/include/libintl.h /usr/include/features.h \
  /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-64.h \
@@ -206,12 +206,9 @@ resynthesizer.o: resynthesizer.c ../config.h plugin-intl.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/bits/stdio.h /usr/include/bits/stdio2.h resynth-constants.h \
  map.h mapIndex.h engineParams.h engine.h adaptGimp.h \
- resynth-parameters.h imageFormat.h imageBuffer.h adaptSimple.h \
- /usr/include/stdlib.h /usr/include/sys/types.h /usr/include/endian.h \
- /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
- /usr/include/sys/select.h /usr/include/bits/select.h \
- /usr/include/sys/sysmacros.h /usr/include/alloca.h \
- /usr/include/bits/stdlib.h adaptGimpSimple.h resynth-pdb.h
+ resynth-parameters.h imageFormat.h resynth-pdb.h
+
+buildSwitches.h:
 
 ../config.h:
 
@@ -726,31 +723,5 @@ adaptGimp.h:
 resynth-parameters.h:
 
 imageFormat.h:
-
-imageBuffer.h:
-
-adaptSimple.h:
-
-/usr/include/stdlib.h:
-
-/usr/include/sys/types.h:
-
-/usr/include/endian.h:
-
-/usr/include/bits/endian.h:
-
-/usr/include/bits/byteswap.h:
-
-/usr/include/sys/select.h:
-
-/usr/include/bits/select.h:
-
-/usr/include/sys/sysmacros.h:
-
-/usr/include/alloca.h:
-
-/usr/include/bits/stdlib.h:
-
-adaptGimpSimple.h:
 
 resynth-pdb.h:

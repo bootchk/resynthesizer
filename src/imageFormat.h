@@ -1,8 +1,17 @@
 /*
-Image format (RGB, RGBA, Grey, etc.)
+Prepare indices into our pixel.
 
-Currently setting global flag variables.
+Synthesizer engine pixel contains mask pixelel and map pixelels
+(Not just the color and alpha pixelels.)
+
+IN: Image format (RGB, RGBA, Grey, etc.)
+OUT: global index variables.
 */
+
+
+
+
+// For use with GIMP
 
 void
 prepareImageFormatIndices(
@@ -91,3 +100,5 @@ prepareImageFormatIndices(
   total_bpp  = map_end_bip;  
   g_assert( total_bpp <= MAX_RESYNTH_BPP);
 }
+
+

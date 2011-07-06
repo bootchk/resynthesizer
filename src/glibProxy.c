@@ -8,9 +8,17 @@ This is not as robust as Glib: little checking is done.
 
 This is a limited subset: only what is used in synth.
 */
+#include "buildSwitches.h"
+
+// Certain configurations use glib defines of structs GRand and GArray
+#ifdef SYNTH_USE_GLIB
+	#include <libgimp/gimp.h>
+#endif
+
 
 #include <stdlib.h>   // size_t, calloc
 #include <string.h>   // memcpy
+// Redefines some of glib if gimp.h included above
 #include "glibProxy.h"
 
 /*
@@ -47,12 +55,12 @@ s_array_sized_new (
   guint    elt_size,
   guint    reserved_size)
 {
-  GArray *array = calloc(1, sizeof(GArray));
+  GRealArray *array = calloc(1, sizeof(GRealArray));
   array->data = calloc(reserved_size, elt_size);
   array->len = 0;
-  array->reserved_count = reserved_size;
-  array->element_size = elt_size;
-  return array;
+  array->alloc = reserved_size;
+  array->elt_size = elt_size;
+  return (GArray*) array;
 }
 
 void
@@ -78,10 +86,12 @@ s_array_append_vals (
   )
 {
   // TODO if each array is typed: (((t*) (void *) array->data [array->len] = data
+  GRealArray *rarray = (GRealArray*) array;
+  
   memcpy (
-    array->data + array->element_size * array->len,  // pointer arithmetic
+    array->data + rarray->elt_size * array->len,  // pointer arithmetic
     data, 
-	  array->element_size
+	  rarray->elt_size
 	  );
   array->len += 1;
   return array;
@@ -92,9 +102,11 @@ s_array_sort (
   GArray *     array,
 	TCompareFunc  compare_func)
 {
+  GRealArray *rarray = (GRealArray*) array;
+  
   qsort (
     array->data,
 	  array->len,
-	  array->element_size,
+	  rarray->elt_size,
 	  compare_func);
 }

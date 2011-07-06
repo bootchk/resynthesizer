@@ -1,0 +1,39 @@
+# Makefile for synth: platform independent texture synthesizer
+# Copyright 2011 Lloyd Konneker
+
+CC = gcc
+
+# These are more or less arbitrary, change them at will
+# except we use inline hints extensively
+CFLAGS= -g -O3  -std=c99 -fno-common -ffast-math -frename-registers -msse3 -Winline
+
+LDFLAGS= -lm -g
+
+all: synth
+	@echo
+	@echo 'Done building synth'
+	@echo 
+
+# Get source files from development directory
+# !!! Except for buildSwitches.h and Makefile
+source:
+	for file in synth.c engine.c glibProxy.c engineParams.c imageBuffer.h engineParams.h resynth-constants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h ; do \
+		cp ../../synth/src/$$file . ; \
+	done
+
+# !!! These dependencies are not complete.
+# .h are missing
+# some of the .h files are definitions, not just declarations
+
+# engine
+synth: synth.o engine.o glibProxy.o engineParams.o
+	$(CC) -Wextra $(CFLAGS) synth.o engine.o glibProxy.o engineParams.o -o $@  $(LDFLAGS)
+
+# rm source except Makefile 
+# !!! This deletes buildSwitches.h
+refreshsource:
+	rm -f *.c *.h
+	
+clean:
+	-rm -f *~ *.o core synth
+

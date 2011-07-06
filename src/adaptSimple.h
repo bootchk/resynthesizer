@@ -146,19 +146,19 @@ antiAdaptImage(
 }
 
 /*
-For test purposes, initialize buffers and antiAdapt into the buffers.
+For test purposes, initialize buffer and antiAdapt into the buffer.
 
 This is used:
 - for the test harness from a GIMP plugin on Linux
 
 The test harness adapts in order:
 - 1 from GIMP to existing API
-- 2 from existing to simple API
+- 2 from existing to simple API (this adaption is throwaway, not used except in testing)
 - 3 from simple to existing API
-This is used in step 2.
+initBufferAndAntiAdapt() is step 2.
 */
 static void
-createBuffersAndAntiAdapt(
+initBufferAndAntiAdapt(
   ImageBuffer* imageBuffer,        // OUT image: target or corpus drawable
   Map*         pixmap,             // IN NON-rowpadded pixmap
   guint        offset,             // IN Offset in destination pixel
@@ -172,7 +172,7 @@ createBuffersAndAntiAdapt(
   // Use dimensions of IN pixmap to size the buffer
   // !! Note the depth of the buffer is only the pixelels moved, 
   // not the pixelel count of pixmap, which may be more.
-  rowBytes = pixmap->width * pixelel_count + 11;  // arbitrarily pad row
+  rowBytes = pixmap->width * pixelel_count + 11;  // arbitrarily pad row, testing
   int reservedSize = rowBytes * pixmap->height;
   
   // Set attributes imageBuffer
@@ -182,6 +182,12 @@ createBuffersAndAntiAdapt(
   imageBuffer->height = pixmap->height;
   imageBuffer->rowBytes = rowBytes;
 
+  antiAdaptImage(
+    imageBuffer,
+    pixmap,
+    offset,
+    pixelel_count
+    );
 }
 
 
@@ -198,14 +204,13 @@ adaptImageAndMask(
   ImageBuffer *   mask,   // IN 
   Map *imagePixmap,       // OUT our color pixmap of drawable, w/ interleaved mask
   Map *maskPixmap,        // OUT our selection bytemap (only one channel ie pixelel ie byte ie depth)
-  guint pixelel_count,    // IN total count mask+image+map Pixelels in our Pixel
-  Pixelel default_mask_value  // IN default value for any created mask
+  guint pixelel_count    // IN total count mask+image+map Pixelels in our Pixel
   ) 
 {
   /* Both OUT pixmaps same 2D dimensions.  Depth pixelel_count includes a mask byte. */
   new_pixmap(imagePixmap, image->width, image->height, 5 /* pixelel_count */ );
   
-  // Get color, alpha channels.  Offset them past mask byte. 
+  // Get color, alpha channels.  Offset them past mask byte. 4 bytes of RGBA.
   adaptImage(image, imagePixmap, FIRST_PIXELEL_INDEX, 4); // TODO 4 is hardcoded for RGBAFormat
   
   new_pixmap(maskPixmap, image->width, image->height, 1 /* pixelel_count */ );
@@ -215,37 +220,47 @@ adaptImageAndMask(
 }
 
 
+/*
+Adapt simpleAPI to existingAPI:
+- Duplicate the single image of the simpleAPI into two images (target and corpus) of existingAPI.
+- Invert the mask of the corpus
+- Interleave the masks into the main pixmap (but keep the mask pixmap also.)
+Inner engine (existingAPI) is more general and wants separate corpus and separate selection masks.
+*/
+
 void
 adaptSimpleAPI(
   ImageBuffer * imageBuffer,
   ImageBuffer * maskBuffer
   )
 {
+  // Assert image and mask are same size, not need to initialize empty mask with a value
+  // (as is the case when mask is smaller).
+  
   // Copy image and mask to global pixmaps
   adaptImageAndMask(
     imageBuffer, 
     maskBuffer,
     &image,       // global in engine.c
     &image_mask,  // "
-    5,    // total count mask+image Pixelels in our Pixel
-    MASK_TOTALLY_SELECTED
+    5    // total count mask+image Pixelels in our Pixel
     );
   
   // For performance (cache memory locality), interleave mask into pixmap.
   interleave_mask(&image, &image_mask);  /* Interleave mask byte into our Pixels */
   
+  
   // Duplicate image to corpus with inverted mask
-  // Inner engine is more general and wants separate corpus with separate selection mask.
   adaptImageAndMask(
     imageBuffer, 
     maskBuffer,
     &corpus,       // global in engine.c
     &corpus_mask,        // "
-    5,    // total count mask+image Pixelels in our Pixel
-    MASK_TOTALLY_SELECTED
+    5    // total count mask+image Pixelels in our Pixel
     );
   
-  // !!!! For the simple API,  invert corpus mask: corpus is inverse of target selection
+  // !!!! 
+  // For the simple API,  invert corpus mask: corpus is inverse of target selection
   invert_bytemap(&corpus_mask);
   
   // For performance (cache memory locality), interleave mask into pixmap.

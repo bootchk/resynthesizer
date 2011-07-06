@@ -61,7 +61,10 @@ testdir = './'
 tmpdir = tempfile.mkdtemp()
 
 indir = testdir + 'in_images/'
-referencedir = testdir + 'reference_out_images_rand/'
+# For testing pure GIMP/glib with GRand: reference files different
+referencedir = testdir + 'reference_out_images/'
+# For testing with stdc rand(): 
+## referencedir = testdir + 'reference_out_images_rand/'
 
 test_summary = ""
 

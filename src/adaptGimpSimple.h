@@ -1,22 +1,8 @@
 /*
 Adapt GIMP to SimpleAPI
 
-Probably throwaway, just harness for testing SimpleAPI from GIMP.
+Probably throwaway, just harness for testing SimpleAPI driven from GIMP.
 */
-
-
-
-void adaptAPIToSimple(
-  Map*          pixmap,
-  ImageBuffer*  buffer,
-  int           srcOffset,
-  int           byteCount
-  )
-{
-  // malloc and set all fields of buffer
-  // and put pixmap into row-padded ImageBuffer
-  createBuffersAndAntiAdapt(buffer, pixmap, srcOffset, byteCount);
-}
 
 
 
@@ -29,14 +15,17 @@ adaptImageToBuffer(
   ImageBuffer  *maskBuffer
   )
 {
-  // Adapt GIMP to existing API
+  // Adapt GIMP to existing API: GIMP drawable=>Map
   // Many parameters are global vars
+  // Assert image and image_mask invalid, uninitialized.
   fetch_image_mask_map(drawable, image, total_bpp, image_mask, MASK_TOTALLY_SELECTED, 
       NULL /*map_out_drawable*/, map_start_bip);
+  // assert image and image_mask now valid, same dimensions
+  // assert mask represents selection in drawable
       
-  // Adapt existing API to SimpleAPI
-  adaptAPIToSimple(image, imageBuffer, 1, 4);
-  adaptAPIToSimple(image_mask, maskBuffer, 0, 1);
+  // Adapt existing API to SimpleAPI: Map=>ImageBuffer
+  initBufferAndAntiAdapt(imageBuffer, image, 1, 4);
+  initBufferAndAntiAdapt(maskBuffer, image_mask, 0, 1);
   
   // Discard, since caller will re adapt SimpleAPI to existing API
   free_map(image);

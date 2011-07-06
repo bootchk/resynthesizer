@@ -69,46 +69,46 @@ to the opposite side.  See wrap_or_clip.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
 
+// Compiling switch #defines
+#include "buildSwitches.h"
+
+
+// #include <glib/gprintf.h>
+
 // Bring in alternative code: experimental, debugging, etc.
 // #define ANIMATE    // Animate image while processing, for debugging.
 // #define DEBUG
+
 /*
-Uncomment this before release.  I'm not sure if it the build environment
-defines it on the command line to gcc.
+Uncomment this before release.  
+I don't think the GNU build environment disables assertions on the command line to gcc.
 Also, uncomment when using splint.
 Leave it commented for development and testing, to enable assertions.
 */
 // #define G_DISABLE_ASSERT      // To disable g_assert macro, uncomment this.
 
-#include "../config.h" // GNU buildtools local configuration
-
-// !!! Engine is independent of GIMP, not: #include <libgimp/gimp.h>
-// FIXME work in progress eliminating Glib types
-// #include <glib/gprintf.h>
-
-#define SYNTH_USE_GLIB TRUE
-
-/*
-On platform Linux, used Glib grand so results are consistent across test invocations
-On platform OSX (when using stdc but not Glib), use stdc rand()
-*/
-#ifdef SYNTH_USE_GLIB 
-  // Use Glib prng for testing against test suite prior generated using Glib
-  #include <glib/grand.h> 
-#else
-  // Use PRNG in glibProxy
-  #define g_rand_new_with_seed(s) s_rand_new_with_seed(s)
-  #define g_rand_int_range(r,u,l) s_rand_int_range(r,u,l)
+#ifdef SYNTH_USE_GLIB
+  #include "../config.h" // GNU buildtools local configuration
 #endif
 
+/*
+On platform Linux, used Glib grand so results are consistent across test invocations.
+On platform OSX (when using stdc but not Glib), use stdc rand()
+*/
 
 #ifdef SYNTH_USE_GLIB
   // Use glib via gimp.h
   #include <libgimp/gimp.h>
-#else
+#endif
+  
+#ifdef USE_GLIB_PROXY
   #include <stddef.h>   // size_t
+  // This immediately redefines all but a few glib structs
   #include "glibProxy.h"
   #include <math.h> // atan2(), log()
+  // More proxy.  Redefines all but GRand struct
+  #define g_rand_new_with_seed(s) s_rand_new_with_seed(s)
+  #define g_rand_int_range(r,u,l) s_rand_int_range(r,u,l)
 #endif
 
 /* Shared with resynth-gui, engine plugin, and engine */
@@ -919,7 +919,7 @@ engine(
   order_target_points(&parameters);
   prepare_tried();  // Must follow prepare_corpus
   
-  /* Preparations done, begin actual synthesis */
+  // Preparations done, begin actual synthesis
   print_processor_time();
   
   // progress(_("Resynthesizer: synthesizing"));
@@ -927,6 +927,9 @@ engine(
   refiner(
     // targetDrawable, // ANIMATE
     parameters);
+    
+  // TODO free pixmaps
+  
   return 0; // Success
 }
 
