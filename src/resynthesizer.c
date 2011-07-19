@@ -403,18 +403,9 @@ static void run(
   // but then it does NOT test returning results in buffer.
   
   /* 
-  TODO to test that antiAdaptImage works need more here:
-  But antiAdaptImage has already been tested once on the incoming side.
+  We could test antiAdaptImage() here.
+  But antiAdaptImage() has already been tested once on the incoming side.
   So no compelling need to test it again here.
-  #ifdef ADAPT_SIMPLE   
-    antiAdaptImage(
-      ImageBuffer * imageBuffer,              // OUT image: target or corpus drawable
-      Map          *pixmap,             // IN NON-rowpadded pixmap
-      guint        offset,              // IN Offset in destination pixel
-      guint        pixelel_count        // IN count pixelels to move
-      )
-    postBufferToGimp(foo)   // Not written yet
-  #else
   */
   post_results_to_gimp(drawable); 
   

@@ -201,8 +201,9 @@ Totally transparent areas in the corpus should not match anything since color is
 Partially transparent areas might have SOME user provided color to match,
 but what the user sees is not what we might be matching against, is that what user intended?
 */
-gboolean is_alpha_image = FALSE;
-gboolean is_alpha_corpus = FALSE;
+// TODO every adapter must set these.  The Resynthesizer does.  The SimpleAPI doesn't yet.  They default to TRUE for prototype.
+gboolean is_alpha_image = TRUE;
+gboolean is_alpha_corpus = TRUE;
 
 // clock_t start_time;
 

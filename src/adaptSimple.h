@@ -24,19 +24,17 @@ Adapt pixmap that is row padded to pixmap:
 - NOT row padded
 - optionally offset color pixelels beyond 0th byte (an interleaved mask byte)
 Convert between slightly different pixmap types.
+
+!!!! This is not fully general.  Strides should be passed in.
+It just happens to work for now: when we are moving all pixels of the source.
 */
 static void
 adaptImage(
   ImageBuffer * image,              // IN image: target or corpus drawable
   Map          *pixmap,             // OUT NON-rowpadded pixmap
-  guint        offset,              // IN Offset in destination pixel
+  guint        offset,              // IN Offset in destination pixel. !!! Can be zero
   guint        pixelel_count        // IN count pixelels to move
   )
-/*
-  Map          *mask,               // OUT our selection bytemap (only one channel ie byte ie depth)
-  Pixelel      default_mask_value   // IN default value for any created mask
-  )
-*/
 {
   guint row;
   guint col;
@@ -56,6 +54,8 @@ adaptImage(
   dest: not row padded 
   */
   destPixel = offset; // dest pixel index starts at offset
+  guint srcPixelStride = pixelel_count;
+  guint destPixelStride = pixelel_count + offset;
   
   for(row=0; row<image->height; row++) 
   { 
@@ -64,8 +64,7 @@ adaptImage(
     for(col=0; col<image->width; col++) 
     {
       for (pixelel=0; pixelel < pixelel_count; pixelel++)
-        // Copy one pixelel, but offset in destination
-        // TODO is this one byte?????
+        // Copy one pixelel, but possibly offset in destination
         g_array_index(
           pixmap->data, 
           Pixelel, 
@@ -74,10 +73,10 @@ adaptImage(
           = 
           image->data[srcPixel+pixelel];  // src data is array of uchar
           
-       srcPixel+= pixelel_count;  // Src pixel stride
-       destPixel += (pixelel_count + offset); // Dest pixel stride
-     }
-   }
+      srcPixel += srcPixelStride;
+      destPixel += destPixelStride;
+    }
+  }
 }
 
 
@@ -89,19 +88,22 @@ Dest is row padded.
 This is used:
 - for the test harness from a GIMP plugin on Linux
 - in the final simpleAPI to write results back to the passed in ImageBuffer->data
+
+!!! This is not fully general, the strides are hard coded below.
 */
 static void
 antiAdaptImage(
   ImageBuffer*  imageBuffer,      // OUT image: target or corpus drawable
   Map*          pixmap,           // IN NON-rowpadded pixmap
   guint         offset,           // IN Offset in source pixel
-  guint         pixelel_count     // IN count pixelels to move
+  guint         pixelel_count     // IN count pixelels to move !!! Not size of pixel in src or dest
   )
 {
   guint row;
   guint col;
   guint pixelel;
   
+  // Indexes that move by pixel strides, but might point offset inside a pixel
   guint srcPixel;
   guint destPixel;
   
@@ -122,6 +124,8 @@ antiAdaptImage(
   */
   
   srcPixel = offset;
+  guint srcPixelStride = 5;	// mask, RGBA
+  guint destPixelStride = 4; // RGBA
   
   for(row=0; row<imageBuffer->height; row++) 
   { 
@@ -139,8 +143,8 @@ antiAdaptImage(
           srcPixel+pixelel
           );
           
-       srcPixel += (pixelel_count + offset);  // Src pixel stride
-       destPixel += pixelel_count; // Dest pixel stride
+       srcPixel += srcPixelStride;
+       destPixel += destPixelStride;
      }
    }
 }

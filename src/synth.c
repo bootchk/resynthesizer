@@ -7,6 +7,7 @@ The inner engine is engine.c.
 With simple API, for healing only from the full context of the target.
 */
 #include <stddef.h>  // size_t
+#include <stdio.h>	// printf
 
 // Non code defining, true headers: macros, declarations, and static inline functions
 #include "imageBuffer.h"
@@ -43,8 +44,8 @@ prepareDefaultFormatIndices()
 
 img_match_bpp = 3;  // Match RGB but not A
 color_end_bip = 4;  // Pixelels 1-3 (2nd through 4th)
-
-map_match_bpp = 0;   // No map pixelels
+alpha_bip = 4;			// Alpha bip must be defined: read but not synthesize
+map_match_bpp = 0;  // No map pixelels
 map_start_bip = 5;
 map_end_bip = 5;
 
@@ -97,12 +98,16 @@ synth(
 void
 dumpBuffer(ImageBuffer* buffer)
 {
-	for (int row=0; row<buffer->height; row++)
+	int row;
+	int col;
+	int pixelel;
+	
+	for (row=0; row<buffer->height; row++)
 	{
-		for (int col=0; col<buffer->width; col++)
+		for (col=0; col<buffer->width; col++)
 		{
-			for (int pixelel=0; pixelel<4; pixelel++)
-				printf("%x", buffer->data[row*buffer->rowBytes + col*4 + pixelel]);
+			for (pixelel=0; pixelel<4; pixelel++)
+				printf("%02hhx ", buffer->data[row*buffer->rowBytes + col*4 + pixelel]);
 		  printf(" ");
 		}
 	printf("\n");
@@ -110,16 +115,27 @@ dumpBuffer(ImageBuffer* buffer)
 }
 
 // Dump engine's image pixmap
-dumpImage()
+void
+dumpImage(unsigned int count)
 {
-	for (int i=0; i<45; i++)
-		printf("%x", image.data[i]);
+	int i;
+	
+	for (i=0; i<count; i++)
+	{
+		// hh is char, x is hex notation, O is left pad with zeroes, 2 is field width
+		printf("%02hhx ", (char) image.data->data[i]);
+		if ( i % 5 == 4)
+			printf("\n");	// spaces after every 5 pixelels, ie after a pixel
+	}
+	printf("\n");
 }
 
-// Test harness, small image
+// Test harness, small images
+// !!! Here Alpha FF is total opacity.  Alpha 0 is total transparency.
 int main(
 	)
 {
+	// A 3x3 image where the center pixel will be synthesized
 	unsigned char image[42] = {
 		0,0,0,0, 0,0,0,1, 0,0,0,0, 0,0,	// 3*RGBA and 2 trailing pad byte
 		0,0,0,0, 1,1,1,1, 0,0,0,0, 0,0,
@@ -131,23 +147,67 @@ int main(
 		0,0xFF,	0, 0,	// 0xFF == totally selected
 		0,0,		0, 0
 		};
-		 
-	ImageBuffer testImage = { &image, 3, 3, 14 };
-	ImageBuffer testMask= { &mask, 3, 3, 4 };
+	
+	// A 1x3 image where the middle pixel will be synthesized.
+	// First pixel opaque
+	// Third pixel transparent
+	unsigned char image2[14] = {
+		128,128,128,0xFF, 1,1,1,1, 0,0,0,0, 0,0	// 3*RGBA and 2 trailing pad byte
+		};
+	unsigned char mask2[12] = {
+		0,0xFF,0, 0 	// 3*mask and trailing pad byte
+		};
+	
+	// A 1x3 image where the all pixel transparent and the middle pixel will be synthesized.
+	unsigned char image3[14] = {
+		128,128,128,0, 1,1,1,1, 0,0,0,0, 0,0	// 3*RGBA and 2 trailing pad byte
+		};
+		
+	ImageBuffer testImage = { (unsigned char*) &image, 3, 3, 14 };
+	ImageBuffer testMask= { (unsigned char*) &mask, 3, 3, 4 };
+	
+	// !!! Note width, height in that order
+	ImageBuffer testImage2 = { (unsigned char*) &image2, 3, 1, 14 };
+	ImageBuffer testMask2= { (unsigned char*) &mask2, 3, 1, 4 };
+	
+	ImageBuffer testImage3 = { (unsigned char*) &image3, 3, 1, 14 };
 	
 	// 13 == 3 * 4 pixelels + one byte padding
 	// 4 == 3 * 1 pixelels + one byte padding
 	
-	synth(&testImage, &testMask);
-	dumpImage();
+	printf("\nTest center pixel synthesized but alpha unchanged.\n");
+	printf("Before\n");
 	dumpBuffer(&testImage);
-	
-	// print two pixels (0,1) and (1,1) 
-	printf(" %x %x %x %x \n %x %x %x %x \n", image[4],image[5],image[6],image[7],  image[17],image[18],image[19],image[20]);
+	synth(&testImage, &testMask);
+	// dumpImage(45);	// 45 pixelels 3x3x5
+	printf("After\n");
+	dumpBuffer(&testImage);
+
 	/*
 	(1,1) should be changed to 0,0,0,1
 	i.e. the alpha byte 1 should not be changed
-	but the color should be 0,0,0 from unmasked region
+	but the color should be 0,0,0 from unmasked and partially opaque region.
+	Other pixels are not changed.
 	*/
+	
+	printf("\nTest full transparency\n");
+	printf("Before\n");
+	dumpBuffer(&testImage2);
+	synth(&testImage2, &testMask2);
+	// dumpImage(15);	// 1x3x5
+	printf("After\n");
+	dumpBuffer(&testImage2);
+	
+	printf("\nTest corpus empty because is fully transparent\n");
+	printf("Doesn't raise exception (shouldn't it?)\n");
+	printf("Finds no pixels in corpus with any opacity and fails to synthesize center pixel.\n");
+	printf("Before\n");
+	dumpBuffer(&testImage3);
+	synth(&testImage3, &testMask2);
+	// dumpImage(15);	// 1x3x5
+	printf("After\n");
+	dumpBuffer(&testImage3);
+	
+	return(0);
 }
 
