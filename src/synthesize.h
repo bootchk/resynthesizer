@@ -7,7 +7,9 @@ synthesize(
   guint pass,
   Parameters *parameters, // IN,
   // GimpDrawable *drawable,  // IN for ANIMATE
-  TRepetionParameters repetition_params
+  TRepetionParameters repetition_params,
+  TFormatIndices* indices,
+  Map * targetMap
   )
 {
   guint target_index;
@@ -45,7 +47,7 @@ synthesize(
     */
     set_has_value(&position, TRUE);  
     
-    prepare_neighbors(position, parameters);
+    prepare_neighbors(position, parameters, indices, targetMap);
     
     /*
     Repeat a pixel even if found an exact match last pass, because neighbors might have changed.
@@ -85,7 +87,7 @@ synthesize(
         /* !!! Must clip corpus_point before further use, its only potentially in the corpus. */
         if (clippedOrMaskedCorpus(corpus_point)) continue;
         if (*intmap_index(&tried, corpus_point) == target_index) continue;  /* Heuristic 2 */
-        is_perfect_match = try_point(corpus_point, NEIGHBORS_SOURCE);
+        is_perfect_match = try_point(corpus_point, NEIGHBORS_SOURCE, indices);
         if ( is_perfect_match ) break;  // Break neighbors loop
         
         /*
@@ -103,7 +105,7 @@ synthesize(
       gint j;
       for(j=0; j<parameters->trys; j++)
       {
-        is_perfect_match = try_point(random_corpus_point(), RANDOM_CORPUS);
+        is_perfect_match = try_point(random_corpus_point(), RANDOM_CORPUS, indices);
         if ( is_perfect_match ) break;  /* Break loop over random corpus points */
         /* Not set tried(point) because that heuristic rarely works for random source. */
       }
@@ -131,10 +133,12 @@ synthesize(
         integrate_color_change(position); /* Stats. Must be before we store the new color values. */
         /* Save the new color values (!!! not the alpha) for this target point */
         {
-          BppType j;
+          TPixelelIndex j;
           
-          for(j=FIRST_PIXELEL_INDEX; j<color_end_bip; j++)  // For all color pixelels (channels)
-            pixmap_index(&image, position)[j] = pixmap_index(&corpus, best_point)[j];  // Overwrite prior with new color
+          // For all color pixelels (channels)
+          for(j=FIRST_PIXELEL_INDEX; j<indices->colorEndBip; j++)
+            // Overwrite prior with new color
+            pixmap_index(targetMap, position)[j] = pixmap_index(&corpus, best_point)[j];  
         }
         set_source(position, best_point); /* Remember new source */
       } /* else same source for target */

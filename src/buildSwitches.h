@@ -15,7 +15,11 @@ There are three configurations:
 3) Engine uses glibProxy, not gimp or glib.  (a platform independent engine.)
 */
 
-/* Please comment out all but one of these configurations. */
+/* 
+Please comment out all but one of these configurations. 
+Also, for config 1, edit Makefile.am to remove glibproxy.c as resynthesizer_SOURCE
+then run >automake from the top directory.
+*/
 
 /* config 1 */
 #define SYNTH_USE_GLIB TRUE

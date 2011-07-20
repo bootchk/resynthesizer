@@ -32,7 +32,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = resynthesizer$(EXEEXT) synth$(EXEEXT)
+bin_PROGRAMS = resynthesizer$(EXEEXT) resynthesizer_gui$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -46,16 +46,16 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_resynthesizer_OBJECTS = resynthesizer.$(OBJEXT) \
-	engineParams.$(OBJEXT) engine.$(OBJEXT) glibProxy.$(OBJEXT)
+	engineParams.$(OBJEXT) engine.$(OBJEXT)
 resynthesizer_OBJECTS = $(am_resynthesizer_OBJECTS)
 resynthesizer_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
 resynthesizer_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_synth_OBJECTS = synth.$(OBJEXT) engine.$(OBJEXT) \
-	glibProxy.$(OBJEXT) engineParams.$(OBJEXT)
-synth_OBJECTS = $(am_synth_OBJECTS)
-synth_LDADD = $(LDADD)
-synth_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_resynthesizer_gui_OBJECTS = resynth-gui.$(OBJEXT) \
+	engineParams.$(OBJEXT)
+resynthesizer_gui_OBJECTS = $(am_resynthesizer_gui_OBJECTS)
+resynthesizer_gui_LDADD = $(LDADD)
+resynthesizer_gui_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -64,8 +64,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(resynthesizer_SOURCES) $(synth_SOURCES)
-DIST_SOURCES = $(resynthesizer_SOURCES) $(synth_SOURCES)
+SOURCES = $(resynthesizer_SOURCES) $(resynthesizer_gui_SOURCES)
+DIST_SOURCES = $(resynthesizer_SOURCES) $(resynthesizer_gui_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -189,9 +189,12 @@ top_srcdir = @top_srcdir@
 resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
-  engine.c \
-  glibProxy.c
+  engine.c
 
+
+# For certain configurations (not using glib),
+# resynthesizer_SOURCES should include
+#   glibProxy.c
 
 # lkk Note glibProxy.c not needed for resynthesizer for GIMP
 # but IS needed when using GIMP as a test harness to the standalone engine
@@ -303,9 +306,9 @@ clean-binPROGRAMS:
 resynthesizer$(EXEEXT): $(resynthesizer_OBJECTS) $(resynthesizer_DEPENDENCIES) 
 	@rm -f resynthesizer$(EXEEXT)
 	$(LINK) $(resynthesizer_OBJECTS) $(resynthesizer_LDADD) $(LIBS)
-synth$(EXEEXT): $(synth_OBJECTS) $(synth_DEPENDENCIES) 
-	@rm -f synth$(EXEEXT)
-	$(LINK) $(synth_OBJECTS) $(synth_LDADD) $(LIBS)
+resynthesizer_gui$(EXEEXT): $(resynthesizer_gui_OBJECTS) $(resynthesizer_gui_DEPENDENCIES) 
+	@rm -f resynthesizer_gui$(EXEEXT)
+	$(LINK) $(resynthesizer_gui_OBJECTS) $(resynthesizer_gui_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -315,9 +318,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engineParams.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glibProxy.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resynth-gui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resynthesizer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/synth.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

@@ -115,6 +115,7 @@ On platform OSX (when using stdc but not Glib), use stdc rand()
 #include "resynth-constants.h"
 
 // True header files
+#include "imageFormat.h"
 #include "map.h"
 #include "mapIndex.h"
 #include "engineParams.h"
@@ -126,22 +127,12 @@ On platform OSX (when using stdc but not Glib), use stdc rand()
 #include "matchWeighting.h"
 
 
-BppType color_end_bip; /* Index of last color pixelels in target/context image. */
-BppType alpha_bip;      /* Index of target alpha pixelel */
-BppType map_start_bip;  /* Index of map pixelels */
-BppType map_end_bip;
-
-BppType img_match_bpp; /* bpp to match in image. */
-BppType map_match_bpp; /* bpp to match in map. */
-BppType total_bpp;     /* Total pixelels */
-
-
 /* 
 Local copies of pixmaps (not using gimp regions.) 
 2-D arrays of Pixel, addressable by Coordinates (Point).
 c++: static Bitmap<Pixelel>
 */
-Map image;         /* Entire image, includes selection (target) and context (non-target) */
+// Map image;         /* Entire image, includes selection (target) and context (non-target) */
 Map corpus;        /* Source.  Might be distinct from image. */
 Map image_mask;    /* Selection channel for image */
 Map corpus_mask;   /* Selection channel for corpus */
@@ -281,9 +272,9 @@ get_has_value(Coordinates coords)
 }
 
 static inline void
-prepare_has_value()
+prepare_has_value(Map* targetMap)
 {
-  new_bytemap(&has_value, image.width, image.height);
+  new_bytemap(&has_value, targetMap->width, targetMap->height);
 }
 
 
@@ -325,16 +316,16 @@ get_source_of (
 
 /* Initially, no target points have source in corpus, i.e. none synthesized. */
 static void
-prepare_target_sources()
+prepare_target_sources(Map* targetMap)
 {
   guint x;
   guint y;
   Coordinates null_coords = {-1, -1};
   
-  new_coordmap(&source_of, image.width, image.height);
+  new_coordmap(&source_of, targetMap->width, targetMap->height);
   
-  for(y=0; y<image.height; y++)
-    for(x=0; x<image.width; x++) 
+  for(y=0; y<targetMap->height; y++)
+    for(x=0; x<targetMap->width; x++) 
       {
       Coordinates coords = {x,y}; 
       set_source(coords, null_coords);
@@ -425,15 +416,22 @@ Our strategy is to synthesize target pixels with any opacity,
 and use context pixels with any opacity.
 */
 static inline gboolean
-not_transparent_image(Coordinates coords)
+not_transparent_image(
+  Coordinates coords,
+  TFormatIndices* indices,
+  Map * targetMap
+  )
 {
-  return ( is_alpha_image ? pixmap_index(&image, coords)[alpha_bip] != ALPHA_TOTAL_TRANSPARENCY : TRUE);
+  return ( indices->isAlphaTarget ? pixmap_index(targetMap, coords)[indices->alpha_bip] != ALPHA_TOTAL_TRANSPARENCY : TRUE);
 }
 
 static inline gboolean
-not_transparent_corpus(Coordinates coords)
+not_transparent_corpus(
+  Coordinates coords,
+  TFormatIndices* indices
+  )
 {
-  return ( is_alpha_corpus ? pixmap_index(&corpus, coords)[alpha_bip] != ALPHA_TOTAL_TRANSPARENCY : TRUE);
+  return ( indices->isAlphaSource ? pixmap_index(&corpus, coords)[indices->alpha_bip] != ALPHA_TOTAL_TRANSPARENCY : TRUE);
 }
 
 
@@ -473,15 +471,19 @@ Prepare a vector of target points.
 Initialize has_value for all image points.
 */
 static void
-prepare_target_points( gboolean is_use_context)
+prepare_target_points( 
+  gboolean is_use_context,
+  TFormatIndices* indices,
+  Map* targetMap
+  )
 {
   guint x;
   guint y;
   
   /* Count selected pixels in the image, for sizing a vector */
   target_points_size = 0;
-  for(y=0; y<image.height; y++)
-    for(x=0; x<image.width; x++)
+  for(y=0; y<targetMap->height; y++)
+    for(x=0; x<targetMap->width; x++)
       {
       Coordinates coords = {x,y};
       if (is_selected_image(coords)) 
@@ -490,10 +492,10 @@ prepare_target_points( gboolean is_use_context)
         
   target_points = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), target_points_size); /* reserve */
   
-  prepare_has_value();  /* reserve, initialize to value: unknown */
+  prepare_has_value(targetMap);  /* reserve, initialize to value: unknown */
   
-  for(y=0; y<image.height; y++)
-    for(x=0; x<image.width; x++) 
+  for(y=0; y<targetMap->height; y++)
+    for(x=0; x<targetMap->width; x++) 
     {
       Coordinates coords = {x,y};
       
@@ -507,7 +509,7 @@ prepare_target_points( gboolean is_use_context)
           is_use_context // ie use_border ie match image neighbors outside the selection (the context)
           && ! is_selected_image(coords)  // outside the target
           /* !!! and if the point is not transparent (e.g. background layer) which is arbitrarily black !!! */
-          && not_transparent_image(coords)
+          && not_transparent_image(coords, indices, targetMap)
         ));
       
       /* 
@@ -525,7 +527,9 @@ prepare_target_points( gboolean is_use_context)
 
 /* Scan corpus pixmap for selected pixels, create vector of coords */
 void
-prepare_corpus_points () 
+prepare_corpus_points (
+  TFormatIndices* indices
+  ) 
 {
   /* Reserve size of pixmap, but excess, includes unselected. */
   corpus_points = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), corpus.height*corpus.width);
@@ -544,7 +548,7 @@ prepare_corpus_points ()
       I.E. this was not is_selected
       */
       if (is_selected_corpus(coords)
-        && not_transparent_corpus(coords) /* Exclude transparent from corpus */
+        && not_transparent_corpus(coords, indices) /* Exclude transparent from corpus */
         ) 
       {
         corpus_points_size++;
@@ -636,11 +640,13 @@ this might be vastly many more offsets than are needed for good synthesis.
 But at worst, if not used they get paged out from virtual memory.
 */
 static void 
-prepare_sorted_offsets(void) 
+prepare_sorted_offsets(
+  Map* targetMap
+  ) 
 {
-  // Minimum().  Use smaller dimension of corpus and image.
-  gint width = (corpus.width<image.width ? corpus.width : image.width);
-  gint height = (corpus.height<image.height ? corpus.height : image.height);
+  // Minimum().  Use smaller dimension of corpus and target.
+  gint width = (corpus.width<targetMap->width ? corpus.width : targetMap->width);
+  gint height = (corpus.height<targetMap->height ? corpus.height : targetMap->height);
   
   sorted_offsets_size = 2*2*width*height; 
   sorted_offsets = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), sorted_offsets_size); /* Reserve */
@@ -706,7 +712,8 @@ Then does it make sense to also use MAX_WEIGHT for missing neighbors?
 static inline gboolean 
 try_point(
   const Coordinates point, 
-  tBettermentKind pointKind
+  tBettermentKind pointKind,
+  TFormatIndices* indices
   ) 
 {
   guint sum = 0;
@@ -720,7 +727,7 @@ try_point(
     if (clippedOrMaskedCorpus(off_point)) 
     {    
       /* Maximum difference for this neighbor outside corpus */
-      sum += MAX_WEIGHT*img_match_bpp + map_diff_table[0]*map_match_bpp;   
+      sum += MAX_WEIGHT*indices->img_match_bpp + map_diff_table[0]*indices->map_match_bpp;   
     } 
     else  
     {
@@ -737,14 +744,14 @@ try_point(
       */
       if (i) 
       {
-        BppType j;
-        for(j=FIRST_PIXELEL_INDEX; j<color_end_bip; j++)
+        TPixelelIndex j;
+        for(j=FIRST_PIXELEL_INDEX; j<indices->colorEndBip; j++)
           sum += diff_table[256u + image_pixel[j] - corpus_pixel[j]];
       }
-      if (map_match_bpp > 0)
+      if (indices->map_match_bpp > 0)
       {
-        BppType j;
-        for(j=map_start_bip; j<map_end_bip; j++)  // also sum mapped difference
+        TPixelelIndex j;
+        for(j=indices->map_start_bip; j<indices->map_end_bip; j++)  // also sum mapped difference
           sum += map_diff_table[256u + image_pixel[j] - corpus_pixel[j]];
       }
       #else
@@ -792,7 +799,9 @@ static inline void
 new_neighbor(
   guint        index,
   Coordinates offset,
-  Coordinates neighbor_point
+  Coordinates neighbor_point,
+  TFormatIndices* indices,
+  Map * targetMap
   )
 {
   neighbours[index] = offset;
@@ -800,10 +809,10 @@ new_neighbor(
   // !!! Copy the whole Pixel, all the pixelels
   
   {
-  BppType k;
-  for (k=0; k<total_bpp; k++)
+  TPixelelIndex k;
+  for (k=0; k<indices->total_bpp; k++)
     // c++ neighbour_values[n_neighbours][k] = data.at(neighbor_point)[k];
-    neighbour_values[index][k] = pixmap_index(&image, neighbor_point)[k];
+    neighbour_values[index][k] = pixmap_index(targetMap, neighbor_point)[k];
   }
 }
 
@@ -820,7 +829,9 @@ Neighbours describes a patch, a shotgun pattern in the first pass, or a contiguo
 */
 void prepare_neighbors(
   Coordinates position, // IN target point
-  Parameters *parameters // IN
+  Parameters *parameters, // IN
+  TFormatIndices* indices,
+  Map * targetMap
   ) 
 {
   guint j;
@@ -834,12 +845,12 @@ void prepare_neighbors(
     Coordinates neighbor_point = add_points(position, offset);
 
     // !!! Note side effects: wrap_or_clip might change neighbor_point coordinates !!!
-    if (wrap_or_clip(parameters, &image, &neighbor_point)  // is neighbor in target image or wrappable
+    if (wrap_or_clip(parameters, targetMap, &neighbor_point)  // is neighbor in target image or wrappable
         &&  get_has_value(neighbor_point)   // is neighbor outside target (context) 
             // or inside target with already synthed value
       ) 
     {
-      new_neighbor(n_neighbours, offset, neighbor_point);
+      new_neighbor(n_neighbours, offset, neighbor_point, indices, targetMap);
       n_neighbours++;
       if (n_neighbours >= (guint) parameters->neighbours) break;
     }
@@ -878,20 +889,22 @@ Temporarily, uses globals set by adapters.
 
 int
 engine(
-  Parameters parameters
+  Parameters parameters,
   // , GimpDrawable *targetDrawable  // ANIMATE
+  TFormatIndices* indices,
+  Map* targetMap
   )
 {
   // target prep
-  prepare_target_points(parameters.use_border); // Uses image_mask
+  prepare_target_points(parameters.use_border, indices, targetMap); // Uses image_mask
   #ifdef ANIMATE
-  clear_target_pixels(color_end_bip);  // For debugging, blacken so new colors sparkle
+  clear_target_pixels(indices->color_end_bip);  // For debugging, blacken so new colors sparkle
   #endif
   free_map(&image_mask); // Assert no more references to image_mask.
-  prepare_target_sources();
+  prepare_target_sources(targetMap);
   
   // source prep
-  prepare_corpus_points();
+  prepare_corpus_points(indices);
 
   /* 
   Rare user error: all pixels transparent (which we ignore.)
@@ -907,7 +920,7 @@ engine(
   }
   
   // prep unrelated to images
-  prepare_sorted_offsets(); // Depends on image size
+  prepare_sorted_offsets(targetMap); // Depends on image size
   make_diff_table(parameters.autism, parameters.map_weight);
  
   // Now we need a prng, before order_target_points
@@ -927,7 +940,10 @@ engine(
 
   refiner(
     // targetDrawable, // ANIMATE
-    parameters);
+    parameters,
+    indices,
+    targetMap
+    );
     
   // TODO free pixmaps
   

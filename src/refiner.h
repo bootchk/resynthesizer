@@ -15,7 +15,9 @@ It is debatable whether third and subsequent passes should continue to refine ev
 static void 
 refiner(
   // GimpDrawable *drawable,  // ANIMATE
-  Parameters parameters
+  Parameters parameters,
+  TFormatIndices* indices,
+  Map* targetMap
   ) {
   guint pass;
   TRepetionParameters repetition_params;
@@ -26,7 +28,10 @@ refiner(
   { 
     guint betters = synthesize(pass, &parameters, 
       // drawable, // ANIMATE
-      repetition_params);
+      repetition_params,
+      indices,
+      targetMap
+      );
   
     print_pass_stats(pass, repetition_params[pass][1], betters);
   

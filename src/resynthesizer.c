@@ -101,14 +101,20 @@ No definitions of non in-line functions or data.
 #ifdef USE_GLIB_PROXY
 	#include "glibProxy.h"
 #endif
+#include "imageFormat.h"
 #include "map.h"
 #include "mapIndex.h"
 #include "engineParams.h"
 #include "engine.h"
 
-/* Source included, not compiled separately. Is separate to reduce file sizes and later, coupling. */
+
+/* 
+Source included, not compiled separately. 
+Is separate to reduce file sizes and later, coupling. 
+*/
 #include "adaptGimp.h"
 #include "resynth-parameters.h" // Depends on engine.h
+#include "imageFormat.c"
 
 /* See below for more includes. */
 
@@ -150,6 +156,8 @@ progress(gchar * message)
 guint
 count_color_channels(GimpDrawable *drawable)
 {
+  g_assert(drawable); // Not null
+  
   GimpImageType type = gimp_drawable_type(drawable->drawable_id);
   switch(type)
   {
@@ -165,8 +173,6 @@ count_color_channels(GimpDrawable *drawable)
   return 0;
 }
 
-// Func to set pixelel indices
-#include "imageFormat.h"
 
 /*
 Return whether drawables have the same base type.
@@ -188,12 +194,14 @@ Update Gimp image from local pixmap. Canonical postlude for plugins.
 !!! Called in the postlude but also for debugging: animate results during processing.
 */
 static void 
-post_results_to_gimp(GimpDrawable *drawable) 
+post_results_to_gimp(
+  GimpDrawable *drawable,
+  Map targetMap) 
 {
-  pixmap_to_drawable(image, drawable, FIRST_PIXELEL_INDEX);   // our pixels to region
+  pixmap_to_drawable(targetMap, drawable, FIRST_PIXELEL_INDEX);   // our pixels to region
   gimp_drawable_flush(drawable);    // regions back to core
   gimp_drawable_merge_shadow(drawable->drawable_id,TRUE);   // temp buffers merged
-  gimp_drawable_update(drawable->drawable_id,0,0,image.width,image.height);
+  gimp_drawable_update(drawable->drawable_id,0,0,targetMap.width,targetMap.height);
   gimp_displays_flush();
 }
 
@@ -245,6 +253,8 @@ static void run(
   GimpDrawable *map_in_drawable= NULL; 
   GimpDrawable *map_out_drawable= NULL; 
   gboolean ok, with_map;
+  
+  Map targetMap;
   
   #ifdef DEBUG
   gimp_message_set_handler(1); // To console instead of GUI
@@ -348,40 +358,63 @@ static void run(
   I.E. the meaning of "last" is "last values set by user interaction".
   */
   
+  /* 
+  Set flags for presence of alpha channels. 
+  The flag is an optimization.  Alternatives:
+  - a function
+  - OR standardize the internal pixmap to ALWAYS have an alpha pixelel
+  initialized to VISIBLE and set from any alpha pixelel.
+  */
+  is_alpha_image = gimp_drawable_has_alpha(drawable->drawable_id);
+  is_alpha_corpus = gimp_drawable_has_alpha(corpus_drawable->drawable_id);
+  
+  // Image adaption requires format indices
+  // WAS  prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
+  TFormatIndices formatIndices;
+  
+  g_printf("Here2\n");
+  guint map_count = (with_map? count_color_channels(map_in_drawable) : 0 );
+    
+  prepareImageFormatIndices(
+    &formatIndices,
+    count_color_channels(drawable),
+    map_count,
+    is_alpha_image,
+    is_alpha_corpus,
+    with_map
+    );
+  
   #ifdef ADAPT_SIMPLE
     /* Adapt Gimp to an engine with a simpler interface. */
     setDefaultParams(&parameters);
     ImageBuffer imageBuffer;
     ImageBuffer maskBuffer;
     
-    // Image adaption requires format indices
-    prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
-    // g_printf("Here2\n");
     adaptGimpToSimple(drawable, &imageBuffer, &maskBuffer);  // From Gimp to simple
     g_printf("Here3\n");
     adaptSimpleAPI(&imageBuffer, &maskBuffer);        // From simple to existing engine API
     
   #else
-    // Image adaption requires format indices
-    prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
-    
+    g_printf("Gimp adaption\n");
     /* target/context adaption */
-    fetch_image_mask_map(drawable, &image, total_bpp, &image_mask, MASK_TOTALLY_SELECTED, 
-      map_out_drawable, map_start_bip);
+    fetch_image_mask_map(drawable, &targetMap, formatIndices.total_bpp, 
+      &image_mask, MASK_TOTALLY_SELECTED, 
+      map_out_drawable, formatIndices.map_start_bip);
     
     /*  corpus adaption */
-    fetch_image_mask_map(corpus_drawable, &corpus, total_bpp, &corpus_mask, MASK_TOTALLY_SELECTED, 
-        map_in_drawable, map_start_bip);
+    fetch_image_mask_map(corpus_drawable, &corpus, formatIndices.total_bpp, &corpus_mask,
+      MASK_TOTALLY_SELECTED, 
+      map_in_drawable, formatIndices.map_start_bip);
     free_map(&corpus_mask);
-    // !!! Note the engine yet uses image_mask 
+    // !!! Note the engine yet uses targetMap_mask 
   #endif
   
   // After possible adaption, check size again
-  g_assert(image.width * image.height); // Image is not empty
+  g_assert(targetMap.width * targetMap.height); // Image is not empty
   g_assert(corpus.width * corpus.height); // Corpus is not empty
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
-  int result = engine(parameters);
+  int result = engine(parameters, &formatIndices, &targetMap);
   // ANIMATE int result = engine(parameters, drawable);
   if (result == 1)
   {
@@ -407,7 +440,7 @@ static void run(
   But antiAdaptImage() has already been tested once on the incoming side.
   So no compelling need to test it again here.
   */
-  post_results_to_gimp(drawable); 
+  post_results_to_gimp(drawable, targetMap); 
   
   /* Clean up */
   detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable);

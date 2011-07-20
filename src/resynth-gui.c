@@ -37,7 +37,9 @@
 #include <libgimp/gimpui.h>
 
 /* Shared with engine */
+#include "imageFormat.h"
 #include "map.h"
+#include "engineParams.h"
 #include "engine.h" // For type Parameters
 
 /* Shared with engine plugin. */
