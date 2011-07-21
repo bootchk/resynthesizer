@@ -301,7 +301,8 @@ def main():
   runtest('apollo11_w_alpha', 'healtransparencyinward', test, parameters, False)
   
   # Sharpen with resynthesis
-  ''' Too slow to test regularly
+  ''' Too slow to test regularly '''
+  '''
   test = "pdb.python_fu_sharpen_resynthesized"
   parameters = "2"
   runtest('ufo-input', 'sharpen', test, parameters, False)
@@ -320,7 +321,8 @@ def main():
   # Enlarge with resynthesis
   # Enlarge factor = 2
   # !!! Very slow
-  ''' Too slow to test regularly
+  ''' Too slow to test regularly '''
+  '''
   test = "pdb.python_fu_enlarge_resynthesized"
   parameters = "2"
   runtest('ufo-input-small', 'enlarge', test, parameters, False)

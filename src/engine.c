@@ -127,62 +127,6 @@ On platform OSX (when using stdc but not Glib), use stdc rand()
 #include "matchWeighting.h"
 
 
-/* 
-Local copies of pixmaps (not using gimp regions.) 
-2-D arrays of Pixel, addressable by Coordinates (Point).
-c++: static Bitmap<Pixelel>
-*/
-// Map image;         /* Entire image, includes selection (target) and context (non-target) */
-Map corpus;        /* Source.  Might be distinct from image. */
-Map image_mask;    /* Selection channel for image */
-Map corpus_mask;   /* Selection channel for corpus */
-
-
-/*
-2-D array of int, addressable by Coordinates.
-c++: static Bitmap<guint> tried;
-*/    
-static Map tried;   /* tried[coords of corpus point] -> index of target_points that most recently tried corpus point */
-
-
-/*
-Flags for state of synthesis of image pixels.
-c++ static Bitmap<Status> status;
-*/     
-static Map has_value;   /* Whether to match a source pixel (depends on selection and state of algorithm.) */
-static Map source_of;   /* Whether this target pixel has a source yet, and the source coords. */
-
-
-/* 
-1-D array (vector) of Coordinates.
-These are subsets of image and corpus, subsetted by selection and alpha,
-and a vector of offsets.
-*/
-static pointVector target_points;   /* For synthesizing target in a particular order (ie random) */
-static pointVector corpus_points;   /* For sampling corpus randomly. */
-static pointVector sorted_offsets;  /* For finding neighbors. */
-
-guint target_points_size = 0;
-guint corpus_points_size = 0;
-guint sorted_offsets_size = 0;
-
-
-/* 
-Neighbors  (patches) 
-An array of points from the source image.
-Copied from the source image for better memory locality.
-*/
-static Coordinates neighbours[RESYNTH_MAX_NEIGHBORS];   // !!! Offsets to neighbors
-static Pixelel neighbour_values[RESYNTH_MAX_NEIGHBORS][MAX_RESYNTH_BPP] __attribute__((aligned(8)));  
-Coordinates neighbour_source[RESYNTH_MAX_NEIGHBORS];
-
-static guint n_neighbours;
-
-/* Data about the best match in the search for a matching patch. */
-static guint best;        /* Best patch diff over all search. */
-static Coordinates best_point;
-
-
 /*
 Whether using an alpha channel.
 !!! Complicated.  The user might want to synthesize a transparent target,
@@ -193,33 +137,20 @@ Partially transparent areas might have SOME user provided color to match,
 but what the user sees is not what we might be matching against, is that what user intended?
 */
 // TODO every adapter must set these.  The Resynthesizer does.  The SimpleAPI doesn't yet.  They default to TRUE for prototype.
-gboolean is_alpha_image = TRUE;
-gboolean is_alpha_corpus = TRUE;
+//gboolean is_alpha_image = TRUE;
+//gboolean is_alpha_corpus = TRUE;
 
 // clock_t start_time;
 
-GRand *prng;
-
+#ifdef STATS
 /* Stats */
 guint countSourceTries = 0;
 guint countTargetTries = 0;
 guint total_targets = 0;  /* Total target attempts over all passes, barring short circuit. */
 
-// Ways of finding a better corpus point
-typedef enum  BettermentKindEnum 
-{
-  NO_BETTERMENT,
-  NEIGHBORS_SOURCE,
-  RANDOM_CORPUS,
-  PERFECT_MATCH,
-  MAX_BETTERMENT_KIND
-} tBettermentKind;
-
-
 // For statistics, remember the most recent kind of corpus point that bettered the previous best
-tBettermentKind latestBettermentKind;
 guint bettermentStats[MAX_BETTERMENT_KIND];
-
+#endif
 
 /* 
 Macro to cleanup for abort. 
@@ -240,7 +171,7 @@ Note this must be used in the scope of nreturn_vals and value, in main().
 
 
 /*
-Class has_value
+Class hasValue
 
 Whether a pixel in the image is ready to be matched.
 Value more or less means a color; not an undefined color.
@@ -248,43 +179,43 @@ Pixels in the context: if they are not clipped, not transparent, etc.
 Pixels in the target: if they have been synthesized.
 
 TODO 
-Alternate way of computing has_value from image_mask, alpha channel, and whether synthesized (has_source.)
+Alternate way of computing hasValue from targetMask, alpha channel, and whether synthesized (has_source.)
 Might use less memory and have better locality.
-But has_value is only called in prepare_neighbors, not as costly as rest of search.
+But hasValue is only called in prepare_neighbors, not as costly as rest of search.
 
-TODO has_value array is larger than it needs to be? 
+TODO hasValue array is larger than it needs to be? 
 It could it be just the size of the target plus a band, since it is only used for neighbors.
 Would require different wrap_or_clip().
 Might affect performance of cache or memory swapping
 */
 
 static inline void
-set_has_value( Coordinates *coords, guchar value)
+setHasValue( Coordinates *coords, guchar value, Map* hasValueMap)
 {
-  // c++ *has_value.at(coords) = value;
-  *bytemap_index(&has_value, *coords) = value;
+  // c++ *hasValueMap.at(coords) = value;
+  *bytemap_index(hasValueMap, *coords) = value;
 }
 
 static inline gboolean
-get_has_value(Coordinates coords)
+getHasValue(Coordinates coords, Map* hasValueMap)
 {
-  return (* bytemap_index(&has_value, coords));
+  return (* bytemap_index(hasValueMap, coords));
 }
 
 static inline void
-prepare_has_value(Map* targetMap)
+prepareHasValue(Map* targetMap, Map* hasValueMap)
 {
-  new_bytemap(&has_value, targetMap->width, targetMap->height);
+  new_bytemap(hasValueMap, targetMap->width, targetMap->height);
 }
 
 
 /*
-Class source_of
+Class sourceOfMap
 
 Whether a target pixel has a source in the corpus (from synthesis).
-TODO Possibly we can use index into corpus_points instead of coordinates.
+TODO Possibly we can use index into corpusPoints instead of coordinates.
 TODO The map only needs to be the size of the target?
-But we are calling get_source_of(neighbor_point), which can be points outside
+But we are calling getSourceOf(neighbor_point), which can be points outside
 of the target (context), whose source is always themselves.
 However, the extra memory is probably not a resource problem,
 and probably not a performance problem because it is only used in prepare_neighbors,
@@ -293,84 +224,58 @@ the source are copied to a dense structure neighbor_sources for the inner search
 
 
 static inline void
-set_source (
+setSourceOf (
   Coordinates target_point,
-  Coordinates source_corpus_point
+  Coordinates source_corpus_point,
+  Map* sourceOfMap
   )
 {
   // c++ status.at(position)->has_source = TRUE;
   // c++ status.at(position)->source = source;
-  *coordmap_index(&source_of, target_point) = source_corpus_point;
+  *coordmap_index(sourceOfMap, target_point) = source_corpus_point;
 }
   
 
 static inline Coordinates
-get_source_of ( 
-  Coordinates target_point
+getSourceOf ( 
+  Coordinates target_point,
+  Map* sourceOfMap
   )
   {
-  // c++ return *source_of.at(target_point);
-  return *coordmap_index(&source_of, target_point);
+  // c++ return *sourceOfMap.at(target_point);
+  return *coordmap_index(sourceOfMap, target_point);
   }
   
 
 /* Initially, no target points have source in corpus, i.e. none synthesized. */
 static void
-prepare_target_sources(Map* targetMap)
+prepare_target_sources(
+  Map* targetMap,
+  Map* sourceOfMap)
 {
   guint x;
   guint y;
   Coordinates null_coords = {-1, -1};
   
-  new_coordmap(&source_of, targetMap->width, targetMap->height);
+  new_coordmap(sourceOfMap, targetMap->width, targetMap->height);
   
   for(y=0; y<targetMap->height; y++)
     for(x=0; x<targetMap->width; x++) 
       {
       Coordinates coords = {x,y}; 
-      set_source(coords, null_coords);
+      setSourceOf(coords, null_coords, sourceOfMap);
       }
 }
 
 static inline gboolean
 has_source (
-  Coordinates target_point
+  Coordinates target_point,
+  Map* sourceOfMap
   )
 {
   //c++ return status.at(target_point)->has_source;
-  return (get_source_of(target_point).x != -1) ;
+  return (getSourceOf(target_point, sourceOfMap).x != -1) ;
 }
-
-
-/*
-Class neighbor_source
-Similar to source_of target points, but for neigbhors.
-*/
-
-
-static inline gboolean
-has_source_neighbor ( 
-  guint j   // Index in neighbors array (the patch)
-  )
-{
-  //c++ return neighbour_statuses[j]->has_source
-  return neighbour_source[j].x != -1;
-  // A neighbor only has a source if it is also in the target and has been synthed.
-}
-
-
-/* Copy the source of a neighbor point into the neighbor array. */
-static inline void
-set_neighbor_state (
-  guint n_neighbour,          // index in neighbors
-  Coordinates neighbor_point  // coords in image (context or target)
-  ) 
-{
-  /* Assert neighbor point has values (we already checked that the candidate neighbor had a value.) */
-  // c++: neighbour_statuses[n_neighbour] = status.at(neighbor_point);
-  neighbour_source[n_neighbour] = get_source_of(neighbor_point);
-}
-
 
 
 
@@ -382,19 +287,24 @@ Here, only pixels fully selected return True.
 This is because when target/corpus are differentiated by the same selection,
 partially selected will be in the target,
 fully selected in inverse? will be the corpus.
+!!! Note this is called from the bottleneck.
 TODO still allow same selection 
 */
 static inline gboolean
-is_selected_corpus ( Coordinates coords )
+is_selected_corpus ( 
+  const Coordinates coords,
+  const Map* const corpusMap
+  )
 {
-  /* Formerly used a separate bitmap for corpus_mask:
-  c++ return (corpus_mask.at(coords)[0] == MASK_SELECTED);
-  return (*bitmap_index(&corpus_mask, coords) != MASK_UNSELECTED);
+  /*
+  Formerly used a separate bitmap for corpus_mask.
+  Now use our interleaved copy of the mask for better memory locality. 
   */
-  
-  /* Use our interleaved copy of the mask for better memory locality. */
-  /* Was:  != MASK_UNSELECTED); */
-  return (pixmap_index(&corpus, coords)[MASK_PIXELEL_INDEX] == MASK_TOTALLY_SELECTED);
+  /* 
+  Was:  != MASK_UNSELECTED); i.e. partially selected was included.
+  Now: if partially selected, excluded from corpus.
+  */
+  return (pixmap_index(corpusMap, coords)[MASK_PIXELEL_INDEX] == MASK_TOTALLY_SELECTED);
   }
 
 
@@ -403,9 +313,11 @@ Is the pixel selected in the image?
 Distinguishes target from context.
 */
 static inline gboolean
-is_selected_image ( Coordinates coords )
+is_selected_image ( 
+  Coordinates coords,
+  Map * targetMaskMap )
 {
-  return (*bytemap_index(&image_mask, coords) != MASK_UNSELECTED);
+  return (*bytemap_index(targetMaskMap, coords) != MASK_UNSELECTED);
 }
 
 
@@ -428,10 +340,11 @@ not_transparent_image(
 static inline gboolean
 not_transparent_corpus(
   Coordinates coords,
-  TFormatIndices* indices
+  TFormatIndices* indices,
+  Map* corpusMap
   )
 {
-  return ( indices->isAlphaSource ? pixmap_index(&corpus, coords)[indices->alpha_bip] != ALPHA_TOTAL_TRANSPARENCY : TRUE);
+  return ( indices->isAlphaSource ? pixmap_index(corpusMap, coords)[indices->alpha_bip] != ALPHA_TOTAL_TRANSPARENCY : TRUE);
 }
 
 
@@ -442,57 +355,61 @@ not_transparent_corpus(
 #include "resynth-order-target.h"
 
 /*
-Array of index of most recent target point tried for this corpus point (tried[corpus x,y] = target)
+Array of index of most recent target point that probed this corpus point 
+(recentProberMap[corpus x,y] = target)
 !!! Larger than necessary if the corpus has holes in it.  TODO very minor.
-!!! Note tried is unsigned, -1 == 0xFFFFFF should not match any target index.
+!!! Note recentProberMap is unsigned, -1 == 0xFFFFFF should not match any target index.
 */
 static void
-prepare_tried()
+prepareRecentProber(Map* corpusMap, Map* recentProberMap)
 {
   guint x;
   guint y;
   
-  new_intmap(&tried, corpus.width, corpus.height);
-  for(y=0; y< (guint) corpus.height; y++)
-    for(x=0; x< (guint) corpus.width; x++)
+  new_intmap(recentProberMap, corpusMap->width, corpusMap->height);
+  for(y=0; y< (guint) corpusMap->height; y++)
+    for(x=0; x< (guint) corpusMap->width; x++)
     {
       Coordinates coords = {x,y};
-      *intmap_index(&tried, coords) = -1;
+      *intmap_index(recentProberMap, coords) = -1;
     } 
 }
 
 
 /*
-Prepare target AND initialize has_value.
+Prepare target AND initialize hasValueMap.
 This is misnamed and is really two concerns: the target (what is synthesized)
 and the context (the surroundings.)
 Both come from the target image.  But the *target* is not *target image*.
 Prepare a vector of target points.
-Initialize has_value for all image points.
+Initialize hasValueMap for all target points.
 */
 static void
-prepare_target_points( 
+prepareTargetPoints( 
   gboolean is_use_context,
   TFormatIndices* indices,
-  Map* targetMap
+  Map* targetMap,
+  Map* targetMaskMap,
+  Map* hasValueMap,
+  pointVector* targetPoints
   )
 {
   guint x;
   guint y;
   
   /* Count selected pixels in the image, for sizing a vector */
-  target_points_size = 0;
+  guint size = 0;
   for(y=0; y<targetMap->height; y++)
     for(x=0; x<targetMap->width; x++)
       {
       Coordinates coords = {x,y};
-      if (is_selected_image(coords)) 
-        target_points_size++;
+      if (is_selected_image(coords, targetMaskMap)) 
+        size++;
       }
-        
-  target_points = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), target_points_size); /* reserve */
   
-  prepare_has_value(targetMap);  /* reserve, initialize to value: unknown */
+  *targetPoints = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), size); /* reserve */
+  
+  prepareHasValue(targetMap, hasValueMap);  /* reserve, initialize to value: unknown */
   
   for(y=0; y<targetMap->height; y++)
     for(x=0; x<targetMap->width; x++) 
@@ -504,21 +421,22 @@ prepare_target_points(
       Initially, no target points have value, and some context points will have value.
       Later, synthesized target points will have values also.
       */
-      set_has_value(&coords,
+      setHasValue(&coords,
         (
           is_use_context // ie use_border ie match image neighbors outside the selection (the context)
-          && ! is_selected_image(coords)  // outside the target
+          && ! is_selected_image(coords, targetMaskMap)  // outside the target
           /* !!! and if the point is not transparent (e.g. background layer) which is arbitrarily black !!! */
           && not_transparent_image(coords, indices, targetMap)
-        ));
+        ),
+        hasValueMap);
       
       /* 
-      Make vector target_points 
+      Make vector targetPoints 
       !!! Note we do NOT exclude transparent.  Will synthesize color (but not alpha)
       for all selected pixels in target, regardless of transparency.
       */
-      if (is_selected_image(coords)) 
-        g_array_append_val(target_points, coords);
+      if (is_selected_image(coords, targetMaskMap)) 
+        g_array_append_val(*targetPoints, coords);
     }
 }
 
@@ -527,32 +445,32 @@ prepare_target_points(
 
 /* Scan corpus pixmap for selected pixels, create vector of coords */
 void
-prepare_corpus_points (
-  TFormatIndices* indices
+prepareCorpusPoints (
+  TFormatIndices* indices,
+  Map* corpusMap,
+  pointVector* corpusPoints
   ) 
 {
   /* Reserve size of pixmap, but excess, includes unselected. */
-  corpus_points = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), corpus.height*corpus.width);
-  
-  corpus_points_size = 0;
+  *corpusPoints = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates),
+   corpusMap->height*corpusMap->width);
   
   {
   guint x;
   guint y;
   
-  for(y=0; y<corpus.height; y++)
-    for(x=0; x<corpus.width; x++)
+  for(y=0; y<corpusMap->height; y++)
+    for(x=0; x<corpusMap->width; x++)
     {
       Coordinates coords = {x, y};
       /* In prior versions, the user's mask was inverted to establish the corpus,
       I.E. this was not is_selected
       */
-      if (is_selected_corpus(coords)
-        && not_transparent_corpus(coords, indices) /* Exclude transparent from corpus */
+      if (is_selected_corpus(coords, corpusMap)
+        && not_transparent_corpus(coords, indices, corpusMap) /* Exclude transparent from corpus */
         ) 
       {
-        corpus_points_size++;
-        g_array_append_val(corpus_points, coords);
+        g_array_append_val(*corpusPoints, coords);
       }
     }
   }
@@ -563,11 +481,14 @@ prepare_corpus_points (
 
 
 static inline Coordinates
-random_corpus_point ()
+randomCorpusPoint (
+  pointVector corpusPoints,
+  GRand * prng
+  )
 {
-  /* Was rand()%corpus_points_size but thats not uniform. */
-  gint index = g_rand_int_range(prng, 0, corpus_points_size);
-  return g_array_index(corpus_points, Coordinates, index);
+  /* Was rand()%corpusPoints_size but thats not uniform. */
+  gint index = g_rand_int_range(prng, 0, corpusPoints->len);
+  return g_array_index(corpusPoints, Coordinates, index);
 }
 
 
@@ -640,29 +561,32 @@ this might be vastly many more offsets than are needed for good synthesis.
 But at worst, if not used they get paged out from virtual memory.
 */
 static void 
-prepare_sorted_offsets(
-  Map* targetMap
+prepareSortedOffsets(
+  Map* targetMap,
+  Map* corpusMap,
+  pointVector* sortedOffsets
   ) 
 {
   // Minimum().  Use smaller dimension of corpus and target.
-  gint width = (corpus.width<targetMap->width ? corpus.width : targetMap->width);
-  gint height = (corpus.height<targetMap->height ? corpus.height : targetMap->height);
+  gint width = (corpusMap->width < targetMap->width ? corpusMap->width : targetMap->width);
+  gint height = (corpusMap->height < targetMap->height ? corpusMap->height : targetMap->height);
+  guint allocatedSize = (2*width-1)*(2*height-1);   // eg for width==3, [-2,-1,0,1,2], size==5
   
-  sorted_offsets_size = 2*2*width*height; 
-  sorted_offsets = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), sorted_offsets_size); /* Reserve */
+  *sortedOffsets = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), allocatedSize); //Reserve
   
   {
-  gint x;
+  gint x; // !!! Signed offsets
   gint y;
   
   for(y=-height+1; y<height; y++)
     for(x=-width+1; x<width; x++) 
       {
       Coordinates coords = {x,y};
-      g_array_append_val(sorted_offsets, coords);
+      g_array_append_val(*sortedOffsets, coords);
       }
   }
-  g_array_sort(sorted_offsets, (gint (*)(const void*, const void*)) lessCartesian);
+  g_assert((*sortedOffsets)->len == allocatedSize);  // Completely filled
+  g_array_sort(*sortedOffsets, (gint (*)(const void*, const void*)) lessCartesian);
   
   /* lkk An experiment to sort the offsets in row major order for better memory 
   locality didn't help performance. 
@@ -671,202 +595,21 @@ prepare_sorted_offsets(
 }
 
 
-
-
-
-
 /* 
 Return True if clipped or masked (not selected.) 
 !!! Note this is called in the bottleneck of try_point, crucial to speed.
 */
 static inline gboolean 
-clippedOrMaskedCorpus(const Coordinates point) 
+clippedOrMaskedCorpus(
+  const Coordinates point, 
+  const Map * const corpusMap) 
 {
   return (
     point.x < 0 || point.y < 0 
-    || point.x >= (gint) corpus.width 
-    || point.y >= (gint) corpus.height /*  Clipped */
-    ||  ! is_selected_corpus(point) /* Masked */
+    || point.x >= (gint) corpusMap->width 
+    || point.y >= (gint) corpusMap->height /*  Clipped */
+    ||  ! is_selected_corpus(point, corpusMap) /* Masked */
     ); 
-}
-
-
-
-
-
-/*
-This is the crux: comparing target patch to corpus patch, pixel by pixel.
-Also the bottleneck in performance.
-
-The following discussion depends on how repetition (passes) are configured:
-if the first pass is not a complete pass over the target, it doesn't apply.
-On the first pass the candidate patch might be a shotgun pattern, to distant context.
-On subsequent passes, the candidate patch is a rectangular pixmap (since the target is filled in.)
-But since pixels can be masked, the actual patch tested might be irregularly shaped.
-
-Note that size of patch (n_neighbors) is usually the same for each target pixel, 
-but in rare cases, it might not be.
-(If there is no context, the first probe has 0 neighbors, the second probe 1 neighbor, ...)
-Then does it make sense to also use MAX_WEIGHT for missing neighbors?
-*/
-static inline gboolean 
-try_point(
-  const Coordinates point, 
-  tBettermentKind pointKind,
-  TFormatIndices* indices
-  ) 
-{
-  guint sum = 0;
-  guint i; 
-  
-  countSourceTries++;   // Stats
-  // Iterate over neighbors of candidate point. Sum grows as more neighbors tested.
-  for(i=0; i<n_neighbours; i++)
-  {
-    Coordinates off_point = add_points(point, neighbours[i]);
-    if (clippedOrMaskedCorpus(off_point)) 
-    {    
-      /* Maximum difference for this neighbor outside corpus */
-      sum += MAX_WEIGHT*indices->img_match_bpp + map_diff_table[0]*indices->map_match_bpp;   
-    } 
-    else  
-    {
-      const Pixelel * corpus_pixel;
-      const Pixelel * image_pixel;
-      
-      corpus_pixel = pixmap_index(&corpus, off_point);
-      // ! Note the target values come not from target_points, but the smaller copy neighbour_values
-      image_pixel = neighbour_values[i];
-      #ifndef VECTORIZED
-      /* If not the target point (its own 0th neighbor).
-      !!! On the first pass, the target point as its own 0th neighbor has no meaningful, unbiased value.
-      Even if e.g. we initialize target to all black, that biases the search.
-      */
-      if (i) 
-      {
-        TPixelelIndex j;
-        for(j=FIRST_PIXELEL_INDEX; j<indices->colorEndBip; j++)
-          sum += diff_table[256u + image_pixel[j] - corpus_pixel[j]];
-      }
-      if (indices->map_match_bpp > 0)
-      {
-        TPixelelIndex j;
-        for(j=indices->map_start_bip; j<indices->map_end_bip; j++)  // also sum mapped difference
-          sum += map_diff_table[256u + image_pixel[j] - corpus_pixel[j]];
-      }
-      #else
-      const Pixelel * __restrict__ corpus_pixel = pixmap_index(&corpus, off_point);
-      const Pixelel  * __restrict__ image_pixel = neighbour_values[i];
-      #define MMX_INTRINSICS_RESYNTH
-      #include "resynth-vectorized.h"
-      #endif
-    }
- 
-    /* 
-    lkk !!! best_point not set.
-    Note: equals.
-    If this source is same as prior source for target or different from prior source
-    ( whether picked randomly or for a repeat) 
-    AND all neighbors checked (iteration completed) without finding a lesser best (but maybe an equal best)
-    best_point is not changed even if it is a different source.
-    ??? Study how many different but equal sources are found.  
-    Are different source in later repeats closer distance?
-    */
-    if (sum >= best) return FALSE;  // !!! Short circuit for neighbors
-  }
-
-  // Assert sum strictly < best
-  best = sum;
-  latestBettermentKind = pointKind;
-  
-  // best_point might already equal point, but might be smaller sum because different neighbors or different neighbor values
-  best_point = point;
-  if (sum <=0) 
-  {
-    bettermentStats[PERFECT_MATCH]+=1;
-    return TRUE;
-  }
-  else 
-    return FALSE;
-}
-
-
-
-
-
-/* Create a neighbor.  Initialize: offset, status, and pixel. */
-static inline void
-new_neighbor(
-  guint        index,
-  Coordinates offset,
-  Coordinates neighbor_point,
-  TFormatIndices* indices,
-  Map * targetMap
-  )
-{
-  neighbours[index] = offset;
-  set_neighbor_state(index, neighbor_point);
-  // !!! Copy the whole Pixel, all the pixelels
-  
-  {
-  TPixelelIndex k;
-  for (k=0; k<indices->total_bpp; k++)
-    // c++ neighbour_values[n_neighbours][k] = data.at(neighbor_point)[k];
-    neighbour_values[index][k] = pixmap_index(targetMap, neighbor_point)[k];
-  }
-}
-
-
-
-  
-
-/*
-Prepare array of neighbors with values, both inside the target, and outside i.e. in the context (if use_border).
-Neighbors are in the source (the target or its context.)
-If repeating a pixel, now might have more, different, closer neighbors than on the first pass.
-Neighbours array is global, used both for heuristic and in synthing every point ( in try_point() )
-Neighbours describes a patch, a shotgun pattern in the first pass, or a contiguous patch in later passes.
-*/
-void prepare_neighbors(
-  Coordinates position, // IN target point
-  Parameters *parameters, // IN
-  TFormatIndices* indices,
-  Map * targetMap
-  ) 
-{
-  guint j;
-  
-  n_neighbours = 0; // global
-  
-  for(j=0; j<sorted_offsets_size; j++)
-  {
-    // c++ Coordinates offset = sorted_offsets[j];
-    Coordinates offset = g_array_index(sorted_offsets, Coordinates, j);
-    Coordinates neighbor_point = add_points(position, offset);
-
-    // !!! Note side effects: wrap_or_clip might change neighbor_point coordinates !!!
-    if (wrap_or_clip(parameters, targetMap, &neighbor_point)  // is neighbor in target image or wrappable
-        &&  get_has_value(neighbor_point)   // is neighbor outside target (context) 
-            // or inside target with already synthed value
-      ) 
-    {
-      new_neighbor(n_neighbours, offset, neighbor_point, indices, targetMap);
-      n_neighbours++;
-      if (n_neighbours >= (guint) parameters->neighbours) break;
-    }
-  }
-  
-  /*
-  Note the neighbors are in order of distance from the target pixel.
-  But the matching does not depend on the order, it only matters that neighbors are nearest.
-  Experiment to sort the nearest neighbors in other orders, such as in row major order
-  (so there might be better memory locality) didn't seem to help speed.
-  
-  Note we can't assert(n_neighbours==parameters.neighbours)
-  If use_border, there is a full neighborhood unless context or corpus small, that is, 
-  there are usually plenty of distant neighbors in the context and corpus.
-  If not use_border, there is usually a full neighborhood except for the first n_neighbor synthesis tries.
-  */
 }
 
 
@@ -892,46 +635,84 @@ engine(
   Parameters parameters,
   // , GimpDrawable *targetDrawable  // ANIMATE
   TFormatIndices* indices,
-  Map* targetMap
+  Map* targetMap,
+  Map* corpusMap,
+  Map* targetMaskMap,
+  Map* corpusMaskMap
   )
 {
+  // Engine private data. On stack (and heap), not global, so engine is reentrant.
+  
+  /*
+  A map on the corpus yielding indexes of target points.
+  For a point in the corpus, which target point (index!) most recently probed the corpus point.
+  recentProbe[coords corpus point] -> index of target_point that most recently probed corpus point
+
+  2-D array of int, addressable by Coordinates.
+  c++: static Bitmap<guint> recentProber;
+  */    
+  Map recentProberMap;
+  
+  /*
+  Flags for state of synthesis of image pixels.
+  c++ static Bitmap<Status> status;
+  */     
+  /* 
+  Does source pixel have value yet, to match (depends on selection and state of algorithm.)
+  Map over entire target image (target selection and context.)
+  */
+  Map hasValueMap;
+  /* Does this target pixel have a source yet: yields corpus coords. */
+  Map sourceOfMap;   
+
+  /* 
+  1-D array (vector) of Coordinates.
+  Subsets of image and corpus, subsetted by selection and alpha.
+  */
+  pointVector targetPoints;   // For synthesizing target in an order (ie random)
+  pointVector corpusPoints;   // For sampling corpus randomly.
+  pointVector sortedOffsets;  // offsets (signed coordinates) for finding neighbors.
+  
+  GRand *prng;  // pseudo random number generator
+  
   // target prep
-  prepare_target_points(parameters.use_border, indices, targetMap); // Uses image_mask
+  prepareTargetPoints(parameters.use_border, indices, targetMap, 
+    targetMaskMap, &hasValueMap, &targetPoints);
   #ifdef ANIMATE
   clear_target_pixels(indices->color_end_bip);  // For debugging, blacken so new colors sparkle
   #endif
-  free_map(&image_mask); // Assert no more references to image_mask.
-  prepare_target_sources(targetMap);
+  free_map(targetMaskMap); // Assert not used later
+  prepare_target_sources(targetMap, &sourceOfMap);
   
   // source prep
-  prepare_corpus_points(indices);
+  prepareCorpusPoints(indices, corpusMap, &corpusPoints);
 
   /* 
   Rare user error: all pixels transparent (which we ignore.)
   This error NOT occur if selection does not intersect, since then we use the whole drawable.
   */
-  if (!corpus_points_size )
+  if (!corpusPoints->len )
   {
     return 1;
   }
-  if ( !target_points_size ) 
+  if ( !targetPoints->len ) 
   {
     return 2;
   }
   
   // prep unrelated to images
-  prepare_sorted_offsets(targetMap); // Depends on image size
+  prepareSortedOffsets(targetMap, corpusMap, &sortedOffsets); // Depends on image size
   make_diff_table(parameters.autism, parameters.map_weight);
  
-  // Now we need a prng, before order_target_points
+  // Now we need a prng, before order_targetPoints
   /* Originally: srand(time(0));   But then testing is non-repeatable. 
   TODO the seed should be a hash of the input or a user parameter.
   Then it would be repeatable, but changeable by the user.
   */
   prng = g_rand_new_with_seed(1198472);
   
-  order_target_points(&parameters);
-  prepare_tried();  // Must follow prepare_corpus
+  orderTargetPoints(&parameters, targetPoints, prng);
+  prepareRecentProber(corpusMap, &recentProberMap);  // Must follow prepare_corpus
   
   // Preparations done, begin actual synthesis
   print_processor_time();
@@ -942,7 +723,15 @@ engine(
     // targetDrawable, // ANIMATE
     parameters,
     indices,
-    targetMap
+    targetMap,
+    corpusMap,
+    &recentProberMap,
+    &hasValueMap,
+    &sourceOfMap,
+    targetPoints,
+    corpusPoints,
+    sortedOffsets,
+    prng
     );
     
   // TODO free pixmaps

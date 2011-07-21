@@ -20,7 +20,7 @@ i.e. a Pixel is a variable-length array of Pixelels.
 */
 static inline Pixelel*
 pixmap_index(
-  Map * map,
+  const Map * const map,
   const Coordinates coords
   )
 {

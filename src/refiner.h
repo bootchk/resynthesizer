@@ -5,7 +5,7 @@ The outer engine does passes with a closed feedback loop to quit early if no imp
 First pass: target is empty and patches are shotgun patterns, i.e. sparse, mostly from outside the target.
 
 Second pass: target is synthesized but poorly.  Use patches from the poor target to refine the target.  
-Patches are non-sparse i.e. contiguous.
+Patches are non-sparse i.e. contiguous, but not necessarily square or symmetric.
 Second pass refines every pixel in the target.
 
 Third and further passes refine a subset of the target.
@@ -17,12 +17,21 @@ refiner(
   // GimpDrawable *drawable,  // ANIMATE
   Parameters parameters,
   TFormatIndices* indices,
-  Map* targetMap
-  ) {
+  Map* targetMap,
+  Map* corpusMap,
+  Map* recentProberMap,
+  Map* hasValueMap,
+  Map* sourceOfMap,
+  pointVector targetPoints,
+  pointVector corpusPoints,
+  pointVector sortedOffsets,
+  GRand *prng
+  ) 
+{
   guint pass;
   TRepetionParameters repetition_params;
   
-  prepare_repetition_parameters(repetition_params);
+  prepare_repetition_parameters(repetition_params, targetPoints->len);
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
@@ -30,17 +39,26 @@ refiner(
       // drawable, // ANIMATE
       repetition_params,
       indices,
-      targetMap
+      targetMap,
+      corpusMap,
+      recentProberMap, // Note not refreshed for each pass
+      hasValueMap,
+      sourceOfMap,
+      targetPoints,
+      corpusPoints,
+      sortedOffsets,
+      prng
       );
   
+    // nil unless DEBUG
     print_pass_stats(pass, repetition_params[pass][1], betters);
   
     /* Break if a small fraction of target is bettered
     This is a fraction of total target points, 
     not the possibly smaller count of target attempts this pass.
-    Or break on small integral change: if ( target_points_size / integralColorChange < 10 ) {
+    Or break on small integral change: if ( targetPoints_size / integralColorChange < 10 ) {
     */
-    if ( (float) betters / target_points_size < (RESYNTH_TERMINATE_FRACTION) )
+    if ( (float) betters / targetPoints->len < (RESYNTH_TERMINATE_FRACTION) )
       break;
   }
 }

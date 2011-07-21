@@ -254,7 +254,15 @@ static void run(
   GimpDrawable *map_out_drawable= NULL; 
   gboolean ok, with_map;
   
+  /* 
+  Local copies of pixmaps (not using gimp regions.) 
+  2-D arrays of Pixel, addressable by Coordinates (Point).
+  c++: static Bitmap<Pixelel>
+  */
   Map targetMap;
+  Map corpusMap;
+  Map targetMaskMap;
+  Map corpusMaskMap;
   
   #ifdef DEBUG
   gimp_message_set_handler(1); // To console instead of GUI
@@ -365,8 +373,8 @@ static void run(
   - OR standardize the internal pixmap to ALWAYS have an alpha pixelel
   initialized to VISIBLE and set from any alpha pixelel.
   */
-  is_alpha_image = gimp_drawable_has_alpha(drawable->drawable_id);
-  is_alpha_corpus = gimp_drawable_has_alpha(corpus_drawable->drawable_id);
+  gboolean is_alpha_image = gimp_drawable_has_alpha(drawable->drawable_id);
+  gboolean is_alpha_corpus = gimp_drawable_has_alpha(corpus_drawable->drawable_id);
   
   // Image adaption requires format indices
   // WAS  prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
@@ -398,23 +406,31 @@ static void run(
     g_printf("Gimp adaption\n");
     /* target/context adaption */
     fetch_image_mask_map(drawable, &targetMap, formatIndices.total_bpp, 
-      &image_mask, MASK_TOTALLY_SELECTED, 
+      &targetMaskMap, 
+      MASK_TOTALLY_SELECTED, 
       map_out_drawable, formatIndices.map_start_bip);
     
     /*  corpus adaption */
-    fetch_image_mask_map(corpus_drawable, &corpus, formatIndices.total_bpp, &corpus_mask,
+    fetch_image_mask_map(corpus_drawable, &corpusMap, formatIndices.total_bpp, 
+      &corpusMaskMap,
       MASK_TOTALLY_SELECTED, 
       map_in_drawable, formatIndices.map_start_bip);
-    free_map(&corpus_mask);
-    // !!! Note the engine yet uses targetMap_mask 
+    free_map(&corpusMaskMap);
+    // !!! Note the engine yet uses targetMaskMap
   #endif
   
   // After possible adaption, check size again
   g_assert(targetMap.width * targetMap.height); // Image is not empty
-  g_assert(corpus.width * corpus.height); // Corpus is not empty
+  g_assert(corpusMap.width * corpusMap.height); // Corpus is not empty
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
-  int result = engine(parameters, &formatIndices, &targetMap);
+  int result = engine(parameters, 
+    &formatIndices, 
+    &targetMap, 
+    &corpusMap,
+    &targetMaskMap,
+    &corpusMaskMap
+    );
   // ANIMATE int result = engine(parameters, drawable);
   if (result == 1)
   {
