@@ -10,6 +10,14 @@ OUT: global index variables.
 Not depend on Gimp
 */
 
+typedef enum  ImageFormat 
+{
+  T_RGB,
+  T_RGBA,
+  T_Gray,
+  T_GrayA
+} TImageFormat;
+
 /* 
 bpp i.e. count of bytes (channels) per pixel or index thereof.
 bpp is bytes per pixel
@@ -37,7 +45,17 @@ typedef struct indicesStruct {
   gboolean isAlphaSource; // Does source have alpha?
 } TFormatIndices;
 
-
+extern unsigned int
+countPixelelsPerPixelForFormat(
+  TImageFormat format // IN
+  );
+  
+extern int
+prepareImageFormatIndicesFromFormatType(
+  TFormatIndices* indices,  // OUT
+  TImageFormat format // IN
+  );
+  
 extern void
 prepareImageFormatIndices(
   TFormatIndices* indices,  // OUT
@@ -48,4 +66,8 @@ prepareImageFormatIndices(
   gboolean isMap
   );
 
+extern void
+prepareDefaultFormatIndices(
+  TFormatIndices* formatIndices
+  );
 

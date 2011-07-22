@@ -55,7 +55,7 @@ adaptImage(
   */
   destPixel = offset; // dest pixel index starts at offset
   guint srcPixelStride = pixelel_count;
-  guint destPixelStride = pixelel_count + offset;
+  guint destPixelStride = pixelel_count + offset; // dest is offset
   
   for(row=0; row<image->height; row++) 
   { 
@@ -95,8 +95,9 @@ static void
 antiAdaptImage(
   ImageBuffer*  imageBuffer,      // OUT image: target or corpus drawable
   Map*          pixmap,           // IN NON-rowpadded pixmap
-  guint         offset,           // IN Offset in source pixel
-  guint         pixelel_count     // IN count pixelels to move !!! Not size of pixel in src or dest
+  guint         offset,           // IN Offset in internal source pixel
+  guint         pixelel_count     // IN count pixelels to move 
+        // !!! Not size of pixel in src or dest since we omit alpha
   )
 {
   guint row;
@@ -108,7 +109,7 @@ antiAdaptImage(
   guint destPixel;
   
   /* 
-  Copy SOME of the pixels from our pixmap to buffer(optionally exclude alpha).
+  Copy ALL of the pixels from our pixmap to buffer(including alpha which is unaltered.)
   Row pad destination.
   OFFSET pixels in source. 
   */
@@ -124,8 +125,9 @@ antiAdaptImage(
   */
   
   srcPixel = offset;
-  guint srcPixelStride = 5;	// mask, RGBA
-  guint destPixelStride = 4; // RGBA
+  // source stride is offset plus pixels moved
+  guint srcPixelStride = pixelel_count + offset;  
+  guint destPixelStride = pixelel_count;
   
   for(row=0; row<imageBuffer->height; row++) 
   { 
@@ -198,6 +200,8 @@ initBufferAndAntiAdapt(
 
 
 /*
+Adapt imageBuffer and its mask to our internal pixmap.
+
 Note the mask is kept separately and also interleaved into the pixmap,
 because a preparation step uses the mask separately.
 See prepareTarget.
@@ -208,18 +212,21 @@ adaptImageAndMask(
   ImageBuffer *   mask,   // IN 
   Map *imagePixmap,       // OUT our color pixmap of drawable, w/ interleaved mask
   Map *maskPixmap,        // OUT our selection bytemap (only one channel ie pixelel ie byte ie depth)
-  guint pixelel_count    // IN total count mask+image+map Pixelels in our Pixel
+  guint pixelelPerPixel    // IN pixelels in the image e.g. 4 for RGBA
   ) 
 {
-  /* Both OUT pixmaps same 2D dimensions.  Depth pixelel_count includes a mask byte. */
-  new_pixmap(imagePixmap, image->width, image->height, 5 /* pixelel_count */ );
+  // Note our internal map includes mask pixelel so +1
+  
+  // Both OUT pixmaps same 2D dimensions.  
+  // imagePixmap includes a mask byte.
+  new_pixmap(imagePixmap, image->width, image->height, pixelelPerPixel+1 );
   
   // Get color, alpha channels.  Offset them past mask byte. 4 bytes of RGBA.
-  adaptImage(image, imagePixmap, FIRST_PIXELEL_INDEX, 4); // TODO 4 is hardcoded for RGBAFormat
+  adaptImage(image, imagePixmap, FIRST_PIXELEL_INDEX, pixelelPerPixel);
   
-  new_pixmap(maskPixmap, image->width, image->height, 1 /* pixelel_count */ );
+  new_pixmap(maskPixmap, image->width, image->height, 1 );
   
-  // Get mask channel. Offset by 0.  Byte count 1.
+  // Get mask channel. Offset by 0 (mask byte first.)  Byte count 1.
   adaptImage(mask, maskPixmap, 0, 1);
 }
 
@@ -235,7 +242,12 @@ Inner engine (existingAPI) is more general and wants separate corpus and separat
 void
 adaptSimpleAPI(
   ImageBuffer * imageBuffer,
-  ImageBuffer * maskBuffer
+  ImageBuffer * maskBuffer,
+  Map * targetMap,
+  Map * targetMaskMap,
+  Map * corpusMap,
+  Map * corpusMaskMap,
+  guint pixelelPerPixel // In imageBuffer
   )
 {
   // Assert image and mask are same size, not need to initialize empty mask with a value
@@ -245,30 +257,30 @@ adaptSimpleAPI(
   adaptImageAndMask(
     imageBuffer, 
     maskBuffer,
-    &image,       // global in engine.c
-    &image_mask,  // "
-    5    // total count mask+image Pixelels in our Pixel
+    targetMap, 
+    targetMaskMap, 
+    pixelelPerPixel
     );
   
   // For performance (cache memory locality), interleave mask into pixmap.
-  interleave_mask(&image, &image_mask);  /* Interleave mask byte into our Pixels */
+  interleave_mask(targetMap, targetMaskMap);  /* Interleave mask byte into our Pixels */
   
   
   // Duplicate image to corpus with inverted mask
   adaptImageAndMask(
     imageBuffer, 
     maskBuffer,
-    &corpus,       // global in engine.c
-    &corpus_mask,        // "
-    5    // total count mask+image Pixelels in our Pixel
+    corpusMap,
+    corpusMaskMap,
+    pixelelPerPixel
     );
   
   // !!!! 
   // For the simple API,  invert corpus mask: corpus is inverse of target selection
-  invert_bytemap(&corpus_mask);
+  invert_bytemap(corpusMaskMap);
   
   // For performance (cache memory locality), interleave mask into pixmap.
-  interleave_mask(&corpus, &corpus_mask);  /* Interleave mask byte into our Pixels */
+  interleave_mask(corpusMap, corpusMaskMap);  /* Interleave mask byte into our Pixels */
 }
 
 

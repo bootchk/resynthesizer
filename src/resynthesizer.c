@@ -398,6 +398,7 @@ static void run(
     ImageBuffer imageBuffer;
     ImageBuffer maskBuffer;
     
+    // TODO change to new signature
     adaptGimpToSimple(drawable, &imageBuffer, &maskBuffer);  // From Gimp to simple
     g_printf("Here3\n");
     adaptSimpleAPI(&imageBuffer, &maskBuffer);        // From simple to existing engine API

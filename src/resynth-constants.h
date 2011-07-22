@@ -8,7 +8,9 @@ Other magic numbers should be constants.
 */
 
 /* Constraints on parameters to plugin. */
-#define RESYNTH_MAX_NEIGHBORS 1000	/* Max size of neighborhood (patch) */
+// Max size of neighborhood (patch)
+// Allocated on stack in reentrant version
+#define RESYNTH_MAX_NEIGHBORS 64	
 #define RESYNTH_MAX_TRYS_PER_PIXEL 10000	/* Max probes of corpus per pixel. */
 
 /* Parameters to engine and controls, same for both. */

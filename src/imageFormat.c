@@ -1,16 +1,96 @@
 /*
 Internal image format.
+
+The engine uses a struct that tells where Pixelels are in an internal Pixel.
+The internal Pixel aggregates color, mask, and map pixelels; for memory locality.
 */
-/*
+
+// Compiling switch #defines
+#include "buildSwitches.h"
 #ifdef SYNTH_USE_GLIB
   // Use glib via gimp.h
   #include <libgimp/gimp.h>
 #else
   #include "glibProxy.h"
 #endif
-
+#include "resynth-constants.h"
 #include "imageFormat.h"
+
+extern unsigned int
+countPixelelsPerPixelForFormat(
+  TImageFormat format // IN
+  )
+{
+switch (format) {
+  case T_RGB:
+    return 3;
+  case T_RGBA:
+    return 4;
+  case T_Gray:
+    return 1;
+  case T_GrayA:
+    return 2;
+  default:
+    return 0; // Unhandled format type
+  }
+}
+
+
+/*
+This is only for adapting to the SimpleAPI.
+When adapting from Gimp,
+formatIndices is generated another way.
 */
+extern int
+prepareImageFormatIndicesFromFormatType(
+  TFormatIndices* formatIndices,  // OUT
+  TImageFormat format
+  )
+{
+  switch (format) {
+  case T_RGB:
+    prepareImageFormatIndices( formatIndices,
+      3,    // count color pixelels
+      0,    // no map colors
+      FALSE, // is_alpha_target,
+      FALSE, // is_alpha_source,
+      FALSE // isMap
+      );
+    break;
+  case T_RGBA:
+    prepareImageFormatIndices( formatIndices,
+      3,    // count color pixelels
+      0,    // no map colors
+      TRUE, // is_alpha_target,
+      // Since we are adapting by duplicating, if target has alpha, so does source
+      TRUE, // is_alpha_source, 
+      FALSE // isMap
+      );
+    break;
+  case T_Gray:
+    prepareImageFormatIndices( formatIndices,
+      1,    // count color pixelels
+      0,    // no map colors
+      FALSE, // is_alpha_target,
+      FALSE, // is_alpha_source,
+      FALSE // isMap
+      );
+    break;
+  case T_GrayA:
+    prepareImageFormatIndices( formatIndices,
+      1,    // count color pixelels
+      0,    // no map colors
+      TRUE, // is_alpha_target,
+      TRUE, // is_alpha_source,
+      FALSE // isMap
+      );
+    break;
+  default:
+    return 1; // Unhandled format type
+  }
+  return 0;
+}
+  
 
 void
 prepareImageFormatIndices(
@@ -103,4 +183,35 @@ prepareImageFormatIndices(
   
   g_assert( indices->total_bpp <= MAX_RESYNTH_BPP);
 }
+
+
+// Test harness setter of pixel indices
+void
+prepareDefaultFormatIndices(
+  TFormatIndices* formatIndices
+  )
+  /*
+  Default is RGBA
+  For testing.
+  
+  Engine internal pixel is:
+  MRGBA
+  012345
+  */
+{
+// !!! MASK_PIXELEL_INDEX is a constant (0); mask pixelel is first, always.
+
+formatIndices->img_match_bpp = 3;  // Match RGB but not A
+formatIndices->colorEndBip = 4;  // Pixelels 1-3 (2nd through 4th)
+formatIndices->alpha_bip = 4;			// Alpha bip must be defined: read but not synthesize
+formatIndices->map_match_bpp = 0;  // No map pixelels
+formatIndices->map_start_bip = 5;
+formatIndices->map_end_bip = 5;
+
+formatIndices->total_bpp = 5;
+
+formatIndices->isAlphaTarget = TRUE; // Does target have alpha?
+formatIndices->isAlphaSource = TRUE;
+}
+
 
