@@ -1,11 +1,13 @@
 # Makefile for synth: platform independent texture synthesizer
 # Copyright 2011 Lloyd Konneker
 
-EXEC      = synth
+EXEC      = testSynth
+LIB       = libimagesynth.so
+
 SRC_FILES = synth.c engine.c glibProxy.c engineParams.c imageFormat.c
 O_FILES   = $(SRC_FILES:%.cc=%.o)
 
-H_FILES   = imageBuffer.h engineParams.h resynth-constants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h
+H_FILES   = imageBuffer.h engineParams.h resynth-constants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h imageFormat.h
 
 CC = gcc
 
@@ -17,10 +19,25 @@ LDFLAGS= -lm -g
 
 all: $(EXEC)
 	@echo
-	@echo 'Done building synth'
+	@echo 'Done building testSynth'
 	@echo 
 
-#	for file in synth.c engine.c glibProxy.c engineParams.c imageBuffer.h engineParams.h resynth-#constants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-#target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h ;
+# test harness
+$(EXEC): $(LIB) testSynth.o
+	$(CC) $(CFLAGS) -L. -lm -limagesynth -o testSynth testSynth.c
+	
+# library: image synthesis
+$(LIB): CFLAGS+=-fPIC -shared
+$(LIB): $(O_FILES)
+	$(CC) $(CFLAGS) -o $@ $^
+
+# $(LIB): $(O_FILES)
+
+# !!! These dependencies are not complete.
+# .h are missing
+# some of the .h files are definitions, not just declarations
+
+
 
 # Get source files from development directory
 # !!! Except for buildSwitches.h and Makefile
@@ -28,13 +45,6 @@ source:
 	for file in $(SRC_FILES) $(H_FILES) ; do \
 		cp ../../synth/src/$$file . ; \
 	done
-
-# !!! These dependencies are not complete.
-# .h are missing
-# some of the .h files are definitions, not just declarations
-
-# engine
-$(EXEC): $(O_FILES)
 
 # OLD
 #synth: synth.o engine.o glibProxy.o engineParams.o imageFormat.o
@@ -47,5 +57,5 @@ refreshsource:
 	rm -f *.c *.h
 	
 clean:
-	-rm -f *~ *.o core synth
+	-rm -f *~ *.o core $(EXEC) $(LIB)
 
