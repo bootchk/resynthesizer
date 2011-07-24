@@ -1,9 +1,11 @@
 /*
 Texture synthesis engine.
 
-This is the outer "engine", a wrapper.
-(The inner engine is engine.c.)
+This is the outer "engine", a wrapper. (The inner engine is engine.c.)
+
 With simple API, for healing only from the full context of the target.
+That is, it only takes one image.
+The inner engine takes four images.
 
 To make: 
 - edit buildswitches.h to use glibProxy.h
@@ -36,35 +38,27 @@ extern int
 imageSynth(
   ImageBuffer * imageBuffer,  // IN/OUT RGBA four Pixelels
   ImageBuffer * mask,         // IN one mask Pixelel
-  TImageFormat imageFormat
+  TImageFormat imageFormat,
+  TImageSynthParameters* parameters  // or NULL to use defaults
   // EngineControls temporarily not passed: see setDefaultParams
   )
 {
-  Parameters parameters;
   Map targetMap;
   Map targetMaskMap;
   Map corpusMap;
   Map corpusMaskMap;
   TFormatIndices formatIndices;
+  int error;
   
   // Sanity: mask and imageBuffer same dimensions
-  assert(imageBuffer->width == mask->width);
-  assert(imageBuffer->height == mask->height);
+  if (imageBuffer->width != mask->width || imageBuffer->height != mask->height)
+    return IMAGE_SYNTH_ERROR_IMAGE_MASK_MISMATCH;
   
-  setDefaultParams(&parameters);
+  // Use defaults if NULL parameters
+  if (!parameters) setDefaultParams(parameters);
   
-  // TODO catch exception
-  prepareImageFormatIndicesFromFormatType(&formatIndices, imageFormat);
-  /*
-  prepareImageFormatIndices(&formatIndices
-    &formatIndices,
-    3,    // count color pixelels
-    0,    // no map colors
-    TRUE, // is_alpha_target,
-    TRUE, // is_alpha_source,
-    FALSE // isMap
-  );
-  */
+  error = prepareImageFormatIndicesFromFormatType(&formatIndices, imageFormat);
+  if ( error ) return error;
   
   // prepareDefaultFormatIndices(&formatIndices);
   
@@ -76,14 +70,17 @@ imageSynth(
     countPixelelsPerPixelForFormat(imageFormat)
     );
  
-  int result = engine(
-    parameters,
+  // assert corpusMaskMap is already freed, not needed by engine
+  
+  error = engine(
+    *parameters,
     &formatIndices, 
     &targetMap, 
     &corpusMap,
-    &targetMaskMap,
-    &corpusMaskMap
+    &targetMaskMap
     );
+  
+  // assert engine freed targetMaskMap already
   
   // Now the synthesized pixels are in the unmasked portion of the global image pixmap.
   // Post adapt: in imageBuffer, replace target pixels from global image pixmap
@@ -102,8 +99,13 @@ imageSynth(
   TODO Still a question here whether the alpha still in imageBuffer is correct,
   if we have changed the color pixels and they are pre-multiplied by alpha.
   */
-      
-  return result;  // TODO return error code instead of assertions
+  
+  // Cleanup internal malloc's done by adaption
+  // See above, masks already freed
+  free_map(&targetMap);
+  free_map(&corpusMap);
+   
+  return error;
 }
 
 

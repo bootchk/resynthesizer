@@ -443,7 +443,10 @@ prepareTargetPoints(
 
 
 
-/* Scan corpus pixmap for selected pixels, create vector of coords */
+/* 
+Scan corpus pixmap for selected && nottransparent pixels, create vector of coords.
+Used to sample corpus.
+*/
 void
 prepareCorpusPoints (
   TFormatIndices* indices,
@@ -508,31 +511,31 @@ In the original c++, all parameters were passed by reference.
 */
 static inline gboolean 
 wrap_or_clip (
-  const Parameters *parameters,   
+  const TImageSynthParameters *parameters,   
   Map *image,
   Coordinates *point // !!! IN/OUT
   )
 { 
   while(point->x < 0)
-    if (parameters->h_tile)
+    if (parameters->isMakeSeamlesslyTileableHorizontally)
       point->x += image->width;
     else
       return FALSE;
   
   while(point->x >= (gint) image->width)
-    if (parameters->h_tile)
+    if (parameters->isMakeSeamlesslyTileableHorizontally)
       point->x -= image->width;
     else
       return FALSE;
   
   while(point->y < 0)
-    if (parameters->v_tile)
+    if (parameters->isMakeSeamlesslyTileableVertically)
       point->y += image->height;
     else
       return FALSE;
   
   while(point->y >= (gint) image->height)
-    if (parameters->v_tile)
+    if (parameters->isMakeSeamlesslyTileableVertically)
       point->y -= image->height;
     else
       return FALSE;
@@ -632,13 +635,11 @@ Temporarily, uses globals set by adapters.
 
 int
 engine(
-  Parameters parameters,
-  // , GimpDrawable *targetDrawable  // ANIMATE
+  TImageSynthParameters parameters,
   TFormatIndices* indices,
   Map* targetMap,
   Map* corpusMap,
-  Map* targetMaskMap,
-  Map* corpusMaskMap
+  Map* targetMaskMap
   )
 {
   // Engine private data. On stack (and heap), not global, so engine is reentrant.
@@ -675,8 +676,13 @@ engine(
   
   GRand *prng;  // pseudo random number generator
   
+  
+  // check parameters in range
+  if ( parameters.patchSize > RESYNTH_MAX_NEIGHBORS)
+    return IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED;
+  
   // target prep
-  prepareTargetPoints(parameters.use_border, indices, targetMap, 
+  prepareTargetPoints(parameters.matchContextType, indices, targetMap, 
     targetMaskMap, &hasValueMap, &targetPoints);
   #ifdef ANIMATE
   clear_target_pixels(indices->color_end_bip);  // For debugging, blacken so new colors sparkle
@@ -693,16 +699,16 @@ engine(
   */
   if (!corpusPoints->len )
   {
-    return 1;
+    return IMAGE_SYNTH_ERROR_EMPTY_CORPUS;
   }
   if ( !targetPoints->len ) 
   {
-    return 2;
+    return IMAGE_SYNTH_ERROR_EMPTY_TARGET;
   }
   
   // prep unrelated to images
   prepareSortedOffsets(targetMap, corpusMap, &sortedOffsets); // Depends on image size
-  make_diff_table(parameters.autism, parameters.map_weight);
+  make_diff_table(parameters.sensitivityToOutliers, parameters.mapWeight);
  
   // Now we need a prng, before order_targetPoints
   /* Originally: srand(time(0));   But then testing is non-repeatable. 
@@ -734,7 +740,13 @@ engine(
     prng
     );
     
-  // TODO free pixmaps
+  // Free all but the IN pixmaps
+  // Caller must free the IN pixmaps since the targetMap holds synthesis results
+  free_map(&recentProberMap);
+  /*
+    &hasValueMap,
+    &sourceOfMap,
+  */
   
   return 0; // Success
 }

@@ -40,7 +40,7 @@
 #include "imageFormat.h"
 #include "map.h"
 #include "engineParams.h"
-#include "engine.h" // For type Parameters
+#include "engine.h"
 
 /* Shared with engine plugin. */
 #include "resynth-constants.h"
@@ -58,7 +58,7 @@ static void run(
 	GimpParam **      return_vals)
 {
   static GimpParam values[1]; // return values persist after run() returns
-  Parameters parameters;
+  TGimpAdapterParameters parameters;
   gboolean ok;
   
   /* Unless anything goes wrong, result is success */

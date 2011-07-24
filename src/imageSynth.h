@@ -1,5 +1,7 @@
 /*
 Header for libimagesynth
+
+With SimpleAPI: only one image passed in.
 */
 
 
@@ -8,8 +10,8 @@ Header for libimagesynth
 
 int
 imageSynth(
-  ImageBuffer * imageBuffer,  // IN/OUT RGBA four Pixelels
+  ImageBuffer * imageBuffer,  // IN/OUT RGBA Pixels described by imageFormat
   ImageBuffer * mask,         // IN one mask Pixelel
-  TImageFormat imageFormat
-  // EngineControls temporarily not passed: see setDefaultParams
+  TImageFormat imageFormat,
+  TImageSynthParameters* parameters
   );

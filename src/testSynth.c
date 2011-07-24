@@ -6,7 +6,7 @@ Test harness for libimagesynth
 
 // Redefine parts of glib that we use
 #include "glibProxy.h"  // glibProxy.c
-
+#include "engineParams.h"
 #include "imageSynth.h"
 #include "map.h"  // header for resynth-map-types.h included by engine.c
 
@@ -52,19 +52,24 @@ dumpImage(
 }
 
 static void test(
-  char * description,
+  const char * description,
   ImageBuffer* buffer,
   ImageBuffer* mask,
   TImageFormat format,
   unsigned int pixelelCount,
-  char * expect
+  const char * expect,
+  TImageSynthParameters parameters
   )
 {
-  printf("\n");  printf(description); printf("\n");
+  ;
+  int error;
+	
+  printf("\n");  printf("%s", description); printf("\n");
 	printf("Before:\n");
 	dumpBuffer(buffer, pixelelCount);
-	imageSynth(buffer, mask, format);
-	printf("Expect:\n"); printf(expect); printf("\n");
+	error = imageSynth(buffer, mask, format, &parameters);
+	if (error) printf("!!!! imageSynth returned error: %d\n", error);
+	printf("Expect:\n"); printf("%s", expect); printf("\n");
 	printf("Result:\n");
 	dumpBuffer(buffer, pixelelCount);
 }
@@ -103,6 +108,8 @@ int main(
 		0,0xFF,0, 0
 		};
 	
+	
+	
 	// A 1x3 image where the all pixel transparent and the middle pixel will be synthesized.
 	unsigned char image3[14] = {
 		128,128,128,0, 1,1,1,1, 0,0,0,0, 0,0	// 3*RGBA and 2 trailing pad byte
@@ -136,11 +143,15 @@ int main(
 	ImageBuffer testMask= { (unsigned char*) &mask, 3, 3, 4 };
 	ImageBuffer testMask2= { (unsigned char*) &mask2, 3, 1, 4 };
 	ImageBuffer testMask3= { (unsigned char*) &mask3, 3, 2, 4 };
+	ImageBuffer testMaskBad= { (unsigned char*) &mask3, 1, 1, 1 };
+	
+	TImageSynthParameters parameters;
+	setDefaultParams(&parameters);
 	
 	printf("\nTest center pixel synthesized but alpha unchanged.\n");
 	printf("Before\n");
 	dumpBuffer(&testImage, 4);
-	imageSynth(&testImage, &testMask, T_RGBA);
+	imageSynth(&testImage, &testMask, T_RGBA, &parameters);
 	// dumpImage(45);	// 45 pixelels 3x3x5
 	printf("After\n");
 	dumpBuffer(&testImage, 4);
@@ -152,24 +163,41 @@ int main(
 	Other pixels are not changed.
 	*/
 	
-	// Note these tests destroy the input image, can't be used twice
+	// Note these tests destroy the input image, which can't be used twice
 	
   test("Test mix of full transparency and opaque", &testImage2, &testMask2, T_RGBA, 4,
-	  "80 80 80 ff  80 80 80 01  00 00 00 00");
+	  "80 80 80 ff  80 80 80 01  00 00 00 00", parameters);
 	
 	// TODO engine should throw error? Corpus is entirely transparent
   test("All transparent", &testImage3, &testMask2, T_RGBA, 4,
-	  "should be unchanged.");
+	  "should be unchanged.", parameters);
 	
 	test("Test RGB w/o alpha", &testImageRGB, &testMask3, T_RGB, 3,
-	  "80 80 80  01 01 01  02 02 02\n40 40 40  01 01 01  03 03 03");
+	  "80 80 80  01 01 01  02 02 02\n40 40 40  01 01 01  03 03 03", parameters);
 	  
 	test("Test Gray w/ alpha", &testImageGrayA, &testMask2, T_GrayA, 2,
-	  "80 ff  80 01  01 00");
+	  "80 ff  80 01  01 00", parameters);
 	  
 	test("Test Gray w/o alpha", &testImageGray, &testMask2, T_Gray, 1,
-	  "80  01  01");
+	  "80  01  01", parameters);
+	
+	// Test passing NULL parameters
+	// TODO
+	
+	// Tests of error conditions
+	
+	test("Invalid image format", &testImageGray, &testMask2, 666, 1,
+	  "80  01  01", parameters);
+	
+	parameters.patchSize = 65;
+	test("patchSize parameter out of range", &testImageGray, &testMask2, T_Gray, 1,
+	  "80  01  01", parameters);
+	parameters.patchSize = 10;
+	
+	test("mask not same size as image", &testImageGray, &testMaskBad, T_Gray, 1,
+	  "80  01  01", parameters);
   
+  // TODO matchContextType; out of range
 	return(0);
 }
 

@@ -1,6 +1,7 @@
 /*
 Internal image format.
 
+The count of pixelels in a pixel depends on the format type.
 The engine uses a struct that tells where Pixelels are in an internal Pixel.
 The internal Pixel aggregates color, mask, and map pixelels; for memory locality.
 */
@@ -13,7 +14,9 @@ The internal Pixel aggregates color, mask, and map pixelels; for memory locality
 #else
   #include "glibProxy.h"
 #endif
+
 #include "resynth-constants.h"
+#include "engineParams.h"
 #include "imageFormat.h"
 
 extern unsigned int
@@ -86,7 +89,7 @@ prepareImageFormatIndicesFromFormatType(
       );
     break;
   default:
-    return 1; // Unhandled format type
+    return IMAGE_SYNTH_ERROR_INVALID_IMAGE_FORMAT;
   }
   return 0;
 }

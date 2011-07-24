@@ -15,16 +15,14 @@ See resynth-parameters.h.
 
 void
 setDefaultParams(
-  Parameters *param)
+  TImageSynthParameters *param)
 {
-  param->corpus_id = -1;
-  param->input_map_id = -1;
-  param->output_map_id = -1;
-  param->v_tile = FALSE;  // lkk was TRUE
-  param->h_tile = FALSE;
-  param->use_border = 1;    // lkk was true, now is an enum
-  param->map_weight = 0.5;
-  param->autism = 0.117; /* 30/256 */
-  param->neighbours = 30;
-  param->trys = 200;
+  param->isMakeSeamlesslyTileableHorizontally = FALSE;
+  param->isMakeSeamlesslyTileableVertically   = FALSE;
+  param->matchContextType                     = 1;   // Match context, synthesize randomly
+  param->mapWeight                            = 0.5;
+  param->sensitivityToOutliers                = 0.117; // 30/256
+  param->patchSize                            = 30;
+  param->maxProbeCount                        = 200;
 }
+

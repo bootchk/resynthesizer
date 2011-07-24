@@ -2,18 +2,19 @@
 # Copyright 2011 Lloyd Konneker
 
 EXEC      = testSynth
-LIB       = libimagesynth.so
+SHAREDLIB = libimagesynth.so
+STATICLIB = libimagesynth.a
 
-SRC_FILES = synth.c engine.c glibProxy.c engineParams.c imageFormat.c
-O_FILES   = $(SRC_FILES:%.cc=%.o)
+SRC_FILES = imageSynth.c engine.c glibProxy.c engineParams.c imageFormat.c
+O_FILES   = $(SRC_FILES:%.c=%.o)
 
-H_FILES   = imageBuffer.h engineParams.h resynth-constants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h imageFormat.h
+H_FILES   = imageSynth.h imageBuffer.h engineParams.h resynth-constants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h imageFormat.h
 
 CC = gcc
 
 # These are more or less arbitrary, change them at will
 # except we use inline hints extensively
-CFLAGS= -g -O3  -std=c99 -fno-common -ffast-math -frename-registers -msse3 -Winline
+CFLAGS= -g -O3 -Wall -std=c99 -fno-common -ffast-math -frename-registers -msse3 -Winline
 
 LDFLAGS= -lm -g
 
@@ -22,16 +23,21 @@ all: $(EXEC)
 	@echo 'Done building testSynth'
 	@echo 
 
-# test harness
-$(EXEC): $(LIB) testSynth.o
-	$(CC) $(CFLAGS) -L. -lm -limagesynth -o testSynth testSynth.c
+# test harness, linked to static library
+$(EXEC): $(STATICLIB) testSynth.c
+	$(CC) $(CFLAGS) -L. -lm -o testSynth testSynth.c -limagesynth 
 	
 # library: image synthesis
-$(LIB): CFLAGS+=-fPIC -shared
-$(LIB): $(O_FILES)
+
+# Shared library
+$(SHAREDLIB): CFLAGS+=-fPIC -shared
+$(SHAREDLIB): $(O_FILES)
 	$(CC) $(CFLAGS) -o $@ $^
 
-# $(LIB): $(O_FILES)
+# Static library
+$(STATICLIB): CFLAGS+=-fPIC
+$(STATICLIB): $(O_FILES)
+	ar rcs $(STATICLIB) $(O_FILES)
 
 # !!! These dependencies are not complete.
 # .h are missing
@@ -42,7 +48,7 @@ $(LIB): $(O_FILES)
 # Get source files from development directory
 # !!! Except for buildSwitches.h and Makefile
 source:
-	for file in $(SRC_FILES) $(H_FILES) ; do \
+	for file in testSynth.c $(SRC_FILES) $(H_FILES) ; do \
 		cp ../../synth/src/$$file . ; \
 	done
 
@@ -57,5 +63,5 @@ refreshsource:
 	rm -f *.c *.h
 	
 clean:
-	-rm -f *~ *.o core $(EXEC) $(LIB)
+	-rm -f *~ *.o core $(EXEC) $(SHAREDLIB) $(STATICLIB)
 

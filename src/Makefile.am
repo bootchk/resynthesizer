@@ -38,11 +38,12 @@ resynthesizer_gui_SOURCES = \
   engineParams.c
 
 # Standalone engine i.e. library
-synth_SOURCES = \
-  synth.c \
+imageSynth_SOURCES = \
+  imageSynth.c \
   engine.c \
   glibProxy.c \
-  engineParams.c
+  engineParams.c \
+  imageFormat.c
   
   
 #  resynth-gui.h \

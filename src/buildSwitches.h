@@ -22,7 +22,7 @@ then run >automake from the top directory.
 */
 
 /* config 1 */
-// #define SYNTH_USE_GLIB TRUE
+#define SYNTH_USE_GLIB TRUE
 
 /* config 2 */
 /*
@@ -31,7 +31,7 @@ then run >automake from the top directory.
 */
 
 /* config 3 */
-#define USE_GLIB_PROXY TRUE
+// #define USE_GLIB_PROXY TRUE
 
 
 

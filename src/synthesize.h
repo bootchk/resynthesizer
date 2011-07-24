@@ -21,11 +21,11 @@ typedef struct neighborStruct {
   Coordinates sourceOf; 
   } TNeighbor;
 
+
 /*
 Class neighbor_source
 Similar to sourceOfMap target points, but for neigbhors.
 */
-
 
 static inline gboolean
 has_source_neighbor ( 
@@ -87,7 +87,7 @@ Neighbours describes a patch, a shotgun pattern in the first pass, or a contiguo
 static guint 
 prepare_neighbors(
   Coordinates position, // IN target point
-  Parameters *parameters, // IN
+  TImageSynthParameters *parameters, // IN
   TFormatIndices* indices,
   Map* targetMap,
   Map* hasValueMap,
@@ -113,7 +113,7 @@ prepare_neighbors(
     {
       new_neighbor(count, offset, neighbor_point, indices, targetMap, sourceOfMap, neighbors);
       count++;
-      if (count >= (guint) parameters->neighbours) break;
+      if (count >= (guint) parameters->patchSize) break;
     }
   }
   
@@ -123,7 +123,7 @@ prepare_neighbors(
   Experiment to sort the nearest neighbors in other orders, such as in row major order
   (so there might be better memory locality) didn't seem to help speed.
   
-  Note we can't assert(countNeighbors==parameters.neighbours)
+  Note we can't assert(countNeighbors==parameters.patchSize)
   If use_border, there is a full neighborhood unless context or corpus small, that is, 
   there are usually plenty of distant neighbors in the context and corpus.
   If not use_border, there is a full neighborhood except for first n_neighbor synthesis tries.
@@ -250,8 +250,7 @@ Called repeatedly: many passes over the data.
 static guint
 synthesize(
   guint pass,
-  Parameters *parameters, // IN,
-  // GimpDrawable *drawable,  // IN for ANIMATE
+  TImageSynthParameters *parameters, // IN,
   TRepetionParameters repetition_params,
   TFormatIndices* indices,
   Map * targetMap,
@@ -274,7 +273,7 @@ synthesize(
   
   // Best match in this pass search for a matching patch.
   guint bestPatchDiff;   
-  Coordinates bestMatchCorpusPoint;
+  Coordinates bestMatchCorpusPoint = {0,0};
   
   /* 
   Neighbors  (patch)
@@ -382,7 +381,7 @@ synthesize(
     {
       /* Try random source points from the corpus */
       gint j;
-      for(j=0; j<parameters->trys; j++)
+      for(j=0; j<parameters->maxProbeCount; j++)
       {
         isPerfectMatch = try_point(randomCorpusPoint(corpusPoints, prng), 
           indices, corpusMap,

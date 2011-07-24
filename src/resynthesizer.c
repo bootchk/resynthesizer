@@ -152,8 +152,7 @@ progress(gchar * message)
 
 
 /* Return count of color channels, exclude alpha and any other channels. */
-// FIXME called from engine WAS static
-guint
+static guint
 count_color_channels(GimpDrawable *drawable)
 {
   g_assert(drawable); // Not null
@@ -225,8 +224,6 @@ detach_drawables(
     gimp_drawable_detach(in_map);
 }
 
-// FIXME
-// #include "engine.h"
 #ifdef ADAPT_SIMPLE
   #include "imageBuffer.h"
   #include "adaptSimple.h"
@@ -246,7 +243,8 @@ static void run(
 	GimpParam **      return_vals)
 {
   static GimpParam values[2];   /* Gimp return values. !!! Allow 2: status and error message. */
-  Parameters parameters;
+  TGimpAdapterParameters pluginParameters;
+  TImageSynthParameters engineParameters;
   
   GimpDrawable *drawable = NULL;
   GimpDrawable *corpus_drawable = NULL; 
@@ -297,15 +295,15 @@ static void run(
   switch(param[0].data.d_int32) 
   {
     case GIMP_RUN_INTERACTIVE :
-      ok = get_last_parameters(&parameters,drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
+      ok = get_last_parameters(&pluginParameters,drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
       gimp_message("Resynthesizer engine should not be called interactively");
       /* But keep going with last (or default) parameters, really no harm. */
       break;
     case GIMP_RUN_NONINTERACTIVE :
-      ok = get_parameters_from_list(&parameters, nparams, param); 
+      ok = get_parameters_from_list(&pluginParameters, nparams, param); 
       break;
     case GIMP_RUN_WITH_LAST_VALS :
-      ok = get_last_parameters(&parameters,drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
+      ok = get_last_parameters(&pluginParameters,drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
       break;
   }
 
@@ -315,12 +313,10 @@ static void run(
   }
   
   /* Limit neighbours parameter to size allocated. */
-  if (parameters.neighbours > RESYNTH_MAX_NEIGHBORS )
-    parameters.neighbours = RESYNTH_MAX_NEIGHBORS;
+  if (pluginParameters.neighbours > RESYNTH_MAX_NEIGHBORS )
+    pluginParameters.neighbours = RESYNTH_MAX_NEIGHBORS;
   
-  // dump_parameters(&parameters);
-  
-  corpus_drawable = gimp_drawable_get(parameters.corpus_id);
+  corpus_drawable = gimp_drawable_get(pluginParameters.corpus_id);
   
   /* The target and corpus must have the same base type.
   In earlier version, they must have the same bpp.
@@ -332,15 +328,15 @@ static void run(
   }
   
   
-  with_map = (parameters.input_map_id != -1 && parameters.output_map_id != -1);
+  with_map = (pluginParameters.input_map_id != -1 && pluginParameters.output_map_id != -1);
   /* If only one map is passed, it is ignored quietly. */
   map_in_drawable=0;
   map_out_drawable=0;
 
   if (with_map) 
   {
-    map_in_drawable = gimp_drawable_get(parameters.input_map_id);
-    map_out_drawable = gimp_drawable_get(parameters.output_map_id);
+    map_in_drawable = gimp_drawable_get(pluginParameters.input_map_id);
+    map_out_drawable = gimp_drawable_get(pluginParameters.output_map_id);
     /* All these can be wrong at the same time.  
     Forego userfriendliness for ease of programming: abort on first error
     */
@@ -418,6 +414,9 @@ static void run(
       map_in_drawable, formatIndices.map_start_bip);
     free_map(&corpusMaskMap);
     // !!! Note the engine yet uses targetMaskMap
+    
+    adaptParameters(&pluginParameters, &engineParameters);
+    
   #endif
   
   // After possible adaption, check size again
@@ -425,14 +424,14 @@ static void run(
   g_assert(corpusMap.width * corpusMap.height); // Corpus is not empty
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
-  int result = engine(parameters, 
+  int result = engine(
+    engineParameters, 
     &formatIndices, 
     &targetMap, 
     &corpusMap,
-    &targetMaskMap,
-    &corpusMaskMap
+    &targetMaskMap
     );
-  // ANIMATE int result = engine(parameters, drawable);
+  
   if (result == 1)
   {
     ERROR_RETURN(_("The texture source is empty. Does any selection include non-transparent pixels?"));
@@ -458,6 +457,8 @@ static void run(
   So no compelling need to test it again here.
   */
   post_results_to_gimp(drawable, targetMap); 
+  
+  // FIXME Assert engine freed targetMap, corpusMap, targetMaskMap
   
   /* Clean up */
   detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable);

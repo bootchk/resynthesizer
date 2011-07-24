@@ -48,7 +48,7 @@ These are the only constants: other counts and indexes are dynamic:
 #define FIRST_PIXELEL_INDEX 1	/* Starting color pixelel (usually Red) */
 /* 
 The most pixelels resynth will store and use to match. 
-1 mask + 3 target colors + 1 target alpha + 3 map colors
+1 mask + 3 colors + 1 alpha + 3 map colors
 */
 #define MAX_RESYNTH_BPP 8
 

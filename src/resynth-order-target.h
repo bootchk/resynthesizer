@@ -248,12 +248,12 @@ Order the vector of target points in one of many ways
 specified by parameter use_border.
 */
 void orderTargetPoints(
-  Parameters *parameters,
+  TImageSynthParameters* parameters,
   pointVector targetPoints,
   GRand *prng
   ) 
 {
-  switch (parameters->use_border) 
+  switch (parameters->matchContextType) 
   {
     case 0: /* Random order, not using context in matches. */
     case 1: /* Random order, using context in matches. */

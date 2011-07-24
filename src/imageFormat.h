@@ -10,6 +10,10 @@ OUT: global index variables.
 Not depend on Gimp
 */
 
+
+#ifndef __SYNTH_IMAGE_FORMAT_H__
+#define __SYNTH_IMAGE_FORMAT_H__
+
 typedef enum  ImageFormat 
 {
   T_RGB,
@@ -70,4 +74,6 @@ extern void
 prepareDefaultFormatIndices(
   TFormatIndices* formatIndices
   );
+  
+#endif /* __SYNTH_IMAGE_FORMAT_H__ */
 
