@@ -1,17 +1,25 @@
 /*
 Parameters of the innermost image synthesis engine.
 Same as engine parameters to be passed in the SimpleAPI.
+
 Also error return values of engine.
 */
 
 typedef enum  ImageSynthError 
 {
   IMAGE_SYNTH_SUCCESS,
-  IMAGE_SYNTH_ERROR_INVALID_IMAGE_FORMAT,
-  IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED,
-  IMAGE_SYNTH_ERROR_IMAGE_MASK_MISMATCH,
+  // Programmer error
+  IMAGE_SYNTH_ERROR_INVALID_IMAGE_FORMAT, // Returned by SimpleAPI adapter
+  IMAGE_SYNTH_ERROR_IMAGE_MASK_MISMATCH,  // "
+  // Programmer error, parameter errors returned by inner engine
+  IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED,  
+  IMAGE_SYNTH_ERROR_MATCH_CONTEXT_TYPE_RANGE,
+  // IN data errors, user error in making selection? returned by inner engine
   IMAGE_SYNTH_ERROR_EMPTY_TARGET,
-  IMAGE_SYNTH_ERROR_EMPTY_CORPUS
+  IMAGE_SYNTH_ERROR_EMPTY_CORPUS,
+  // There are more errors returned by the GIMP adapter
+  // There will be more errors returned by a future FullAPI adapter, similar to GIMP adapter errors
+  // These are only pertinent for the FullAPI, when more than one image is passed
 } TImageSynthError;
 
 

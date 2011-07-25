@@ -44,9 +44,7 @@ imageSynth(
   )
 {
   Map targetMap;
-  Map targetMaskMap;
   Map corpusMap;
-  Map corpusMaskMap;
   TFormatIndices formatIndices;
   int error;
   
@@ -55,50 +53,51 @@ imageSynth(
     return IMAGE_SYNTH_ERROR_IMAGE_MASK_MISMATCH;
   
   // Use defaults if NULL parameters
-  if (!parameters) setDefaultParams(parameters);
+  if (!parameters) {
+    static TImageSynthParameters defaultParameters;
+    setDefaultParams(&defaultParameters);
+    parameters = &defaultParameters;
+    }
   
   error = prepareImageFormatIndicesFromFormatType(&formatIndices, imageFormat);
   if ( error ) return error;
   
-  // prepareDefaultFormatIndices(&formatIndices);
-  
   // Adapt: put (imageBuffer, mask) into pixmaps etc.
-  // pixmaps were global.
   adaptSimpleAPI(imageBuffer, mask, 
-    &targetMap, &targetMaskMap,
-    &corpusMap, &corpusMaskMap,
+    &targetMap,
+    &corpusMap,
     countPixelelsPerPixelForFormat(imageFormat)
     );
- 
-  // assert corpusMaskMap is already freed, not needed by engine
   
   error = engine(
     *parameters,
     &formatIndices, 
     &targetMap, 
-    &corpusMap,
-    &targetMaskMap
+    &corpusMap
     );
   
-  // assert engine freed targetMaskMap already
-  
-  // Now the synthesized pixels are in the unmasked portion of the global image pixmap.
-  // Post adapt: in imageBuffer, replace target pixels from global image pixmap
-  antiAdaptImage(
-    imageBuffer, 
-    &targetMap, // !!! this is the global pixmap named "image"
-    1,      // Offset in source pixel (skip the interleaved mask pixelel)
+  if (! error)
+  {
+    // assert targetMap holds results
+    
+    // Now the synthesized pixels are in the unmasked portion of the global image pixmap.
+    // Post adapt: in imageBuffer, replace target pixels from global image pixmap
+    antiAdaptImage(
+      imageBuffer, 
+      &targetMap, // !!! this is the global pixmap named "image"
+      1,      // Offset in source pixel (skip the interleaved mask pixelel)
+      /*
+      !!! We didn't synthesize an alpha pixelel.
+      But it is still the same in the internal buffer.
+      Go ahead and move it back, simpler than trying to omit alpha from the move.
+      */
+      countPixelelsPerPixelForFormat(imageFormat)       
+      );
     /*
-    !!! We didn't synthesize an alpha pixelel.
-    But it is still the same in the internal buffer.
-    Go ahead and move it back, simpler than trying to omit alpha from the move.
+    TODO Still a question here whether the alpha still in imageBuffer is correct,
+    if we have changed the color pixels and they are pre-multiplied by alpha.
     */
-    countPixelelsPerPixelForFormat(imageFormat)       
-    );
-  /*
-  TODO Still a question here whether the alpha still in imageBuffer is correct,
-  if we have changed the color pixels and they are pre-multiplied by alpha.
-  */
+  }
   
   // Cleanup internal malloc's done by adaption
   // See above, masks already freed

@@ -73,7 +73,7 @@ s_array_free(
   assert(array->data);
   assert(array);
   free(array->data);
-  free(array);
+  free(array);  // free GRealArray
   array = NULL;
 }
 

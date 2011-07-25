@@ -5,6 +5,5 @@ engine(
   TImageSynthParameters parameters,
   TFormatIndices* indices,
   Map* targetMap,
-  Map* corpusMap,
-  Map* targetMaskMap
+  Map* corpusMap
   );

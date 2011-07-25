@@ -58,7 +58,7 @@ static void test(
   TImageFormat format,
   unsigned int pixelelCount,
   const char * expect,
-  TImageSynthParameters parameters
+  TImageSynthParameters* parameters
   )
 {
   ;
@@ -67,7 +67,7 @@ static void test(
   printf("\n");  printf("%s", description); printf("\n");
 	printf("Before:\n");
 	dumpBuffer(buffer, pixelelCount);
-	error = imageSynth(buffer, mask, format, &parameters);
+	error = imageSynth(buffer, mask, format, parameters);
 	if (error) printf("!!!! imageSynth returned error: %d\n", error);
 	printf("Expect:\n"); printf("%s", expect); printf("\n");
 	printf("Result:\n");
@@ -107,7 +107,9 @@ int main(
 		0,   0,0, 0, 	// 3*mask and 1 trailing pad byte = 4
 		0,0xFF,0, 0
 		};
-	
+	unsigned char maskEmpty[4] = {
+		0,0,0, 0 	// 3*mask and 1 trailing pad byte = 4
+		};
 	
 	
 	// A 1x3 image where the all pixel transparent and the middle pixel will be synthesized.
@@ -144,6 +146,7 @@ int main(
 	ImageBuffer testMask2= { (unsigned char*) &mask2, 3, 1, 4 };
 	ImageBuffer testMask3= { (unsigned char*) &mask3, 3, 2, 4 };
 	ImageBuffer testMaskBad= { (unsigned char*) &mask3, 1, 1, 1 };
+	ImageBuffer testMaskEmpty= { (unsigned char*) &maskEmpty, 3, 1, 4 };
 	
 	TImageSynthParameters parameters;
 	setDefaultParams(&parameters);
@@ -166,38 +169,45 @@ int main(
 	// Note these tests destroy the input image, which can't be used twice
 	
   test("Test mix of full transparency and opaque", &testImage2, &testMask2, T_RGBA, 4,
-	  "80 80 80 ff  80 80 80 01  00 00 00 00", parameters);
-	
-	// TODO engine should throw error? Corpus is entirely transparent
-  test("All transparent", &testImage3, &testMask2, T_RGBA, 4,
-	  "should be unchanged.", parameters);
+	  "80 80 80 ff  80 80 80 01  00 00 00 00", &parameters);
 	
 	test("Test RGB w/o alpha", &testImageRGB, &testMask3, T_RGB, 3,
-	  "80 80 80  01 01 01  02 02 02\n40 40 40  01 01 01  03 03 03", parameters);
+	  "80 80 80  01 01 01  02 02 02\n40 40 40  01 01 01  03 03 03", &parameters);
 	  
 	test("Test Gray w/ alpha", &testImageGrayA, &testMask2, T_GrayA, 2,
-	  "80 ff  80 01  01 00", parameters);
+	  "80 ff  80 01  01 00", &parameters);
 	  
+	// Also tests passing NULL parameters for defaults
 	test("Test Gray w/o alpha", &testImageGray, &testMask2, T_Gray, 1,
-	  "80  01  01", parameters);
+	  "80  01  01", (TImageSynthParameters*) NULL);
 	
-	// Test passing NULL parameters
-	// TODO
+	// Tests of error conditions.
+	// Errors that don't leak memory.
+	// Rest of tests should return errors.
 	
-	// Tests of error conditions
-	
-	test("Invalid image format", &testImageGray, &testMask2, 666, 1,
-	  "80  01  01", parameters);
-	
+	test("All transparent", &testImage3, &testMask2, T_RGBA, 4,
+	  "should be unchanged.", &parameters);
+
 	parameters.patchSize = 65;
 	test("patchSize parameter out of range", &testImageGray, &testMask2, T_Gray, 1,
-	  "80  01  01", parameters);
+	  "80  01  01", &parameters);
 	parameters.patchSize = 10;
 	
 	test("mask not same size as image", &testImageGray, &testMaskBad, T_Gray, 1,
-	  "80  01  01", parameters);
+	  "80  01  01", &parameters);
   
-  // TODO matchContextType; out of range
+  test("target empty (mask empty)", &testImageGray, &testMaskEmpty, T_Gray, 1,
+	  "80  01  01", &parameters);
+	
+	return(0);
+	
+	// The rest are programming errors that leak
+	test("Invalid image format", &testImageGray, &testMask2, 666, 1,
+	  "80  01  01", &parameters);
+	
+
+	// TODO matchContextType; out of range IMAGE_SYNTH_ERROR_MATCH_CONTEXT_TYPE_RANGE
+  
 	return(0);
 }
 

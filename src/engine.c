@@ -286,20 +286,15 @@ Is the pixel selected in the corpus?
 Here, only pixels fully selected return True.
 This is because when target/corpus are differentiated by the same selection,
 partially selected will be in the target,
-fully selected in inverse? will be the corpus.
+only fully selected (the inverse) will be the corpus.
 !!! Note this is called from the bottleneck.
-TODO still allow same selection 
 */
 static inline gboolean
-is_selected_corpus ( 
+isSelectedCorpus ( 
   const Coordinates coords,
   const Map* const corpusMap
   )
 {
-  /*
-  Formerly used a separate bitmap for corpus_mask.
-  Now use our interleaved copy of the mask for better memory locality. 
-  */
   /* 
   Was:  != MASK_UNSELECTED); i.e. partially selected was included.
   Now: if partially selected, excluded from corpus.
@@ -309,15 +304,17 @@ is_selected_corpus (
 
 
 /* 
-Is the pixel selected in the image? 
-Distinguishes target from context.
+Is the pixel selected in the image?
+The selection is the mask, created by user to distinguish.
+In the target map, distinguishes target(what is synthesized) from context.
+In the corpus map, distinguishes undesired corpus from desired corpus.
 */
 static inline gboolean
-is_selected_image ( 
+isSelectedTarget( 
   Coordinates coords,
-  Map * targetMaskMap )
+  Map * imageMap )
 {
-  return (*bytemap_index(targetMaskMap, coords) != MASK_UNSELECTED);
+  return (pixmap_index(imageMap, coords)[MASK_PIXELEL_INDEX] != MASK_UNSELECTED);
 }
 
 
@@ -389,7 +386,6 @@ prepareTargetPoints(
   gboolean is_use_context,
   TFormatIndices* indices,
   Map* targetMap,
-  Map* targetMaskMap,
   Map* hasValueMap,
   pointVector* targetPoints
   )
@@ -403,7 +399,7 @@ prepareTargetPoints(
     for(x=0; x<targetMap->width; x++)
       {
       Coordinates coords = {x,y};
-      if (is_selected_image(coords, targetMaskMap)) 
+      if (isSelectedTarget(coords, targetMap)) 
         size++;
       }
   
@@ -424,7 +420,7 @@ prepareTargetPoints(
       setHasValue(&coords,
         (
           is_use_context // ie use_border ie match image neighbors outside the selection (the context)
-          && ! is_selected_image(coords, targetMaskMap)  // outside the target
+          && ! isSelectedTarget(coords, targetMap)  // outside the target
           /* !!! and if the point is not transparent (e.g. background layer) which is arbitrarily black !!! */
           && not_transparent_image(coords, indices, targetMap)
         ),
@@ -435,7 +431,7 @@ prepareTargetPoints(
       !!! Note we do NOT exclude transparent.  Will synthesize color (but not alpha)
       for all selected pixels in target, regardless of transparency.
       */
-      if (is_selected_image(coords, targetMaskMap)) 
+      if (isSelectedTarget(coords, targetMap)) 
         g_array_append_val(*targetPoints, coords);
     }
 }
@@ -467,9 +463,9 @@ prepareCorpusPoints (
     {
       Coordinates coords = {x, y};
       /* In prior versions, the user's mask was inverted to establish the corpus,
-      I.E. this was not is_selected
+      I.E. this was "not is_selected"
       */
-      if (is_selected_corpus(coords, corpusMap)
+      if (isSelectedCorpus(coords, corpusMap)
         && not_transparent_corpus(coords, indices, corpusMap) /* Exclude transparent from corpus */
         ) 
       {
@@ -611,7 +607,7 @@ clippedOrMaskedCorpus(
     point.x < 0 || point.y < 0 
     || point.x >= (gint) corpusMap->width 
     || point.y >= (gint) corpusMap->height /*  Clipped */
-    ||  ! is_selected_corpus(point, corpusMap) /* Masked */
+    ||  ! isSelectedCorpus(point, corpusMap) /* Masked */
     ); 
 }
 
@@ -638,8 +634,7 @@ engine(
   TImageSynthParameters parameters,
   TFormatIndices* indices,
   Map* targetMap,
-  Map* corpusMap,
-  Map* targetMaskMap
+  Map* corpusMap
   )
 {
   // Engine private data. On stack (and heap), not global, so engine is reentrant.
@@ -676,34 +671,43 @@ engine(
   
   GRand *prng;  // pseudo random number generator
   
-  
   // check parameters in range
   if ( parameters.patchSize > RESYNTH_MAX_NEIGHBORS)
     return IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED;
   
   // target prep
   prepareTargetPoints(parameters.matchContextType, indices, targetMap, 
-    targetMaskMap, &hasValueMap, &targetPoints);
+    &hasValueMap, 
+    &targetPoints);
   #ifdef ANIMATE
   clear_target_pixels(indices->color_end_bip);  // For debugging, blacken so new colors sparkle
   #endif
-  free_map(targetMaskMap); // Assert not used later
+  /* 
+  Rare user error: no target selected (mask empty.)
+  This error NOT occur in GIMP if selection does not intersect, since then we use the whole drawable.
+  */
+  if ( !targetPoints->len ) 
+  {
+    g_array_free(targetPoints, TRUE);
+    free_map(&hasValueMap);
+    return IMAGE_SYNTH_ERROR_EMPTY_TARGET;
+  }
   prepare_target_sources(targetMap, &sourceOfMap);
+
   
   // source prep
   prepareCorpusPoints(indices, corpusMap, &corpusPoints);
-
   /* 
-  Rare user error: all pixels transparent (which we ignore.)
-  This error NOT occur if selection does not intersect, since then we use the whole drawable.
+  Rare user error: all corpus pixels transparent or not selected (mask empty.) Which means we can't synthesize.
+  This error NOT occur in GIMP if selection does not intersect, since then we use the whole drawable.
   */
   if (!corpusPoints->len )
   {
+    g_array_free(targetPoints, TRUE);
+    free_map(&hasValueMap);
+    free_map(&sourceOfMap);
+    g_array_free(corpusPoints, TRUE);
     return IMAGE_SYNTH_ERROR_EMPTY_CORPUS;
-  }
-  if ( !targetPoints->len ) 
-  {
-    return IMAGE_SYNTH_ERROR_EMPTY_TARGET;
   }
   
   // prep unrelated to images
@@ -717,7 +721,10 @@ engine(
   */
   prng = g_rand_new_with_seed(1198472);
   
-  orderTargetPoints(&parameters, targetPoints, prng);
+  int error = orderTargetPoints(&parameters, targetPoints, prng);
+  // This is a programming error that we don't clean up.
+  if (error) return error;
+  
   prepareRecentProber(corpusMap, &recentProberMap);  // Must follow prepare_corpus
   
   // Preparations done, begin actual synthesis
@@ -726,7 +733,6 @@ engine(
   // progress(_("Resynthesizer: synthesizing"));
 
   refiner(
-    // targetDrawable, // ANIMATE
     parameters,
     indices,
     targetMap,
@@ -740,13 +746,19 @@ engine(
     prng
     );
     
-  // Free all but the IN pixmaps
-  // Caller must free the IN pixmaps since the targetMap holds synthesis results
+  // Free internal mallocs.
+  // Caller must free some of the IN pixmaps since the targetMap holds synthesis results
   free_map(&recentProberMap);
-  /*
-    &hasValueMap,
-    &sourceOfMap,
-  */
+  free_map(&hasValueMap);
+  free_map(&sourceOfMap);
+  
+  g_array_free(targetPoints, TRUE);
+  g_array_free(corpusPoints, TRUE);
+  g_array_free(sortedOffsets, TRUE);
+  
+  #ifdef SYNTH_USE_GLIB
+    g_rand_free(prng);
+  #endif
   
   return 0; // Success
 }

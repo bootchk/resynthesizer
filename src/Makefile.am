@@ -13,10 +13,9 @@ bindir = $(GIMP_LIBDIR)/plug-ins
 resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
+  imageFormat.c \
   engine.c
 
-## Not compiled separately
-## imageFormat.c \
 
 # For certain configurations (not using glib),
 # resynthesizer_SOURCES should include

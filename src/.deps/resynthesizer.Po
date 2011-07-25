@@ -206,7 +206,7 @@ resynthesizer.o: resynthesizer.c buildSwitches.h ../config.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/bits/stdio.h /usr/include/bits/stdio2.h resynth-constants.h \
  imageFormat.h map.h mapIndex.h engineParams.h engine.h adaptGimp.h \
- resynth-parameters.h imageFormat.c resynth-pdb.h
+ resynth-parameters.h resynth-pdb.h
 
 buildSwitches.h:
 
@@ -723,7 +723,5 @@ engine.h:
 adaptGimp.h:
 
 resynth-parameters.h:
-
-imageFormat.c:
 
 resynth-pdb.h:

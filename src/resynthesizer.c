@@ -114,7 +114,6 @@ Is separate to reduce file sizes and later, coupling.
 */
 #include "adaptGimp.h"
 #include "resynth-parameters.h" // Depends on engine.h
-#include "imageFormat.c"
 
 /* See below for more includes. */
 
@@ -376,7 +375,6 @@ static void run(
   // WAS  prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
   TFormatIndices formatIndices;
   
-  g_printf("Here2\n");
   guint map_count = (with_map? count_color_channels(map_in_drawable) : 0 );
     
   prepareImageFormatIndices(
@@ -412,8 +410,10 @@ static void run(
       &corpusMaskMap,
       MASK_TOTALLY_SELECTED, 
       map_in_drawable, formatIndices.map_start_bip);
+      
+    // TODO These are artifacts of earlier design, not used.
     free_map(&corpusMaskMap);
-    // !!! Note the engine yet uses targetMaskMap
+    free_map(&targetMaskMap);
     
     adaptParameters(&pluginParameters, &engineParameters);
     
@@ -428,19 +428,17 @@ static void run(
     engineParameters, 
     &formatIndices, 
     &targetMap, 
-    &corpusMap,
-    &targetMaskMap
+    &corpusMap
     );
   
-  if (result == 1)
+  if (result == IMAGE_SYNTH_ERROR_EMPTY_CORPUS)
   {
     ERROR_RETURN(_("The texture source is empty. Does any selection include non-transparent pixels?"));
   }
-  else if  (result == 2 )
+  else if  (result == IMAGE_SYNTH_ERROR_EMPTY_TARGET )
   {
     ERROR_RETURN(_("The output layer is empty. Does any selection have visible pixels in the active layer?"));
   }
-  // else must be 0, success
   
   // Normal post-process adaption follows
 
@@ -458,9 +456,11 @@ static void run(
   */
   post_results_to_gimp(drawable, targetMap); 
   
-  // FIXME Assert engine freed targetMap, corpusMap, targetMaskMap
-  
   /* Clean up */
+  // Adapted
+  free_map(&targetMap);
+  free_map(&corpusMap);
+  // GIMP
   detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable);
   gimp_progress_end();
   values[0].data.d_status = GIMP_PDB_SUCCESS;

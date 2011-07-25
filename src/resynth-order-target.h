@@ -247,7 +247,8 @@ void orderTargetPointsRandomSqueeze(
 Order the vector of target points in one of many ways
 specified by parameter use_border.
 */
-void orderTargetPoints(
+int 
+orderTargetPoints(
   TImageSynthParameters* parameters,
   pointVector targetPoints,
   GRand *prng
@@ -317,10 +318,12 @@ void orderTargetPoints(
         // randomized bands, concentric squeezing in and out a donut
         break;
     default:
-        // FIXME no gimp: gimp_message("Parameter use_border out of range."); 
+        // no gimp: gimp_message("Parameter use_border out of range."); 
         // Critical, no i18n
-        g_assert(FALSE);
+        // return g_assert(FALSE);
+        return IMAGE_SYNTH_ERROR_MATCH_CONTEXT_TYPE_RANGE;
   }
+  return 0; // SUCCESS
 }
 
 

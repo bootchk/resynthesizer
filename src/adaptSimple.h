@@ -228,6 +228,8 @@ adaptImageAndMask(
   
   // Get mask channel. Offset by 0 (mask byte first.)  Byte count 1.
   adaptImage(mask, maskPixmap, 0, 1);
+  
+  // Assert two mallocs need to be freed
 }
 
 
@@ -244,43 +246,48 @@ adaptSimpleAPI(
   ImageBuffer * imageBuffer,
   ImageBuffer * maskBuffer,
   Map * targetMap,
-  Map * targetMaskMap,
   Map * corpusMap,
-  Map * corpusMaskMap,
   guint pixelelPerPixel // In imageBuffer
   )
 {
   // Assert image and mask are same size, not need to initialize empty mask with a value
   // (as is the case when mask is smaller).
+  Map targetMaskMap;
   
   // Copy image and mask to global pixmaps
   adaptImageAndMask(
     imageBuffer, 
     maskBuffer,
     targetMap, 
-    targetMaskMap, 
+    &targetMaskMap, 
     pixelelPerPixel
     );
   
   // For performance (cache memory locality), interleave mask into pixmap.
-  interleave_mask(targetMap, targetMaskMap);  /* Interleave mask byte into our Pixels */
+  interleave_mask(targetMap, &targetMaskMap);  /* Interleave mask byte into our Pixels */
+  free_map(&targetMaskMap);
   
   
   // Duplicate image to corpus with inverted mask
+  Map corpusMaskMap;
+  
   adaptImageAndMask(
     imageBuffer, 
     maskBuffer,
     corpusMap,
-    corpusMaskMap,
+    &corpusMaskMap,
     pixelelPerPixel
     );
   
   // !!!! 
   // For the simple API,  invert corpus mask: corpus is inverse of target selection
-  invert_bytemap(corpusMaskMap);
+  invert_bytemap(&corpusMaskMap);
   
   // For performance (cache memory locality), interleave mask into pixmap.
-  interleave_mask(corpusMap, corpusMaskMap);  /* Interleave mask byte into our Pixels */
+  interleave_mask(corpusMap, &corpusMaskMap);  /* Interleave mask byte into our Pixels */
+  free_map(&corpusMaskMap);
+  
+  // assert two mallocs
 }
 
 
