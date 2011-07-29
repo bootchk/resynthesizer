@@ -1,10 +1,7 @@
 /*
-  The Resynthesizer - A GIMP plug-in for resynthesizing textures
+  A texture synthesizing engine for bitmapped images.
   
-  Copyright (C) 2010  Lloyd Konneker
-  Copyright (C) 2000 2008  Paul Francis Harrison
-  Copyright (C) 2002  Laurent Despeyroux
-  Copyright (C) 2002  David Rodríguez García
+  Copyright (C) 2010, 2011  Lloyd Konneker
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,7 +17,17 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
- 
+
+/*
+Inner engine.
+Parameters include target and corpus pixmaps.
+Pixmaps have internal pixel format, which includes mask, color, alpha, and map.
+(where map means an additional e.g. grayscale value for mapping corpus to target.)
+Target and corpus pixmaps have the same pixel format.
+(An adapter can relax the restriction that both have the same format,
+by adding e.g. an alpha channel to one.)
+*/
+
 /*
 Notes:
 
@@ -65,109 +72,61 @@ Again, the transparency of the target is retained even as new colors are synthes
 Tiling: (see parameters horizontal and vertical tiling)
 This means we synthesize a target that is *seamlessly* tileable.
 We treat the target as a sphere, wrapping a coord outside the target around
-to the opposite side.  See wrap_or_clip.
+to the opposite side.  See wrapOrClipTarget.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
+
+#include <stdio.h>  // TEMP
+#include <stdlib.h>   // abs()
 
 // Compiling switch #defines
 #include "buildSwitches.h"
 
-
-// #include <glib/gprintf.h>
-
-// Bring in alternative code: experimental, debugging, etc.
-// #define ANIMATE    // Animate image while processing, for debugging.
-// #define DEBUG
-
-/*
-Uncomment this before release.  
-I don't think the GNU build environment disables assertions on the command line to gcc.
-Also, uncomment when using splint.
-Leave it commented for development and testing, to enable assertions.
-*/
-// #define G_DISABLE_ASSERT      // To disable g_assert macro, uncomment this.
-
 #ifdef SYNTH_USE_GLIB
   #include "../config.h" // GNU buildtools local configuration
-#endif
-
-/*
-On platform Linux, used Glib grand so results are consistent across test invocations.
-On platform OSX (when using stdc but not Glib), use stdc rand()
-*/
-
-#ifdef SYNTH_USE_GLIB
   // Use glib via gimp.h
   #include <libgimp/gimp.h>
 #endif
-  
+
+
 #ifdef USE_GLIB_PROXY
   #include <stddef.h>   // size_t
-  // This immediately redefines all but a few glib structs
-  #include "glibProxy.h"
+  #include "glibProxy.h"  // Redefines the glib structs and routines used here
   #include <math.h> // atan2(), log()
-  // More proxy.  Redefines all but GRand struct
+  /*
+  More proxy.  Redefine GRand routines
+  On platform Linux, used Glib g_rand
+  On platform OSX (when using stdc but not Glib), proxy calls stdc rand()
+  */
   #define g_rand_new_with_seed(s) s_rand_new_with_seed(s)
   #define g_rand_int_range(r,u,l) s_rand_int_range(r,u,l)
 #endif
 
 /* Shared with resynth-gui, engine plugin, and engine */
-#include "resynth-constants.h"
+#include "imageSynthConstants.h"
 
 // True header files
 #include "imageFormat.h"
 #include "map.h"
-#include "mapIndex.h"
+// #include "mapIndex.h"
 #include "engineParams.h"
 #include "engine.h"
 
-/* Source not compiled separately. Is separate to reduce file sizes and later, coupling. */
+/* Source not compiled separately. Is separate to reduce file sizes and coupling. */
 #include "resynth-types.h"
-#include "resynth-map-types.h"
 #include "matchWeighting.h"
+#include "resynth-order-target.h"
 
-
-/*
-Whether using an alpha channel.
-!!! Complicated.  The user might want to synthesize a transparent target,
-but they probably don't want to synthesize a new transparency.
-Transparent areas in the corpus are problematic:
-Totally transparent areas in the corpus should not match anything since color is black (Gimp default).
-Partially transparent areas might have SOME user provided color to match,
-but what the user sees is not what we might be matching against, is that what user intended?
-*/
-// TODO every adapter must set these.  The Resynthesizer does.  The SimpleAPI doesn't yet.  They default to TRUE for prototype.
-//gboolean is_alpha_image = TRUE;
-//gboolean is_alpha_corpus = TRUE;
-
-// clock_t start_time;
 
 #ifdef STATS
-/* Stats */
+/* For development */
 guint countSourceTries = 0;
 guint countTargetTries = 0;
 guint total_targets = 0;  /* Total target attempts over all passes, barring short circuit. */
 
-// For statistics, remember the most recent kind of corpus point that bettered the previous best
+// remember the most recent kind of corpus point that bettered the previous best
 guint bettermentStats[MAX_BETTERMENT_KIND];
 #endif
-
-/* 
-Macro to cleanup for abort. 
-Return value is already PDB_ERROR.
-Return an error string to Gimp, which will display an alert dialog.
-Also log message in case engine is called non-interactively.
-Note this must be used in the scope of nreturn_vals and value, in main().
-*/
-#define ERROR_RETURN(message)   { \
-  detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable); \
-  *nreturn_vals           = 2; \
-  values[1].type          = GIMP_PDB_STRING; \
-  values[1].data.d_string = message ; \
-  g_debug(message); \
-  return; \
-  }
-
 
 
 /*
@@ -185,14 +144,13 @@ But hasValue is only called in prepare_neighbors, not as costly as rest of searc
 
 TODO hasValue array is larger than it needs to be? 
 It could it be just the size of the target plus a band, since it is only used for neighbors.
-Would require different wrap_or_clip().
+Would require different wrapOrClipTarget().
 Might affect performance of cache or memory swapping
 */
 
 static inline void
 setHasValue( Coordinates *coords, guchar value, Map* hasValueMap)
 {
-  // c++ *hasValueMap.at(coords) = value;
   *bytemap_index(hasValueMap, *coords) = value;
 }
 
@@ -230,8 +188,6 @@ setSourceOf (
   Map* sourceOfMap
   )
 {
-  // c++ status.at(position)->has_source = TRUE;
-  // c++ status.at(position)->source = source;
   *coordmap_index(sourceOfMap, target_point) = source_corpus_point;
 }
   
@@ -241,10 +197,9 @@ getSourceOf (
   Coordinates target_point,
   Map* sourceOfMap
   )
-  {
-  // c++ return *sourceOfMap.at(target_point);
+{
   return *coordmap_index(sourceOfMap, target_point);
-  }
+}
   
 
 /* Initially, no target points have source in corpus, i.e. none synthesized. */
@@ -273,7 +228,6 @@ has_source (
   Map* sourceOfMap
   )
 {
-  //c++ return status.at(target_point)->has_source;
   return (getSourceOf(target_point, sourceOfMap).x != -1) ;
 }
 
@@ -345,11 +299,10 @@ not_transparent_corpus(
 }
 
 
-
 /* Included here because it depends on some routines above. */
+// If STATS is not defined, it redefines stat function calls to nil
 #include "resynth-stats.h"
-// Included here because depends on global variables
-#include "resynth-order-target.h"
+
 
 /*
 Array of index of most recent target point that probed this corpus point 
@@ -477,8 +430,6 @@ prepareCorpusPoints (
 }
 
 
-
-
 static inline Coordinates
 randomCorpusPoint (
   pointVector corpusPoints,
@@ -488,55 +439,6 @@ randomCorpusPoint (
   /* Was rand()%corpusPoints_size but thats not uniform. */
   gint index = g_rand_int_range(prng, 0, corpusPoints->len);
   return g_array_index(corpusPoints, Coordinates, index);
-}
-
-
-
-/*
-Is point in the source image or wrapped into it.
-
-!!! Note it can have side effects, wrapping the point into the target image when tiling.
-
-If tiling, wrap the coords into the pixmap (and return True.)
-Otherwise, return whether the resulting coords are in the pixmap (whether not clipped.)
-
-IN image parameter is the target and context pixmap
-IN/OUT point parameter is a neighbor (target point plus offset). The offset potentially needs clipping.
-
-In the original c++, all parameters were passed by reference.
-*/
-static inline gboolean 
-wrap_or_clip (
-  const TImageSynthParameters *parameters,   
-  Map *image,
-  Coordinates *point // !!! IN/OUT
-  )
-{ 
-  while(point->x < 0)
-    if (parameters->isMakeSeamlesslyTileableHorizontally)
-      point->x += image->width;
-    else
-      return FALSE;
-  
-  while(point->x >= (gint) image->width)
-    if (parameters->isMakeSeamlesslyTileableHorizontally)
-      point->x -= image->width;
-    else
-      return FALSE;
-  
-  while(point->y < 0)
-    if (parameters->isMakeSeamlesslyTileableVertically)
-      point->y += image->height;
-    else
-      return FALSE;
-  
-  while(point->y >= (gint) image->height)
-    if (parameters->isMakeSeamlesslyTileableVertically)
-      point->y -= image->height;
-    else
-      return FALSE;
-
-  return TRUE;
 }
 
 
@@ -595,7 +497,8 @@ prepareSortedOffsets(
 
 
 /* 
-Return True if clipped or masked (not selected.) 
+Return True if point is clipped or masked (not selected) in the corpus.
+Point created by coordinate arithmetic, and can be negative or clipped.
 !!! Note this is called in the bottleneck of try_point, crucial to speed.
 */
 static inline gboolean 
@@ -604,7 +507,8 @@ clippedOrMaskedCorpus(
   const Map * const corpusMap) 
 {
   return (
-    point.x < 0 || point.y < 0 
+    point.x < 0 
+    || point.y < 0 
     || point.x >= (gint) corpusMap->width 
     || point.y >= (gint) corpusMap->height /*  Clipped */
     ||  ! isSelectedCorpus(point, corpusMap) /* Masked */
@@ -612,12 +516,9 @@ clippedOrMaskedCorpus(
 }
 
 
-// FIXME defined here but called from resynthesizer adapter
-// #include "imageFormat.h"
-
-
-
-// Engine
+// Included source (function declarations, not just definitions.)
+// Descending levels of the engine
+// imageSynth()->engine()->refiner()->synthesize
 #include "passes.h"
 #include "synthesize.h"
 #include "refiner.h"
@@ -625,8 +526,6 @@ clippedOrMaskedCorpus(
 /*
 The engine.
 Independent of platform, calling app, and graphics libraries.
-
-Temporarily, uses globals set by adapters.
 */
 
 int
@@ -643,22 +542,24 @@ engine(
   A map on the corpus yielding indexes of target points.
   For a point in the corpus, which target point (index!) most recently probed the corpus point.
   recentProbe[coords corpus point] -> index of target_point that most recently probed corpus point
-
+  Heuristic#2.
+  
   2-D array of int, addressable by Coordinates.
-  c++: static Bitmap<guint> recentProber;
   */    
   Map recentProberMap;
   
   /*
   Flags for state of synthesis of image pixels.
-  c++ static Bitmap<Status> status;
-  */     
-  /* 
+  
   Does source pixel have value yet, to match (depends on selection and state of algorithm.)
   Map over entire target image (target selection and context.)
   */
   Map hasValueMap;
-  /* Does this target pixel have a source yet: yields corpus coords. */
+  
+  /* 
+  Does this target pixel have a source yet: yields corpus coords. 
+  (-1,-1) indicates no source.
+  */
   Map sourceOfMap;   
 
   /* 
@@ -671,8 +572,12 @@ engine(
   
   GRand *prng;  // pseudo random number generator
   
+  // Arrays, lookup tables for quantized functions
+  TPixelelMetricFunc corpusTargetMetric;
+  TMapPixelelMetricFunc mapMetric;
+  
   // check parameters in range
-  if ( parameters.patchSize > RESYNTH_MAX_NEIGHBORS)
+  if ( parameters.patchSize > IMAGE_SYNTH_MAX_NEIGHBORS)
     return IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED;
   
   // target prep
@@ -710,9 +615,20 @@ engine(
     return IMAGE_SYNTH_ERROR_EMPTY_CORPUS;
   }
   
-  // prep unrelated to images
+  // prep things not images
   prepareSortedOffsets(targetMap, corpusMap, &sortedOffsets); // Depends on image size
-  make_diff_table(parameters.sensitivityToOutliers, parameters.mapWeight);
+  quantizeMetricFuncs(
+    parameters.sensitivityToOutliers, 
+    parameters.mapWeight,
+    corpusTargetMetric,
+    mapMetric
+    );
+  #ifdef SYMMETRIC_METRIC_TABLE
+  printf("Map max %u \n", mapMetric[LIMIT_DOMAIN]); // 256
+  #else
+  printf("Map max %u \n", mapMetric[0]);
+  #endif
+  fflush(stdout);
  
   // Now we need a prng, before order_targetPoints
   /* Originally: srand(time(0));   But then testing is non-repeatable. 
@@ -722,7 +638,7 @@ engine(
   prng = g_rand_new_with_seed(1198472);
   
   int error = orderTargetPoints(&parameters, targetPoints, prng);
-  // This is a programming error that we don't clean up.
+  // A programming error that we don't clean up.
   if (error) return error;
   
   prepareRecentProber(corpusMap, &recentProberMap);  // Must follow prepare_corpus
@@ -743,11 +659,13 @@ engine(
     targetPoints,
     corpusPoints,
     sortedOffsets,
-    prng
+    prng,
+    corpusTargetMetric,
+    mapMetric
     );
     
   // Free internal mallocs.
-  // Caller must free some of the IN pixmaps since the targetMap holds synthesis results
+  // Caller must free the IN pixmaps since the targetMap holds synthesis results
   free_map(&recentProberMap);
   free_map(&hasValueMap);
   free_map(&sourceOfMap);
@@ -757,7 +675,7 @@ engine(
   g_array_free(sortedOffsets, TRUE);
   
   #ifdef SYNTH_USE_GLIB
-    g_rand_free(prng);
+  g_rand_free(prng);
   #endif
   
   return 0; // Success

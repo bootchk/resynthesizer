@@ -8,7 +8,7 @@ STATICLIB = libimagesynth.a
 SRC_FILES = imageSynth.c engine.c glibProxy.c engineParams.c imageFormat.c
 O_FILES   = $(SRC_FILES:%.c=%.o)
 
-H_FILES   = imageSynth.h imageBuffer.h engineParams.h resynth-constants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h imageFormat.h
+H_FILES   = imageSynth.h imageBuffer.h engineParams.h imageSynthConstants.h glibProxy.h map.h mapIndex.h engine.h adaptSimple.h resynth-stats.h resynth-order-target.h resynth-types.h resynth-map-types.h matchWeighting.h passes.h synthesize.h refiner.h imageFormat.h
 
 CC = gcc
 

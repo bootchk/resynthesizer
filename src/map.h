@@ -1,5 +1,21 @@
 /* 
 Fundamental types of the engine.
+
+  Copyright (C) 2010, 2011  Lloyd Konneker
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /* 
@@ -29,12 +45,11 @@ typedef struct {
     gint y;
 } Coordinates;
 
-// Functions defined in resynth-map-types
 
-extern void free_map (Map *);
+extern void
+free_map (Map *);
 
-extern
-void
+extern void
 new_pixmap(
   Map *,
   guint, 
@@ -42,8 +57,7 @@ new_pixmap(
   guint
   );
 
-extern
-void
+extern void
 new_bytemap(
   Map *,
   guint, 
@@ -80,4 +94,27 @@ interleave_mask(
   Map *pixmap,
   Map *mask
   );
+
+extern inline Pixelel*
+pixmap_index(
+  const Map * const map,
+  const Coordinates coords
+  );
+
+extern inline guint*
+intmap_index(
+  Map* map,
+  const Coordinates coords
+  );
   
+extern inline Coordinates*
+coordmap_index(
+  Map* map,
+  const Coordinates coords
+  );
+  
+extern inline guchar*
+bytemap_index(
+  Map* map,
+  const Coordinates coords
+  );

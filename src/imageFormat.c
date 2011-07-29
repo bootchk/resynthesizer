@@ -4,6 +4,22 @@ Internal image format.
 The count of pixelels in a pixel depends on the format type.
 The engine uses a struct that tells where Pixelels are in an internal Pixel.
 The internal Pixel aggregates color, mask, and map pixelels; for memory locality.
+
+  Copyright (C) 2010, 2011  Lloyd Konneker
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 // Compiling switch #defines
@@ -15,7 +31,7 @@ The internal Pixel aggregates color, mask, and map pixelels; for memory locality
   #include "glibProxy.h"
 #endif
 
-#include "resynth-constants.h"
+#include "imageSynthConstants.h"
 #include "engineParams.h"
 #include "imageFormat.h"
 
@@ -40,9 +56,10 @@ switch (format) {
 
 
 /*
+Generate a TFormatIndices struct from a format code.
+
 This is only for adapting to the SimpleAPI.
-When adapting from Gimp,
-formatIndices is generated another way.
+When adapting from Gimp, formatIndices is generated another way.
 */
 extern int
 prepareImageFormatIndicesFromFormatType(
@@ -184,7 +201,8 @@ prepareImageFormatIndices(
   indices->isAlphaTarget = is_alpha_target;
   indices->isAlphaSource = is_alpha_source;
   
-  g_assert( indices->total_bpp <= MAX_RESYNTH_BPP);
+  // The patch struct has a limit on pixelels per pixel
+  g_assert( indices->total_bpp <= MAX_IMAGE_SYNTH_BPP);
 }
 
 
@@ -215,6 +233,8 @@ formatIndices->total_bpp = 5;
 
 formatIndices->isAlphaTarget = TRUE; // Does target have alpha?
 formatIndices->isAlphaSource = TRUE;
+
+// !!! isMap is not a field of format indices, use map_match_bpp
 }
 
 

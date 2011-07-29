@@ -24,7 +24,9 @@ refiner(
   pointVector targetPoints,
   pointVector corpusPoints,
   pointVector sortedOffsets,
-  GRand *prng
+  GRand *prng,
+  TPixelelMetricFunc corpusTargetMetric,  // array pointers
+  TMapPixelelMetricFunc mapsMetric
   ) 
 {
   guint pass;
@@ -34,6 +36,8 @@ refiner(
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
+    // See def of synthesize() to understand which parameters are 
+    // initialized before the first pass and updated by synthesize()
     guint betters = synthesize(
       pass, 
       &parameters, 
@@ -41,13 +45,14 @@ refiner(
       indices,
       targetMap,
       corpusMap,
-      recentProberMap, // Note not refreshed for each pass
+      recentProberMap,
       hasValueMap,
       sourceOfMap,
       targetPoints,
       corpusPoints,
       sortedOffsets,
-      prng
+      prng,
+      corpusTargetMetric, mapsMetric
       );
   
     // nil unless DEBUG
@@ -58,7 +63,7 @@ refiner(
     not the possibly smaller count of target attempts this pass.
     Or break on small integral change: if ( targetPoints_size / integralColorChange < 10 ) {
     */
-    if ( (float) betters / targetPoints->len < (RESYNTH_TERMINATE_FRACTION) )
+    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) )
       break;
   }
 }

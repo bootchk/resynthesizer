@@ -11,8 +11,24 @@ There are three configurations:
 
 1) resynthesizer plugin and engine uses gimp and glib and not glibProxy (original configuration)
 2) resynthesizer plugin uses gimp but engine uses glibProxy to redefine most of glib
-	(This is for testing the gimp independent engine and glibProxy)
+	(This is for testing using a gimp plugin harness to the gimp independent engine and glibProxy)
 3) Engine uses glibProxy, not gimp or glib.  (a platform independent engine.)
+
+  Copyright (C) 2010, 2011  Lloyd Konneker
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /* 
@@ -37,4 +53,21 @@ then run >automake from the top directory.
 
 // #define ADAPT_SIMPLE TRUE // Adapt engine to simpleAPI. 
 // Only for using resynthesizer plugin for testing adaption to independent engine.
+
+// Bring in alternative code: experimental, debugging, etc.
+// #define ANIMATE    // Animate image while processing, for debugging.
+// #define DEBUG
+
+// VECTORIZED requires SYMMETRIC_METRIC_TABLE
+// #define SYMMETRIC_METRIC_TABLE
+// #define VECTORIZED
+
+/*
+Uncomment this before release.  
+Or disables assertions on the command line to gcc.
+Also, uncomment when using splint.
+Leave it commented for development and testing, to enable assertions.
+*/
+// #define G_DISABLE_ASSERT      // To disable g_assert macro, uncomment this.
+// #define NDEBUG                // Or this if not using glib
 

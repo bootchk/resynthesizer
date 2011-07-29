@@ -120,6 +120,8 @@ if test "x$have_gimp_2_3" != "xyes"; then
   CPPFLAGS="$CPPFLAGS -DGIMP_DISABLE_DEPRECATED"
 fi
 
+dnl lkk July 2011
+dnl AC_PROG_LIBTOOL
 
 dnl lkk 2011 Added PluginScripts/Makefile
 AC_CONFIG_FILES([

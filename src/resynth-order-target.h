@@ -44,7 +44,7 @@ void randomizeBandsTargetPoints(
   ) 
 {
   gint last = targetPoints->len - 1;
-  gint halfBand = targetPoints->len * RESYNTH_BAND_FRACTION;
+  gint halfBand = targetPoints->len * IMAGE_SYNTH_BAND_FRACTION;
   gint i;
   for(i=0; i<=last; i++) 
   {
@@ -71,7 +71,7 @@ void randomizeBandsTargetPoints2(
   ) 
 {
   gint last = targetPoints->len - 1;
-  gint halfBand = targetPoints->len * RESYNTH_BAND_FRACTION;
+  gint halfBand = targetPoints->len * IMAGE_SYNTH_BAND_FRACTION;
   gint i;
   
   GArray * moved;

@@ -68,10 +68,15 @@ We treat the target as a sphere, wrapping a coord outside the target around
 to the opposite side.  See wrap_or_clip.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
-
-// Bring in alternative code: experimental, debugging, etc.
-// #define ANIMATE    // Animate image while processing, for debugging.
-// #define DEBUG
+/*
+Whether using an alpha channel.
+!!! Complicated.  The user might want to synthesize a transparent target,
+but they probably don't want to synthesize a new transparency.
+Transparent areas in the corpus are problematic:
+Totally transparent areas in the corpus should not match anything since color is black (Gimp default).
+Partially transparent areas might have SOME user provided color to match,
+but what the user sees is not what we might be matching against, is that what user intended?
+*/
 
 #include "buildSwitches.h"
 
@@ -112,6 +117,7 @@ No definitions of non in-line functions or data.
 Source included, not compiled separately. 
 Is separate to reduce file sizes and later, coupling. 
 */
+#include "imageSynthConstants.h"
 #include "adaptGimp.h"
 #include "resynth-parameters.h" // Depends on engine.h
 
@@ -312,8 +318,8 @@ static void run(
   }
   
   /* Limit neighbours parameter to size allocated. */
-  if (pluginParameters.neighbours > RESYNTH_MAX_NEIGHBORS )
-    pluginParameters.neighbours = RESYNTH_MAX_NEIGHBORS;
+  if (pluginParameters.neighbours > IMAGE_SYNTH_MAX_NEIGHBORS )
+    pluginParameters.neighbours = IMAGE_SYNTH_MAX_NEIGHBORS;
   
   corpus_drawable = gimp_drawable_get(pluginParameters.corpus_id);
   

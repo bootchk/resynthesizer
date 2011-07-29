@@ -1,3 +1,10 @@
+/*
+A generic data structure for passing images.
+
+Data is a stream of unpadded pixels.
+Interpretation of pixels (order and count of pixelels (unsigned bytes)) is given by a format code.
+Rows padded.
+*/
 
 typedef struct _ImageBuffer 
 {
@@ -8,11 +15,5 @@ typedef struct _ImageBuffer
 }
 ImageBuffer;
 
-// Temporarily, mask same as image except only one pixelel per pixel
+// Mask same as image except only one pixelel per pixel (different, or assumed format code of on pixelel per pixel.)
 
-/*
-typedef struct _ImageMask 
-{
-}
-ImageMask;
-*/

@@ -1,12 +1,14 @@
 /*
 Proxy for /usr/include/glib-2.0
 
+This proxy obviates recoding to eliminate existing glib use.
+
 Glib is for portability, on top of ANSI C.
 This is an alternative.
 This is without GPL license.
 This is not as robust as Glib: little checking is done.
 
-This is a limited subset: only what is used in synth.
+This is a limited subset: only what is used in imageSynth.
 */
 #include "buildSwitches.h"
 

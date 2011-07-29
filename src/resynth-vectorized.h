@@ -11,6 +11,8 @@ MMX code for SIMD vectorized innermost loop of resynthesizer
   Eight bytes at once.
   
   There must be padding after the last pixel if it is not eight bytes.
+  
+  Unsigned 8-bit difference is (saturated subtract) xor (saturated subtract)
   */
   temp3 = _mm_xor_si64(
                 _mm_subs_pu8 ( *((__m64*) corpus_pixel), *((__m64*) image_pixel)),
@@ -18,13 +20,21 @@ MMX code for SIMD vectorized innermost loop of resynthesizer
               );
   
   /* Using the lookup tables is not vectorizeable. */
+  /* OR... use PEXTRW and PINSRW to unpack into indexes,
+  lookup in a loop
+  pack back into a vector,
+  and sum in a vector.
+  _mm_extract_pi16 
+  */
+  TPixelelIndex j;
   if (i)  // If not the target point (its own 0th neighbor)
   {
-    for(BppType j=FIRST_PIXELEL_INDEX; j<color_end_bip; j++)
-      sum += diff_table2[((unsigned char *)(&temp3))[j]];
+    
+    for(j=FIRST_PIXELEL_INDEX; j<indices->colorEndBip; j++)
+      sum += corpusTargetMetric[((unsigned char *)(&temp3))[j]];
   }
-  if (map_bpp > 0)
-    for(BppType j=map_start_bip; j<map_end_bip; j++)  // also sum mapped difference
-      sum += map_diff_table2[((unsigned char *)(&temp3))[j]];
+  if (indices->map_match_bpp > 0)
+    for(j=indices->map_start_bip; j<indices->map_end_bip; j++)  // also sum mapped difference
+      sum += mapsMetric[((unsigned char *)(&temp3))[j]];
   
 #endif

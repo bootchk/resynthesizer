@@ -5,6 +5,11 @@ Same as engine parameters to be passed in the SimpleAPI.
 Also error return values of engine.
 */
 
+#ifndef FALSE
+  #define FALSE 0
+#endif
+
+
 typedef enum  ImageSynthError 
 {
   IMAGE_SYNTH_SUCCESS,
@@ -49,6 +54,9 @@ typedef struct ImageSynthParametersStruct {
   For the advanced API, when maps are passed tothe engine,
   the weight to give to the matching of the maps for the target and corpus,
   as opposed to the weight  given to the matching of the target and the corpus themselves.
+  Multiplication factor the the map metric.
+  Scales the map metric function to return greater or lesser values
+  in relation to the target/corpus metric funtion.
   */
   double mapWeight;
   

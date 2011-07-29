@@ -1,4 +1,13 @@
-// Match result kind
+/*
+Innermost routines of image synthesis.
+*/
+
+
+#ifdef VECTORIZED
+#include <mmintrin.h> // intrinsics for assembly language MMX op codes, for sse2 xmmintrin.h
+#endif// Match result kind
+
+
 typedef enum  BettermentKindEnum 
 {
   PERFECT_MATCH,  // Patches equal
@@ -9,13 +18,66 @@ typedef enum  BettermentKindEnum
   MAX_BETTERMENT_KIND
 } tBettermentKind;
 
+
+/*
+Is point in the target image or wrapped into it.
+
+!!! Note it can have side effects, wrapping the point into the target image when tiling.
+
+If tiling, wrap the coords into the pixmap (and return True.)
+Otherwise, return whether the resulting coords are in target pixmap (whether not clipped.)
+!!! See elsewhere, tiling is only pertinent if matchContext is False.
+
+IN image parameter is the target and context pixmap
+IN/OUT point parameter is a neighbor (target point plus offset). 
+Point can be outside the pixmap, requiring clipping or wrapping.
+Here clipping means: return false if outside the pixmap.
+
+Note this is not in the innermost, bottleneck.
+TODO It makes the engine more capable,
+at the cost of slightly slowing down the most frequent use: healing to matchContext.
+*/
+static inline gboolean 
+clipToTargetOrWrapIfTiled (
+  const TImageSynthParameters *parameters,   
+  Map *image,
+  Coordinates *point // !!! IN/OUT
+  )
+{ 
+  while(point->x < 0)
+    if (parameters->isMakeSeamlesslyTileableHorizontally)
+      point->x += image->width;
+    else
+      return FALSE;
+  
+  while(point->x >= (gint) image->width)
+    if (parameters->isMakeSeamlesslyTileableHorizontally)
+      point->x -= image->width;
+    else
+      return FALSE;
+  
+  while(point->y < 0)
+    if (parameters->isMakeSeamlesslyTileableVertically)
+      point->y += image->height;
+    else
+      return FALSE;
+  
+  while(point->y >= (gint) image->height)
+    if (parameters->isMakeSeamlesslyTileableVertically)
+      point->y -= image->height;
+    else
+      return FALSE;
+
+  return TRUE;
+}
+
 /* 
 Neighbor (patch element)
 Element of array of points from target image (selection and context).
 Copied from target image for better memory locality.
 */
 typedef struct neighborStruct {
-  Pixelel pixel[MAX_RESYNTH_BPP] __attribute__((aligned(8))); // Copy of target pixel
+  Pixelel pixel[MAX_IMAGE_SYNTH_BPP] __attribute__((aligned(8))); // Copy of target pixel
   Coordinates offset;   // Offset from patch center
   // Coords of corpus point this target synthed from, or -1 if this neighbor is context
   Coordinates sourceOf; 
@@ -33,7 +95,6 @@ has_source_neighbor (
   const TNeighbor neighbors[]   // Index in neighbors array (the patch)
   )
 {
-  //c++ return neighbour_statuses[j]->has_source
   return neighbors[j].sourceOf.x != -1;
   // A neighbor only has a source if it is also in the target and has been synthed.
 }
@@ -49,7 +110,6 @@ set_neighbor_state (
   ) 
 {
   /* Assert neighbor point has values (we already checked that the candidate neighbor had a value.) */
-  // c++: neighbour_statuses[n_neighbour] = status.at(neighbor_point);
   neighbors[n_neighbour].sourceOf = getSourceOf(neighbor_point, sourceOfMap);
 }
   
@@ -71,17 +131,16 @@ new_neighbor(
   {
   TPixelelIndex k;
   for (k=0; k<indices->total_bpp; k++)
-    // c++ neighbour_values[countNeighbors][k] = data.at(neighbor_point)[k];
     neighbors[index].pixel[k] = pixmap_index(targetMap, neighbor_point)[k];
   }
 }
 
 
 /*
-Prepare array of neighbors with values, both inside the target, and outside i.e. in the context (if use_border).
+Prepare patch (array of neighbors) with values, both inside the target, and outside i.e. in the context (if use_border).
 Neighbors are in the source (the target or its context.)
 If repeating a pixel, now might have more, different, closer neighbors than on the first pass.
-Neighbours array is global, used both for heuristic and in synthing every point ( in try_point() )
+Neighbours array is global, used both for heuristic and in synthing every point ( in computeBestFit() )
 Neighbours describes a patch, a shotgun pattern in the first pass, or a contiguous patch in later passes.
 */
 static guint 
@@ -101,14 +160,13 @@ prepare_neighbors(
   
   for(j=0; j<sortedOffsets->len; j++)
   {
-    // c++ Coordinates offset = sortedOffsets[j];
     Coordinates offset = g_array_index(sortedOffsets, Coordinates, j);
     Coordinates neighbor_point = add_points(position, offset);
 
-    // !!! Note side effects: wrap_or_clip might change neighbor_point coordinates !!!
-    if (wrap_or_clip(parameters, targetMap, &neighbor_point)  // is neighbor in target image or wrappable
-        &&  getHasValue(neighbor_point, hasValueMap)   // is neighbor outside target (context) 
-            // or inside target with already synthed value
+    // !!! Note side effects: clipToTargetOrWrapIfTiled might change neighbor_point coordinates !!!
+    if (clipToTargetOrWrapIfTiled(parameters, targetMap, &neighbor_point)  // is neighbor in target image or wrappable
+        &&  getHasValue(neighbor_point, hasValueMap)   
+          // AND ( is neighbor outside target (context) OR inside target with already synthed value )
       ) 
     {
       new_neighbor(count, offset, neighbor_point, indices, targetMap, sourceOfMap, neighbors);
@@ -123,14 +181,14 @@ prepare_neighbors(
   Experiment to sort the nearest neighbors in other orders, such as in row major order
   (so there might be better memory locality) didn't seem to help speed.
   
-  Note we can't assert(countNeighbors==parameters.patchSize)
+  Note we can't assert(count==parameters.patchSize)
   If use_border, there is a full neighborhood unless context or corpus small, that is, 
   there are usually plenty of distant neighbors in the context and corpus.
-  If not use_border, there is a full neighborhood except for first n_neighbor synthesis tries.
+  If not use_border, there is a full neighborhood except for first n_neighbor synthesis tries
+  on the very first pass.
   */
   return count;
 }
-
 
 
 
@@ -140,10 +198,14 @@ prepare_neighbors(
 This is the inner crux: comparing target patch to corpus patch, pixel by pixel.
 Also the bottleneck in performance.
 
+Computing a best fit metric, with early out when exceed known best.
+
+Because of a log transform of a product, this is a summing.
+
 The following discussion depends on how repetition (passes) are configured:
 if the first pass is not a complete pass over the target, it doesn't apply.
 On the first pass the candidate patch might be a shotgun pattern, to distant context.
-On subsequent passes, the candidate patch is a rectangular pixmap (since the target is filled in.)
+On subsequent passes, the candidate patch is often a rectangular pixmap (since the target is filled in.)
 But since pixels can be masked, the actual patch tested might be irregularly shaped.
 
 Note that size of patch (n_neighbors) is usually the same for each target pixel, 
@@ -152,7 +214,7 @@ but in rare cases, it might not be.
 Then does it make sense to also use MAX_WEIGHT for missing neighbors?
 */
 static inline gboolean // TODO tBettermentKind, but very subtle 
-try_point(
+computeBestFit(
   const Coordinates point, 
   const TFormatIndices * const indices,
   const Map * const corpusMap,
@@ -161,7 +223,9 @@ try_point(
   const guint countNeighbors,
   const TNeighbor const neighbors[],
   tBettermentKind* latestBettermentKind,
-  const tBettermentKind bettermentKind
+  const tBettermentKind bettermentKind,
+  const TPixelelMetricFunc corpusTargetMetric,  // array pointers
+  const TMapPixelelMetricFunc mapsMetric
   ) 
 {
   guint sum = 0;
@@ -176,18 +240,35 @@ try_point(
     Coordinates off_point = add_points(point, neighbors[i].offset);
     if (clippedOrMaskedCorpus(off_point, corpusMap)) 
     {    
-      /* Maximum difference for this neighbor outside corpus */
-      sum += MAX_WEIGHT*indices->img_match_bpp + map_diff_table[0]*indices->map_match_bpp;   
+      /* 
+      Maximum weighted difference for this neighbor outside corpus.
+      !!! Note even if no maps are passed to engine, we weight by the map,
+      for this case of an invalid corpus point.
+      !!! Note the mapsMetric function is not scaled, 
+      so we can't use a constant such as MAX_MAP_DIFF,'
+      but instead mapMetric[...], the extreme max value of the metric.
+      !!! Which will be zero if mapWeight parameter is zero.
+      */
+      #ifdef SYMMETRIC_METRIC_TABLE
+      // mapsMetric[256] is the max
+      sum += MAX_WEIGHT*indices->img_match_bpp + mapsMetric[LIMIT_DOMAIN]*indices->map_match_bpp;
+      #else
+      sum += MAX_WEIGHT*indices->img_match_bpp + mapsMetric[0]*indices->map_match_bpp;
+      #endif
     } 
     else  
     {
+#ifndef VECTORIZED
+      // Iterate over color pixelels to compute weighted difference
       const Pixelel * corpus_pixel;
       const Pixelel * image_pixel;
+      gshort diff;
       
       corpus_pixel = pixmap_index(corpusMap, off_point);
       // ! Note target pixel comes not from targetPoints, but from copy neighbors
       image_pixel = neighbors[i].pixel; // pixel is array, yields Pixelel pointer
-      #ifndef VECTORIZED
+      
+
       /* If not the target point (its own 0th neighbor).
       !!! On the first pass, the target point as its own 0th neighbor has no meaningful, unbiased value.
       Even if e.g. we initialize target to all black, that biases the search.
@@ -196,20 +277,44 @@ try_point(
       {
         TPixelelIndex j;
         for(j=FIRST_PIXELEL_INDEX; j<indices->colorEndBip; j++)
-          sum += diff_table[256u + image_pixel[j] - corpus_pixel[j]];
+        {
+          #ifdef SYMMETRIC_METRIC_TABLE
+          diff = (gshort) image_pixel[j] - (gshort) corpus_pixel[j];
+          sum += corpusTargetMetric[ ((diff < 0) ? (-diff) : (diff)) ];
+          // sum += corpusTargetMetric[ abs(diff) ];
+          #else
+          sum += corpusTargetMetric[ 256u + image_pixel[j] - corpus_pixel[j] ];
+          #endif
+        }
       }
-      if (indices->map_match_bpp > 0)
+      if (indices->map_match_bpp > 0) // If maps
       {
         TPixelelIndex j;
         for(j=indices->map_start_bip; j<indices->map_end_bip; j++)  // also sum mapped difference
-          sum += map_diff_table[256u + image_pixel[j] - corpus_pixel[j]];
+        {
+          #ifdef SYMMETRIC_METRIC_TABLE
+          diff = (gshort) image_pixel[j] - (gshort) corpus_pixel[j];
+          sum += mapsMetric[ ((diff < 0) ? (-diff) : (diff)) ];
+          // sum += mapsMetric[ abs(diff) ];
+          #else
+          sum += mapsMetric[256u + image_pixel[j] - corpus_pixel[j]];
+          #endif
+        }
       }
-      #else
-      const Pixelel * __restrict__ corpus_pixel = pixmap_index(&corpus, off_point);
-      const Pixelel  * __restrict__ image_pixel = neighbour_values[i];
+#else
+      const Pixelel * __restrict__ corpus_pixel = pixmap_index(corpusMap, off_point);
+      const Pixelel  * __restrict__ image_pixel = neighbors[i].pixel;
       #define MMX_INTRINSICS_RESYNTH
       #include "resynth-vectorized.h"
-      #endif
+#endif
+      /*
+      !!! Very subtle: on the very first pass and very first target point, with no context,
+      the patch is only one point, the being synthesized pixel.
+      Above, the loop will execute exactly once.
+      At "if (i)", it will not compute a weighted difference.
+      Hence the sum will be zero, i.e. a perfect match, and the very first probe will be the best match.
+      In other words, it will be completely at random, with no actual searching.
+      */
     }
  
     /* 
@@ -249,19 +354,21 @@ Called repeatedly: many passes over the data.
 */
 static guint
 synthesize(
-  guint pass,
-  TImageSynthParameters *parameters, // IN,
-  TRepetionParameters repetition_params,
-  TFormatIndices* indices,
-  Map * targetMap,
-  Map* corpusMap,
-  Map* recentProberMap,
-  Map* hasValueMap,
-  Map* sourceOfMap,
-  pointVector targetPoints,
-  pointVector corpusPoints,
-  pointVector sortedOffsets,
-  GRand *prng
+  guint pass, // IN
+  TImageSynthParameters *parameters,  // IN
+  TRepetionParameters repetition_params,  // IN
+  TFormatIndices* indices,  // IN
+  Map * targetMap,      // IN/OUT
+  Map* corpusMap,       // IN
+  Map* recentProberMap, // IN/OUT
+  Map* hasValueMap,     // IN/OUT
+  Map* sourceOfMap,     // IN/OUT
+  pointVector targetPoints, // IN
+  pointVector corpusPoints, // IN
+  pointVector sortedOffsets, // IN
+  GRand *prng,
+  TPixelelMetricFunc corpusTargetMetric,  // array pointers
+  TMapPixelelMetricFunc mapsMetric
   )
 {
   guint target_index;
@@ -280,7 +387,7 @@ synthesize(
   Copied from source image for better memory locality.
   */
   // TODO this is large and allocated on the stack
-  TNeighbor neighbors[RESYNTH_MAX_NEIGHBORS];
+  TNeighbor neighbors[IMAGE_SYNTH_MAX_NEIGHBORS];
   guint countNeighbors = 0;
   
   /* ALT: count progress once at start of pass countTargetTries += repetition_params[pass][1]; */
@@ -332,6 +439,8 @@ synthesize(
     latestBettermentKind = NO_BETTERMENT;
     /*
     Heuristic 1, try neighbors of sources of neighbors of target pixel.
+    In other words, continue building this region of the target
+    from the corpus region (continuation) where neighbors of the target pixel came from.
     
     Subtle: The target pixel is its own first neighbor (offset 0,0).
     It also has_value (since we set_has_value() above, but it really doesn't have color on the first pass.)
@@ -344,7 +453,7 @@ synthesize(
     
     // TODO check for zero here is redundant
     for(neighbor_index=0; neighbor_index<countNeighbors && bestPatchDiff != 0; neighbor_index++)
-      // If the neighbor is in the target (not the context) and has a source in the corpus
+      // If the neighbor is in the target (not the context) and has a source in the corpus (already synthesized.)
       if ( has_source_neighbor(neighbor_index, neighbors) ) {
         /*
         Coord arithmetic: corpus source minus neighbor offset.
@@ -359,17 +468,19 @@ synthesize(
         /* !!! Must clip corpus_point before further use, its only potentially in the corpus. */
         if (clippedOrMaskedCorpus(corpus_point, corpusMap)) continue;
         if (*intmap_index(recentProberMap, corpus_point) == target_index) continue; // Heuristic 2
-        isPerfectMatch = try_point(corpus_point, indices, corpusMap,
+        isPerfectMatch = computeBestFit(corpus_point, indices, corpusMap,
           &bestPatchDiff, &bestMatchCorpusPoint,
           countNeighbors, neighbors, 
-          &latestBettermentKind, NEIGHBORS_SOURCE
+          &latestBettermentKind, NEIGHBORS_SOURCE,
+          corpusTargetMetric, mapsMetric
           );
         // TODO stats: if bettered, is kind NEIGHBORS_SOURCE 
         // if ( matchResult == PERFECT_MATCH ) break;  // Break neighbors loop
         if ( isPerfectMatch ) break;  // Break neighbors loop
         /*
         !!! Remember we probed corpus pixel point for target point target_index.
-        Heuristic 2: all target neighbors with values might come from the same corpus locus.
+        Heuristic 2: all target neighbors with values might come from the same corpus locus,
+        called a "continuation" in Harrison's thesis.
         */
         *intmap_index(recentProberMap, corpus_point) = target_index;
       }
@@ -379,15 +490,19 @@ synthesize(
     // if ( matchResult != PERFECT_MATCH )
     if ( ! isPerfectMatch )
     {
-      /* Try random source points from the corpus */
+      /* 
+      Match patches at random source points from the corpus.
+      In later passes, many will be earlyouts.
+      */
       gint j;
       for(j=0; j<parameters->maxProbeCount; j++)
       {
-        isPerfectMatch = try_point(randomCorpusPoint(corpusPoints, prng), 
+        isPerfectMatch = computeBestFit(randomCorpusPoint(corpusPoints, prng), 
           indices, corpusMap,
           &bestPatchDiff, &bestMatchCorpusPoint,
           countNeighbors, neighbors,
-          &latestBettermentKind, RANDOM_CORPUS
+          &latestBettermentKind, RANDOM_CORPUS,
+          corpusTargetMetric, mapsMetric
           );
         if ( isPerfectMatch ) break;  /* Break loop over random corpus points */
         // if ( matchResult == PERFECT_MATCH ) break;  /* Break loop over random corpus points */

@@ -46,7 +46,8 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_resynthesizer_OBJECTS = resynthesizer.$(OBJEXT) \
-	engineParams.$(OBJEXT) imageFormat.$(OBJEXT) engine.$(OBJEXT)
+	engineParams.$(OBJEXT) imageFormat.$(OBJEXT) engine.$(OBJEXT) \
+	map.$(OBJEXT)
 resynthesizer_OBJECTS = $(am_resynthesizer_OBJECTS)
 resynthesizer_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -190,7 +191,8 @@ resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
   imageFormat.c \
-  engine.c
+  engine.c \
+  map.c
 
 
 # For certain configurations (not using glib),
@@ -224,6 +226,14 @@ imageSynth_SOURCES = \
 #  resynth-gui.h \
 #  resynth-parameters.c \
 #  resynth-constants.h 
+
+#lib_LTLIBRARIES = libimagesynth-1.0.la
+#libimagesynth_1_0_la_SOURCES = \
+#  imageSynth.c \
+#  engine.c \
+#  glibProxy.c \
+#  engineParams.c \
+#  imageFormat.c
 AM_CPPFLAGS = \
 	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
 	-DDATADIR=\""$(DATADIR)"\"
@@ -321,6 +331,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engineParams.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imageFormat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/map.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resynth-gui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resynthesizer.Po@am__quote@
 

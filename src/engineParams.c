@@ -1,17 +1,9 @@
 /*
 Parameters of the engine.
-
-The first three parameter are parameters of the Gimp plugin,
-not the engine.
-See resynth-parameters.h.
 */
-
 
 #include "engineParams.h"
 
-#ifndef FALSE
-  #define FALSE 0
-#endif
 
 void
 setDefaultParams(

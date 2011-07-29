@@ -14,7 +14,8 @@ resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
   imageFormat.c \
-  engine.c
+  engine.c \
+  map.c
 
 
 # For certain configurations (not using glib),
@@ -48,6 +49,16 @@ imageSynth_SOURCES = \
 #  resynth-gui.h \
 #  resynth-parameters.c \
 #  resynth-constants.h 
+
+
+#lib_LTLIBRARIES = libimagesynth-1.0.la
+#libimagesynth_1_0_la_SOURCES = \
+#  imageSynth.c \
+#  engine.c \
+#  glibProxy.c \
+#  engineParams.c \
+#  imageFormat.c
+
 
 AM_CPPFLAGS = \
 	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
