@@ -65,17 +65,8 @@ Again, the transparency of the target is retained even as new colors are synthes
 Tiling: (see parameters horizontal and vertical tiling)
 This means we synthesize a target that is *seamlessly* tileable.
 We treat the target as a sphere, wrapping a coord outside the target around
-to the opposite side.  See wrap_or_clip.
+to the opposite side.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
-*/
-/*
-Whether using an alpha channel.
-!!! Complicated.  The user might want to synthesize a transparent target,
-but they probably don't want to synthesize a new transparency.
-Transparent areas in the corpus are problematic:
-Totally transparent areas in the corpus should not match anything since color is black (Gimp default).
-Partially transparent areas might have SOME user provided color to match,
-but what the user sees is not what we might be matching against, is that what user intended?
 */
 
 #include "buildSwitches.h"
@@ -108,17 +99,17 @@ No definitions of non in-line functions or data.
 #endif
 #include "imageFormat.h"
 #include "map.h"
-#include "mapIndex.h"
 #include "engineParams.h"
-#include "engine.h"
-
+#include "engine.h" // requires map.h
+#include "imageSynthConstants.h"
 
 /* 
 Source included, not compiled separately. 
 Is separate to reduce file sizes and later, coupling. 
 */
-#include "imageSynthConstants.h"
-#include "adaptGimp.h"
+
+#include "mapIndex.h"
+#include "adaptGimp.h"  // requires mapIndex.h
 #include "resynth-parameters.h" // Depends on engine.h
 
 /* See below for more includes. */

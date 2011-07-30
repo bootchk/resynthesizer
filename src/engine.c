@@ -33,23 +33,15 @@ Notes:
 
 The selection:
 
-In prior versions, you could pass the same layer as the target and corpus.
-Since there is only one selection, the selection was the target and the inverse
-of the selection was the corpus.  But if you wanted to pass a different image and layer
-as the corpus, you needed to invert the selection in that image.
-
-This feature was a source of confusion for users and programmers.
-Here, this feature is abolished.  The selection in the corpus layer is the corpus,
-not the inverse of the selection.
-
-This only eliminates one use: synthesizing a selection from the inverse of the selection
-in the same drawable.  If you need to do that, copy the drawable to another image and
-create a selection there that is the inverse of the selection in the original.
-The heal selection plugin does that for you.
+A caller of the engine may be an application supporting "selection."
+Then a caller should adapt the selection mask to separate masks for the target and corpus.
+Generally, in such a case, the masks should generally be mutually exclusive,
+especially regarding partial selection.
+But this is not a concern of the engine.
 
 The alpha:
 
-In prior versions the alpha was treated like a color channel, and matched during resynthesis.
+In prior versions the alpha was treated like a color channel, and matched during synthesis.
 Transparent pixels (which Gimp arbitrarily gives the color black in some circumstances)
 were not distinguished.  In certain cases  with transparency, transparent pixels were synthesized
 into the target, as good matches for black.
@@ -75,9 +67,6 @@ We treat the target as a sphere, wrapping a coord outside the target around
 to the opposite side.  See wrapOrClipTarget.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
-
-#include <stdio.h>  // TEMP
-#include <stdlib.h>   // abs()
 
 // Compiling switch #defines
 #include "buildSwitches.h"
@@ -108,14 +97,19 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 // True header files
 #include "imageFormat.h"
 #include "map.h"
-// #include "mapIndex.h"
 #include "engineParams.h"
 #include "engine.h"
 
-/* Source not compiled separately. Is separate to reduce file sizes and coupling. */
-#include "resynth-types.h"
+/* 
+Source not compiled separately. Is separate to reduce file sizes and coupling. 
+Also, some functions are inlined.
+*/
+
+#include "engineTypes.h"
+#include "mapIndex.h" // inlined, used in innermost loop
+#include "mapOps.h"   // definitions for map.h
 #include "matchWeighting.h"
-#include "resynth-order-target.h"
+#include "orderTarget.h"
 
 
 #ifdef STATS
@@ -301,7 +295,7 @@ not_transparent_corpus(
 
 /* Included here because it depends on some routines above. */
 // If STATS is not defined, it redefines stat function calls to nil
-#include "resynth-stats.h"
+#include "stats.h"
 
 
 /*
@@ -623,12 +617,6 @@ engine(
     corpusTargetMetric,
     mapMetric
     );
-  #ifdef SYMMETRIC_METRIC_TABLE
-  printf("Map max %u \n", mapMetric[LIMIT_DOMAIN]); // 256
-  #else
-  printf("Map max %u \n", mapMetric[0]);
-  #endif
-  fflush(stdout);
  
   // Now we need a prng, before order_targetPoints
   /* Originally: srand(time(0));   But then testing is non-repeatable. 

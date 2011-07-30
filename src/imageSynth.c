@@ -45,14 +45,14 @@ To make:
 #include "glibProxy.h"  // glibProxy.c
 
 #include "imageFormat.h"
-#include "map.h"  // header for resynth-map-types.h included by engine.c
+#include "map.h"  // header for mapOps.h included by engine.c
 #include "engineParams.h" // engineParams.c
-#include "mapIndex.h" // inline funcs depending on map.h
 #include "engine.h" // engine.c
 
 
 // Code defining, could be compiled separately
-#include "adaptSimple.h"
+#include "mapIndex.h" // inline funcs depending on map.h
+#include "adaptSimple.h"  // requires mapIndex.h
 
 
 

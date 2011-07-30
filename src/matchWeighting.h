@@ -1,5 +1,22 @@
 /*
+Metric function for computing best-fit.
 Weight a pixelel difference statistically.
+
+  Copyright (C) 2010, 2011  Lloyd Konneker
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 
@@ -48,13 +65,23 @@ Depends on the size of a Pixelel.
 */
 
 
-#ifdef SYMMETRIC_METRIC_TABLE
 /* 
 Lookup tables for metric functions.
 For unvectorized, table size is doubled, for negative and positive signed differences,
-and a difference is offset by 256 to enter this table.
-!!! diff_table is unsigned short, typically 16-bit, no less than 16-bit by C standard.
+and a difference is offset by LIMIT_DOMAIN (256) to enter this table.
+
+!!! corpusTargetMetric is unsigned short, typically 16-bit, no less than 16-bit by C standard.
+!!! mapMetric is unsigned int, its range can be greater than that of corpusTargetMetric
 */
+
+
+#ifdef SYMMETRIC_METRIC_TABLE   // misnamed, really means, generate half the symmetric function.
+
+/*
+Since the metric function has a real (including negative) domain
+but is symmetric, generate the positive side and use abs(diff) elsewhere.
+*/
+
 typedef gushort TPixelelMetricFunc[LIMIT_DOMAIN];
 typedef guint TMapPixelelMetricFunc[LIMIT_DOMAIN_MAP];  
 
@@ -62,6 +89,14 @@ typedef guint TMapPixelelMetricFunc[LIMIT_DOMAIN_MAP];
 /*
 Since the metric function has a real (including negative) domain
 but is symmetric, generate only the positive side and use abs(diff) elsewhere.
+
+But, I found that it is NOT faster to use abs() instead of 256u+ in the inner loop.
+Hence this is only needed for one method of vectorization (which itself is not faster.)
+Another method of vectorization might not need this.
+
+But don't delete this, it documents failed attempts to speed up the innermost loop.
+
+See other comments below.
 */
 static void 
 quantizeImageMetricFunc(
@@ -83,11 +118,7 @@ quantizeImageMetricFunc(
   }
 }
 
-/* 
-Similar for the metric function on the maps.
-But for maps, the metric function is simply proportional to the square.
-!!! Note the domain is not scaled.
-*/
+
 static void 
 quantizeMapMetricFunc(
   gfloat mapWeightParam,
@@ -104,20 +135,10 @@ quantizeMapMetricFunc(
 
 #else
 
-/* 
-Lookup tables for metric functions.
-For unvectorized, table size is doubled, for negative and positive signed differences,
-and a difference is offset by 256 to enter this table.
-!!! diff_table is unsigned short, typically 16-bit, no less than 16-bit by C standard.
-*/
 // Note this is 255 values on each side of zero, plus zero, is 511 values, with an extreme value at metric[0]
 typedef gushort TPixelelMetricFunc[512];
 typedef guint TMapPixelelMetricFunc[512];
 
-/*
-Since the metric function has a real (including negative) domain
-but is symmetric, generate the positive side and use abs(diff) elsewhere.
-*/
 static void 
 quantizeImageMetricFunc(
   gfloat cauchyParam, 

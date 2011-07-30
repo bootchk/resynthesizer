@@ -14,8 +14,7 @@ resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
   imageFormat.c \
-  engine.c \
-  map.c
+  engine.c
 
 
 # For certain configurations (not using glib),
@@ -26,16 +25,29 @@ resynthesizer_SOURCES = \
 # but IS needed when using GIMP as a test harness to the standalone engine
   
 # lkk 2011 These are 'sources' but not compiled, just included
-#  resynth-pdb.h \
-#  resynth-parameters.c \
-#  resynth-constants.h \
-#  resynth-types.h \
-#  resynth-map-types.h \
-#  resynth-order-target.h
+# Files included by engine.c
+#  mapIndex.h
+#  orderTarget.h
+#  passes.h
+#  refiner.h
+#  engineTypes.h
+#  stats.h
 
+# These are for the resynthesizer plugin adapter to the engine
+#  resynth-pdb.h
+#  resynth-parameters.c
+#  resynth-constants.h
+
+
+# resynthesizer_gui is a plugin that calls resynthesizer plugin
 resynthesizer_gui_SOURCES = \
   resynth-gui.c \
   engineParams.c
+
+# Files included by resynthesizer_gui
+#  resynth-gui.h
+#  resynth-parameters.c
+#  resynth-constants.h 
 
 # Standalone engine i.e. library
 imageSynth_SOURCES = \
@@ -44,11 +56,6 @@ imageSynth_SOURCES = \
   glibProxy.c \
   engineParams.c \
   imageFormat.c
-  
-  
-#  resynth-gui.h \
-#  resynth-parameters.c \
-#  resynth-constants.h 
 
 
 #lib_LTLIBRARIES = libimagesynth-1.0.la

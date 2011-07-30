@@ -1,13 +1,30 @@
 /*
 Innermost routines of image synthesis.
+
+  Copyright (C) 2010, 2011  Lloyd Konneker
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 
 #ifdef VECTORIZED
+
 #include <mmintrin.h> // intrinsics for assembly language MMX op codes, for sse2 xmmintrin.h
-#endif// Match result kind
+#endif
 
-
+// Match result kind
 typedef enum  BettermentKindEnum 
 {
   PERFECT_MATCH,  // Patches equal
@@ -140,8 +157,9 @@ new_neighbor(
 Prepare patch (array of neighbors) with values, both inside the target, and outside i.e. in the context (if use_border).
 Neighbors are in the source (the target or its context.)
 If repeating a pixel, now might have more, different, closer neighbors than on the first pass.
-Neighbours array is global, used both for heuristic and in synthing every point ( in computeBestFit() )
-Neighbours describes a patch, a shotgun pattern in the first pass, or a contiguous patch in later passes.
+Neighbors array is global, used both for heuristic and in synthing every point ( in computeBestFit() )
+Neighbors describes a patch, a shotgun pattern in the first pass, or a contiguous patch in later passes.
+It is stored in an array, but is not necessarily a square, contiguous patch.
 */
 static guint 
 prepare_neighbors(
@@ -262,7 +280,9 @@ computeBestFit(
       // Iterate over color pixelels to compute weighted difference
       const Pixelel * corpus_pixel;
       const Pixelel * image_pixel;
+      #ifdef SYMMETRIC_METRIC_TABLE
       gshort diff;
+      #endif
       
       corpus_pixel = pixmap_index(corpusMap, off_point);
       // ! Note target pixel comes not from targetPoints, but from copy neighbors
@@ -281,7 +301,7 @@ computeBestFit(
           #ifdef SYMMETRIC_METRIC_TABLE
           diff = (gshort) image_pixel[j] - (gshort) corpus_pixel[j];
           sum += corpusTargetMetric[ ((diff < 0) ? (-diff) : (diff)) ];
-          // sum += corpusTargetMetric[ abs(diff) ];
+          // OR sum += corpusTargetMetric[ abs(diff) ]; // abs() a macro? from stddef.h
           #else
           sum += corpusTargetMetric[ 256u + image_pixel[j] - corpus_pixel[j] ];
           #endif

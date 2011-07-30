@@ -1,5 +1,3 @@
-// resynth-order-target.h
-
 /*
 Order target points.
 The order of synthesis affects the results:
@@ -7,7 +5,24 @@ first synthesizing target points near the context can give *better* results
 but can also lead to artifacts: objects bleeding from the context into the target.
 Originally, there was only one method of ordering: random over the entire target.
 Added methods of ordering by distance from center.
+
 TODO ordering by a thinning, or brushfire, algorithm, i.e. distance from context, not from center.
+
+  Copyright (C) 2010, 2011  Lloyd Konneker
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 
@@ -15,7 +30,7 @@ TODO ordering by a thinning, or brushfire, algorithm, i.e. distance from context
 Order vector of target pixels: shuffle randomly
 This is the single, original method of randomizing.
 */
-void 
+static void 
 orderTargetPointsRandom(
   pointVector targetPoints,
   GRand *prng
@@ -38,7 +53,7 @@ Note that elements CAN move all the way to the back, but not vice versa:
 elements can only move the band size forward.
 TODO another method of random bands that is symmetric.
 */
-void randomizeBandsTargetPoints(
+static void randomizeBandsTargetPoints(
   pointVector targetPoints,
   GRand *prng
   ) 
@@ -101,7 +116,7 @@ void randomizeBandsTargetPoints2(
 Coordinates to and from offsets.
 Add or subtract a point (e.g. a center.)
 */
-void
+static void
 targetPoints_to_offsets(
   Coordinates center,
   pointVector targetPoints
@@ -115,7 +130,7 @@ targetPoints_to_offsets(
       subtract_points(g_array_index(targetPoints, Coordinates, i), center);
 }
 
-void
+static void
 targetPoints_from_offsets(
   Coordinates center,
   pointVector targetPoints
@@ -155,7 +170,7 @@ prepare_max_cartesian_along_ray(pointVector targetPoints)
 Order target points by 2D distance from target center, then randomize in bands.
 Note the compare function changes the direction, eg inward, outward, horizontal, vertical, etc.
 */
-void 
+static void 
 orderTargetPointsRandomDirectional(
   // c++ bool (*compare) (const Coordinates, const Coordinates)
   gint (*compare)(const void*, const void*),
@@ -188,7 +203,7 @@ orderTargetPointsRandomDirectional(
 Random squeeze: order the target points both directions, in and out by distance from center.
 Used if the target is a donut, with context inside and outside.
 */
-void orderTargetPointsRandomSqueeze(
+static void orderTargetPointsRandomSqueeze(
   pointVector targetPoints,
   GRand *prng
   )

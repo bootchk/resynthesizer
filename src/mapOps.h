@@ -29,16 +29,8 @@ Here, there are separate functions for creating and indexing each type of map.
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-// Compiling switch #defines
-#include "buildSwitches.h"
-#ifdef SYNTH_USE_GLIB
-  #include "../config.h" // GNU buildtools local configuration
-  // Use glib via gimp.h
-  #include <libgimp/gimp.h>
-#endif
 
-#include "imageSynthConstants.h"
-#include "map.h"
+// Note, included, not compiled separately
 
 void
 free_map (Map *map)
@@ -111,6 +103,9 @@ new_bytemap(
 }
 
 
+
+/* Misc operations on Map. */
+
 /* Set all elements of bytemap to a value. 
 TODO use memset?
 */
@@ -172,66 +167,5 @@ interleave_mask(
           g_array_index(mask->data, Pixelel, i*mask->depth);
 }
 
-
-/*
-Indexing into a Map
-
-This is dictated by use of glib GArray
-instead of conventional malloc and pointer arithmetic.
-Presumably glib does good error checking for malloc.
-Here we also do arithmetic for indexing a dynamic multi-dimensional array.
-Here we use static inline rather than a macro.
-!!! g_array_index is a macro that casts types.
-!!! g_array_index returns an element, we return address of. 
-*/
-
-
-/* 
-!!! Note in this case the 3rd dimension, depth, varies. 
-i.e. a Pixel is a variable-length array of Pixelels.
-*/
-inline Pixelel*
-pixmap_index(
-  const Map * const map,
-  const Coordinates coords
-  )
-{
-  guint index = (coords.x + coords.y * map->width) * map->depth;
-  return &g_array_index(map->data, Pixelel, index);
-}
-  
-/* Return pointer to guint at coordinates in map. */
-inline guint*
-intmap_index(
-  Map* map,
-  const Coordinates coords
-  )
-{
-  guint index = coords.x + coords.y * map->width;
-  return &g_array_index(map->data, guint, index);
-}
-  
-/* Return pointer to coordinates at coordinates in map. */
-inline Coordinates*
-coordmap_index(
-  Map* map,
-  const Coordinates coords
-  )
-{
-  guint index = coords.x + coords.y * map->width;
-  return &g_array_index(map->data, Coordinates, index);
-}
-
-/* Return pointer to boolean at coordinates in Pixmap. */
-/* Use guchar as boolean, which corresponds to current use of bytes for masks in Gimp. */
-inline guchar*
-bytemap_index(
-  Map* map,
-  const Coordinates coords
-  )
-{
-  guint index = coords.x + coords.y * map->width;
-  return &g_array_index(map->data, guchar, index);
-}
 
 

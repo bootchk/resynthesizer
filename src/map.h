@@ -77,7 +77,10 @@ new_coordmap(
   guint, 
   guint
   );
-  
+
+
+/* Misc map operations. */
+
 extern void
 set_bytemap(
   Map*,
@@ -95,26 +98,4 @@ interleave_mask(
   Map *mask
   );
 
-extern inline Pixelel*
-pixmap_index(
-  const Map * const map,
-  const Coordinates coords
-  );
 
-extern inline guint*
-intmap_index(
-  Map* map,
-  const Coordinates coords
-  );
-  
-extern inline Coordinates*
-coordmap_index(
-  Map* map,
-  const Coordinates coords
-  );
-  
-extern inline guchar*
-bytemap_index(
-  Map* map,
-  const Coordinates coords
-  );
