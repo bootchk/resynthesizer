@@ -68,6 +68,10 @@ referencedir = testdir + 'reference_out_images/'
 
 test_summary = ""
 
+# selection rects
+select1 = (100, 90, 100, 50)  # ufo
+select2 = (90, 175, 135, 100) # donkey
+
 def drawable_of_file(filename):
   '''
   Load a file and return the the drawable.
@@ -78,6 +82,17 @@ def drawable_of_file(filename):
   drawable = pdb.gimp_image_get_active_layer(image)
   return drawable
 
+def drawable_of_file_with_anti_selection(filename, select):
+  '''
+  Load a file and return the the drawable.
+  A call to this can be used as an actual parameter, see instance below.
+  '''
+  image = pdb.gimp_file_load(filename, filename, run_mode=RUN_NONINTERACTIVE)
+  pdb.gimp_image_flatten(image)
+  pdb.gimp_rect_select(image, select[0], select[1], select[2], select[3], 0, False, 0)
+  pdb.gimp_selection_invert(image)
+  drawable = pdb.gimp_image_get_active_layer(image)
+  return drawable
 
 def record_test_result(testname, result, outfilename = ""):
   global test_summary
@@ -85,7 +100,7 @@ def record_test_result(testname, result, outfilename = ""):
   test_summary += result + " " + testname + " " + outfilename + "\n"
   
 
-def runtest(filename, testname, testcommand, testparameters, is_selection = False):
+def runtest(filename, testname, testcommand, testparameters, select=None):
   
   global test_summary
   
@@ -102,9 +117,10 @@ def runtest(filename, testname, testcommand, testparameters, is_selection = Fals
   try:
     image = pdb.gimp_file_load(infilepath, infilepath, run_mode=RUN_NONINTERACTIVE)
     drawable = pdb.gimp_image_get_active_layer(image)
-    if is_selection:
+    if select is not None:
       # Make selection    x,y, width, height
-      pdb.gimp_rect_select(image, 100, 90, 100, 50, 0, False, 0)
+      # pdb.gimp_rect_select(image, 100, 90, 100, 50, 0, False, 0)
+      pdb.gimp_rect_select(image, select[0], select[1], select[2], select[3], 0, False, 0)
   except:
     record_test_result(testname, "IMPROPER preprocessing")
     return
@@ -178,17 +194,48 @@ def main():
   
   # Make paths to various input files
   grasspath = indir + 'grass-input-alpha.png'
+  brickpath = indir + 'brick.png'
+  donkeypath = indir + 'donkey_original.png'
   angelpath = indir + 'angel_texture.png'
   wanderpath = indir + 'wander-texture.png'
   zappath = indir + 'zap-texture.png'
+  ufopath = indir + 'ufo-input.png'
   
+  
+  # Begin test definitions
+  
+  '''
+  Straight resynthesis tests (without using a helper plugin, just resynth)
+  '''
+  
+  # Resynthesis of ufo from full context
+  test = "pdb.plug_in_resynthesizer"
+  # !!! Note we want the ID of the drawable
+  parameters = "0,0, True, drawable_of_file_with_anti_selection('"+ ufopath + "', select1).ID, -1, -1, 0.0, 0.117, 16, 500" 
+  runtest('ufo-input', 'resynthfull', test, parameters, select1)
+  
+  # Resynthesis of rect selection in bricks from full context
+  test = "pdb.plug_in_resynthesizer"
+  # !!! Note we want the ID of the drawable
+  parameters = "0,0, True, drawable_of_file_with_anti_selection('"+ brickpath + "', select1).ID, -1, -1, 0.0, 0.117, 16, 500" 
+  runtest('brick', 'resynthfull', test, parameters, select1)
+  
+  # Resynthesis of rect selection in donkey from full context
+  test = "pdb.plug_in_resynthesizer"
+  # !!! Note we want the ID of the drawable
+  parameters = "0,0, True, drawable_of_file_with_anti_selection('"+ donkeypath + "', select2).ID, -1, -1, 0.0, 0.117, 16, 500" 
+  runtest('donkey_original', 'resynthfull', test, parameters, select2)
+ 
+  '''
+  Tests of mapping using helper plugins.
+  '''
   # Texture transfer (map style) with texture having alpha
   # map style: RGBA to RGB w/ color maps
   
   test = "pdb.python_fu_map_style"
   parameters = "drawable_of_file('"+ grasspath + "'), 50.0, 0"  
   # source image, fifty percent transfer, map by colors
-  runtest('ufo-input', 'mapstylealpha', test, parameters, False)
+  runtest('ufo-input', 'mapstylealpha', test, parameters, select=None)
   
   # Texture transfer (map style) with target having alpha
   # map style: RGB to RGBA w/ color maps
@@ -196,127 +243,138 @@ def main():
   test = "pdb.python_fu_map_style"
   parameters = "drawable_of_file('"+ grasspath + "'), 50.0, 0"  
   # source image, fifty percent transfer, map by colors
-  runtest('ufo-input-w-alpha', 'mapstyletoalpha', test, parameters, False)
+  runtest('ufo-input-w-alpha', 'mapstyletoalpha', test, parameters, select=None)
   
   # Texture transfer (map style)
   # map style: RGB to RGB w/ color maps
   test = "pdb.python_fu_map_style"
   parameters = "drawable_of_file('"+ grasspath + "'), 50.0, 0"  
   # source image, fifty percent transfer, map by colors
-  runtest('ufo-input', 'mapstyle', test, parameters, False)
+  runtest('ufo-input', 'mapstyle', test, parameters, select=None)
   
   # map style: RGB to RGB w/ color maps
   # This is conceptually little different from the above test, but it is a popular example.
   test = "pdb.python_fu_map_style"
   parameters = "drawable_of_file('"+ angelpath + "'), 10.0, 0"  
   # source image, fifty percent transfer, map by colors
-  runtest('angel_target', 'mapstyleangel', test, parameters, False)
+  runtest('angel_target', 'mapstyleangel', test, parameters, select=None)
   
   # map style: RGB to RGB w/ GRAY maps
   test = "pdb.python_fu_map_style"
   parameters = "drawable_of_file('"+ grasspath + "'), 50.0, 1"  
   # source image, fifty percent transfer, map by brightness
-  runtest('ufo-input', 'mapstylebrightness', test, parameters, False)
+  runtest('ufo-input', 'mapstylebrightness', test, parameters, select=None)
   
   # mapstyle: GRAY to GRAY
   test = "pdb.python_fu_map_style"
   parameters = "drawable_of_file('"+ wanderpath + "'), 50.0, 0"  
   # source image, fifty percent transfer, map by colors
-  runtest('wander', 'mapstylegraygray', test, parameters, False)
+  runtest('wander', 'mapstylegraygray', test, parameters, select=None)
   
   # mapstyle: RGB to GRAY
   test = "pdb.python_fu_map_style"
   parameters = "drawable_of_file('"+ zappath + "'), 10.0, 0"  
   # source image, ten percent transfer, map by colors
-  runtest('zap-output-map', 'mapstylergbgray', test, parameters, False)
+  runtest('zap-output-map', 'mapstylergbgray', test, parameters, select=None)
   
   # Render texture
   # !!! Note here the plugin returns a new image which we assign to image variable
   test = "image = pdb.python_fu_render_texture"
   parameters = "2, 1"
-  runtest('grass-input', 'rendertexture', test, parameters, False)
+  runtest('grass-input', 'rendertexture', test, parameters, select=None)
+  
+  '''
+  More straight resynthesis tests.
+  '''
   
   # Straight resynthesis, from selection in drawable into same selection in drawable
   # !!! Note the target image is not in this parameter string, it is the corpus.
   test = "pdb.plug_in_resynthesizer"
   parameters = "0,0, True, drawable.ID, -1, -1, 0.0, 0.117, 16, 500"
-  runtest('ufo-input', 'resynth', test, parameters, True)
+  runtest('ufo-input', 'resynth', test, parameters, select1)
   
   # Straight resynthesis, from separate image with no selection into selection in drawable
   test = "pdb.plug_in_resynthesizer"
   # !!! Note we want the ID of the drawable
   parameters = "0,0, True, drawable_of_file('"+ grasspath + "').ID, -1, -1, 0.0, 0.117, 16, 500" 
-  runtest('ufo-input', 'resynthtwoimages', test, parameters, True)
+  runtest('ufo-input', 'resynthtwoimages', test, parameters, select1)
   
   # Straight resynthesis, from separate image with no selection into selection in drawable
   # also, tileable without using context: 1,1,0,...
   test = "pdb.plug_in_resynthesizer"
   # !!! Note we want the ID of the drawable
   parameters = "1, 1, 0, drawable_of_file('"+ grasspath + "').ID, -1, -1, 0.0, 0.117, 16, 500" 
-  runtest('ufo-input', 'resynthtileable', test, parameters, True)
+  runtest('ufo-input', 'resynthtileable', test, parameters, select1)
   
+  '''
+  Heal selection plugin tests.
+  '''
   # Heal from donut corpus
   test = "pdb.python_fu_heal_selection"
   parameters = "50, 1, 1" # 1 = sample from sides, 1 = direction inward
-  runtest('ufo-input', 'heal', test, parameters, True)
+  runtest('ufo-input', 'heal', test, parameters, select1)
   
   # Heal from donut corpus
   # also randomly all around
   test = "pdb.python_fu_heal_selection"
   parameters = "50, 0, 0" # 0 = sample from all around, 0 = randomly
-  runtest('ufo-input', 'healaroundrandom', test, parameters, True)
+  runtest('ufo-input', 'healaroundrandom', test, parameters, select1)
   
   # Heal where target includes alpha layer.
   # This selects from an area having a transparent area.
   # The transparent area should NOT be resynthesized, but yield white upon flattening.
   test = "pdb.python_fu_heal_selection"
   parameters = "50, 1, 1" 
-  runtest('ufo-input-w-alpha', 'healincludedalpha', test, parameters, True)
+  runtest('ufo-input-w-alpha', 'healincludedalpha', test, parameters, select1)
   
   # Heal where target has distant alpha layer.
   # This selects from a black sky area with a nearby transparent area.
   # The result should be black resynthesized, NOT white of transparent flattened.
   test = "pdb.python_fu_heal_selection"
   parameters = "50, 1, 1"
-  runtest('apollo11_w_alpha', 'healalpha', test, parameters, True)
+  runtest('apollo11_w_alpha', 'healalpha', test, parameters, select1)
   
   # Heal a grayscale
   test = "pdb.python_fu_heal_selection"
   parameters = "50, 1, 1"
-  runtest('wander', 'healgray', test, parameters, True)
+  runtest('wander', 'healgray', test, parameters, select1)
   
   # Heal a grayscale w alpha
   test = "pdb.python_fu_heal_selection"
   parameters = "50, 0, 1"
-  runtest('ufo-input-w-alpha-gray', 'healalphagray', test, parameters, True)
+  runtest('ufo-input-w-alpha-gray', 'healalphagray', test, parameters, select1)
   
   # Heal transparency outward
   test = "pdb.python_fu_heal_transparency"
   parameters = "50, 2" # pixels of context width, outward
-  runtest('apollo11_w_alpha', 'healtransparency', test, parameters, False)
+  runtest('apollo11_w_alpha', 'healtransparency', test, parameters, select=None)
   
   # Heal transparency inward
   test = "pdb.python_fu_heal_transparency"
   parameters = "50, 1" # pixels of context width, 1=inward
-  runtest('apollo11_w_alpha', 'healtransparencyinward', test, parameters, False)
+  runtest('apollo11_w_alpha', 'healtransparencyinward', test, parameters, select=None)
+  
+  '''
+  Other plugin tests
+  '''
   
   # Sharpen with resynthesis
   ''' Too slow to test regularly '''
   '''
   test = "pdb.python_fu_sharpen_resynthesized"
   parameters = "2"
-  runtest('ufo-input', 'sharpen', test, parameters, False)
+  runtest('ufo-input', 'sharpen', test, parameters, select=None)
   '''
   
   # Uncrop 20%
   test = "pdb.python_fu_uncrop"
   parameters = "20"
-  runtest('ufo-input', 'uncrop', test, parameters, False)
+  runtest('ufo-input', 'uncrop', test, parameters, select=None)
 
   # Fill resynthesized pattern
   test = "pdb.python_fu_fill_pattern_resynth"
   parameters = " 'Maple Leaves' "
-  runtest('ufo-input', 'fillpattern', test, parameters, True)
+  runtest('ufo-input', 'fillpattern', test, parameters, select1)
 
   # Enlarge with resynthesis
   # Enlarge factor = 2
@@ -325,13 +383,17 @@ def main():
   '''
   test = "pdb.python_fu_enlarge_resynthesized"
   parameters = "2"
-  runtest('ufo-input-small', 'enlarge', test, parameters, False)
+  runtest('ufo-input-small', 'enlarge', test, parameters, select=None)
   '''
+  
+  
+ 
+  
   
   # TODO a much harder test with many layers and alpha channels
 
-  logging.info("Temp directory: " + tmpdir)
-  logging.info(test_summary)
+  logging.info("\nTemp directory: " + tmpdir)
+  logging.info( "\n" + test_summary)
   
   pdb.gimp_quit(True)
   

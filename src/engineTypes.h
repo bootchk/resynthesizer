@@ -1,5 +1,4 @@
 /*
-resynth-types.h
 
 Some type definitions, mainly Coordinates and pointVector.
 In earlier versions, this was mostly c++ vector and operators on it.
