@@ -130,9 +130,55 @@ Note this must be used in the scope of nreturn_vals and value, in main().
   return; \
   }
 
+#ifdef ANIMATE
+/*
+Use in debugging with DEEP_PROGRESS and ANIMATE.
+Blacken target, then animate pixels as they are synthesized.
+*/
 
+GimpDrawable * targetDrawableCopy;
+Map*            targetMapCopy;
+
+static void 
+post_results_to_gimp(
+  GimpDrawable *drawable,
+  Map targetMap);
+  
+/* 
+Clear target pixels. So see them get synthesized when animated debugging. 
+Note the initial values of the target are never used, but totally synthesized.
+*/
 static void
-progress(gchar * message)
+clear_target_pixels(guint bpp)
+{
+  guint x;
+  guint y;
+  
+  for(y=0;y<targetMapCopy->height;y++)
+    for(x=0;x<targetMapCopy->width;x++)
+    {
+      Coordinates coords = {x,y};
+      if (pixmap_index(targetMapCopy, coords)[MASK_PIXELEL_INDEX] != MASK_UNSELECTED)
+      // if (isSelectedTarget(coords, targetMapCopy)) 
+      {
+        guint pixelel;
+        Pixelel * pixel = pixmap_index(targetMapCopy, coords);
+        for (pixelel = FIRST_PIXELEL_INDEX; pixelel < bpp; pixelel++) // Color channels only
+          pixel[pixelel] = PIXELEL_BLACK;
+      }
+    }
+}
+
+#endif
+
+
+/*
+Progress functions.
+*/
+
+// Called before any real progress is made
+static void
+progressStart(gchar * message)
 {
   gimp_progress_init(message);
   gimp_progress_update(0.0);
@@ -145,6 +191,17 @@ progress(gchar * message)
 #endif
 }
 
+// Called repeatedly as progress is made
+void  // Not static, in test build, called from inside engine
+progressUpdate( int percent, void * contextInfo)
+{
+  gimp_progress_update((float)percent/100);
+
+  #ifdef ANIMATE
+  post_results_to_gimp(targetDrawableCopy, *targetMapCopy);
+  #endif
+
+}
 
 
 /* Return count of color channels, exclude alpha and any other channels. */
@@ -358,6 +415,15 @@ static void run(
   I.E. the meaning of "last" is "last values set by user interaction".
   */
   
+  #ifdef ANIMATE
+  // Copy local pointer vars to globals
+  targetDrawableCopy = drawable;
+  targetMapCopy = &targetMap;
+  #endif
+  
+  /* Error checks done, initialization work begins.  So start progress callbacks. */
+  progressStart("Initializing...");
+  
   /* 
   Set flags for presence of alpha channels. 
   The flag is an optimization.  Alternatives:
@@ -402,6 +468,10 @@ static void run(
       MASK_TOTALLY_SELECTED, 
       map_out_drawable, formatIndices.map_start_bip);
     
+      #ifdef ANIMATE
+      clear_target_pixels(formatIndices.colorEndBip);  // For debugging, blacken so new colors sparkle
+      #endif
+  
     /*  corpus adaption */
     fetch_image_mask_map(corpus_drawable, &corpusMap, formatIndices.total_bpp, 
       &corpusMaskMap,
@@ -421,11 +491,16 @@ static void run(
   g_assert(corpusMap.width * corpusMap.height); // Corpus is not empty
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
+  // Begin real work
+  progressStart("synthesizing...");
+  
   int result = engine(
     engineParameters, 
     &formatIndices, 
     &targetMap, 
-    &corpusMap
+    &corpusMap,
+    progressUpdate,
+    (void *) 0
     );
   
   if (result == IMAGE_SYNTH_ERROR_EMPTY_CORPUS)

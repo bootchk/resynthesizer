@@ -51,6 +51,12 @@ dumpImage(
 	printf("\n");
 }
 
+void progressCallback(int percent, void * context)
+{
+  printf("Percent %d\n", percent);
+}
+
+
 static void test(
   const char * description,
   ImageBuffer* buffer,
@@ -67,7 +73,7 @@ static void test(
   printf("\n");  printf("%s", description); printf("\n");
 	printf("Before:\n");
 	dumpBuffer(buffer, pixelelCount);
-	error = imageSynth(buffer, mask, format, parameters);
+	error = imageSynth(buffer, mask, format, parameters, progressCallback, (void*) 0);
 	if (error) printf("!!!! imageSynth returned error: %d\n", error);
 	printf("Expect:\n"); printf("%s", expect); printf("\n");
 	printf("Result:\n");
@@ -154,7 +160,7 @@ int main(
 	printf("\nTest center pixel synthesized but alpha unchanged.\n");
 	printf("Before\n");
 	dumpBuffer(&testImage, 4);
-	imageSynth(&testImage, &testMask, T_RGBA, &parameters);
+	imageSynth(&testImage, &testMask, T_RGBA, &parameters, progressCallback, (void*) 0);
 	// dumpImage(45);	// 45 pixelels 3x3x5
 	printf("After\n");
 	dumpBuffer(&testImage, 4);

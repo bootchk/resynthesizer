@@ -44,9 +44,11 @@ TODO experiments on other ways of repeating synthesis.
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+#include <stdio.h>
 
 #define MAX_PASSES 6
 typedef guint TRepetionParameters[MAX_PASSES][2] ;
+
 
 static guint
 prepare_repetition_parameters(
@@ -75,4 +77,39 @@ prepare_repetition_parameters(
   }
   return total_targets;
 }
+
+
+#ifdef ORIGINAL_PASSES
+/* 
+Each pass synthesizes more target points than previous.
+Each pass repeat synthesizes the target points of the previous pass.
+
+This is not quite the same as the original, nor complete.
+This is experimental code.
+It does not make the first pass to be just a few pixels,
+and the last pass include all the pixels.
+
+Just a little experimentation seems to show it is not an improvement.
+*/
+static guint
+prepare_repetition_parameters(
+  TRepetionParameters repetition_params,
+  guint countTargetPoints
+  )
+{ 
+  gint i;
+  guint n = countTargetPoints;
+  guint total_targets=0;
+  
+  for (i=MAX_PASSES-1; i>=0; i--) 
+  {
+    repetition_params[i][0] = 0;    /* Start index of iteration. Not used, starts at 0 always, see the loop. */
+    repetition_params[i][1] = n;    /* End index of iteration. */
+    total_targets += n;
+    n = (guint) n*3/4;
+    // printf("pass %d n is %d", i, n);
+  }
+  return total_targets;
+}
+#endif
 

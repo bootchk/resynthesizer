@@ -121,6 +121,7 @@ if test "x$have_gimp_2_3" != "xyes"; then
 fi
 
 dnl lkk July 2011
+AC_PROG_RANLIB
 dnl AC_PROG_LIBTOOL
 
 dnl lkk 2011 Added PluginScripts/Makefile

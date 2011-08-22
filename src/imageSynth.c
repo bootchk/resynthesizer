@@ -62,8 +62,9 @@ imageSynth(
   ImageBuffer * imageBuffer,  // IN/OUT RGBA four Pixelels
   ImageBuffer * mask,         // IN one mask Pixelel
   TImageFormat imageFormat,
-  TImageSynthParameters* parameters  // or NULL to use defaults
-  // EngineControls temporarily not passed: see setDefaultParams
+  TImageSynthParameters* parameters,  // or NULL to use defaults
+  void (*progressCallback)(int, void*),   // int percentDone, void *contextInfo
+  void *contextInfo
   )
 {
   Map targetMap;
@@ -96,7 +97,9 @@ imageSynth(
     *parameters,
     &formatIndices, 
     &targetMap, 
-    &corpusMap
+    &corpusMap,
+    progressCallback,
+    contextInfo
     );
   
   if (! error)

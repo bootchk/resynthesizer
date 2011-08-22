@@ -168,6 +168,7 @@ POFILES =  es.po
 POSUB = po
 PO_IN_DATADIR_FALSE = 
 PO_IN_DATADIR_TRUE = 
+RANLIB = ranlib
 SET_MAKE = 
 SHELL = /bin/bash
 STRIP = 

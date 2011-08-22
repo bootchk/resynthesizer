@@ -45,13 +45,18 @@ refiner(
   pointVector sortedOffsets,
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
-  TMapPixelelMetricFunc mapsMetric
+  TMapPixelelMetricFunc mapsMetric,
+  void (*progressCallback)(int, void*),
+  void *contextInfo
   ) 
 {
   guint pass;
   TRepetionParameters repetition_params;
   
   prepare_repetition_parameters(repetition_params, targetPoints->len);
+  
+  // Get progress started with small percent
+  progressCallback( 2, contextInfo);
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
@@ -84,5 +89,10 @@ refiner(
     */
     if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) )
       break;
+    
+    // Simple progress: percent of passes complete.
+    // This is not ideal, a maximum of MAX_PASSES callbacks, typically six.
+    // And the later passes are much shorter than earlier passes.
+    progressCallback( (int) ((pass+1.0)/(MAX_PASSES+1)*100), contextInfo);
   }
 }

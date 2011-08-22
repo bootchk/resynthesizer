@@ -527,7 +527,9 @@ engine(
   TImageSynthParameters parameters,
   TFormatIndices* indices,
   Map* targetMap,
-  Map* corpusMap
+  Map* corpusMap,
+  void (*progressCallback)(int, void*),
+  void *contextInfo
   )
 {
   // Engine private data. On stack (and heap), not global, so engine is reentrant.
@@ -649,7 +651,9 @@ engine(
     sortedOffsets,
     prng,
     corpusTargetMetric,
-    mapMetric
+    mapMetric,
+    progressCallback,
+    contextInfo
     );
     
   // Free internal mallocs.

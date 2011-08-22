@@ -1,20 +1,27 @@
 ## Process this file with automake to produce Makefile.in
 
 ## lkk 2011
-## Note the two .c files are 'main.c' files and many .h files are not just declarations but definitions, that is, not pure header files.
+## Note many .h files are not just declarations but definitions, that is, not pure header files.
 
-bin_PROGRAMS = resynthesizer resynthesizer_gui 
+noinst_LIBRARIES = libimagesynth.a
 
-## Don't make synth since it is not a plugin to be installed in the plug-in directory
-
+# Standalone engine is a static library
+libimagesynth_a_SOURCES = \
+  imageSynth.c \
+  engine.c \
+  glibProxy.c \
+  engineParams.c \
+  imageFormat.c
+  
+bin_PROGRAMS = resynthesizer resynthesizer_gui
 
 bindir = $(GIMP_LIBDIR)/plug-ins
 
+# resynthesizer is a GIMP plugin calling libimagesynth
 resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
-  imageFormat.c \
-  engine.c
+  imageFormat.c
 
 
 # For certain configurations (not using glib),
@@ -49,15 +56,7 @@ resynthesizer_gui_SOURCES = \
 #  resynth-parameters.c
 #  resynth-constants.h 
 
-# Standalone engine i.e. library
-imageSynth_SOURCES = \
-  imageSynth.c \
-  engine.c \
-  glibProxy.c \
-  engineParams.c \
-  imageFormat.c
-
-
+# Work in progress building a shared dynamic library
 #lib_LTLIBRARIES = libimagesynth-1.0.la
 #libimagesynth_1_0_la_SOURCES = \
 #  imageSynth.c \
@@ -76,7 +75,8 @@ INCLUDES =\
 	@GIMP_CFLAGS@		\
 	-I$(includedir)
 
-LDADD = $(GIMP_LIBS)
+# resynthesizer depends on imagesynth library
+LDADD = $(GIMP_LIBS) libimagesynth.a
 
 
 

@@ -419,16 +419,14 @@ synthesize(
     countTargetTries += 1;
 #endif
     
-    #ifdef PROGRESS
+    #ifdef DEEP_PROGRESS
     if ((target_index&4095) == 0) 
     {
       /* Progress over all passes, not just within this pass.
       Towards the maximum expected tries, but we might omit latter passes.
       */
-      gimp_progress_update((float)countTargetTries/total_targets);
-      #ifdef ANIMATE
-        post_results_to_gimp(drawable);
-      #endif
+      // gimp_progress_update((float)countTargetTries/total_targets);
+      progressUpdate(0, (void*) 0); 
     }
     #endif
     

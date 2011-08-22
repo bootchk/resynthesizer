@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -43,19 +44,28 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+LIBRARIES = $(noinst_LIBRARIES)
+AR = ar
+ARFLAGS = cru
+libimagesynth_a_AR = $(AR) $(ARFLAGS)
+libimagesynth_a_LIBADD =
+am_libimagesynth_a_OBJECTS = imageSynth.$(OBJEXT) engine.$(OBJEXT) \
+	glibProxy.$(OBJEXT) engineParams.$(OBJEXT) \
+	imageFormat.$(OBJEXT)
+libimagesynth_a_OBJECTS = $(am_libimagesynth_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_resynthesizer_OBJECTS = resynthesizer.$(OBJEXT) \
-	engineParams.$(OBJEXT) imageFormat.$(OBJEXT) engine.$(OBJEXT)
+	engineParams.$(OBJEXT) imageFormat.$(OBJEXT)
 resynthesizer_OBJECTS = $(am_resynthesizer_OBJECTS)
 resynthesizer_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
-resynthesizer_DEPENDENCIES = $(am__DEPENDENCIES_1)
+resynthesizer_DEPENDENCIES = $(am__DEPENDENCIES_1) libimagesynth.a
 am_resynthesizer_gui_OBJECTS = resynth-gui.$(OBJEXT) \
 	engineParams.$(OBJEXT)
 resynthesizer_gui_OBJECTS = $(am_resynthesizer_gui_OBJECTS)
 resynthesizer_gui_LDADD = $(LDADD)
-resynthesizer_gui_DEPENDENCIES = $(am__DEPENDENCIES_1)
+resynthesizer_gui_DEPENDENCIES = $(am__DEPENDENCIES_1) libimagesynth.a
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -64,8 +74,10 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(resynthesizer_SOURCES) $(resynthesizer_gui_SOURCES)
-DIST_SOURCES = $(resynthesizer_SOURCES) $(resynthesizer_gui_SOURCES)
+SOURCES = $(libimagesynth_a_SOURCES) $(resynthesizer_SOURCES) \
+	$(resynthesizer_gui_SOURCES)
+DIST_SOURCES = $(libimagesynth_a_SOURCES) $(resynthesizer_SOURCES) \
+	$(resynthesizer_gui_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -137,6 +149,7 @@ POFILES = @POFILES@
 POSUB = @POSUB@
 PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
 PO_IN_DATADIR_TRUE = @PO_IN_DATADIR_TRUE@
+RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -186,12 +199,24 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+noinst_LIBRARIES = libimagesynth.a
+
+# Standalone engine i.e. static library
+libimagesynth_a_SOURCES = \
+  imageSynth.c \
+  engine.c \
+  glibProxy.c \
+  engineParams.c \
+  imageFormat.c
+
 resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
-  imageFormat.c \
-  engine.c
+  imageFormat.c
 
+
+# resynthesizer depends on imageSynth library
+# resynthesizer_LDADD = libimagesynth.a
 
 # For certain configurations (not using glib),
 # resynthesizer_SOURCES should include
@@ -225,15 +250,6 @@ resynthesizer_gui_SOURCES = \
 #  resynth-parameters.c
 #  resynth-constants.h 
 
-# Standalone engine i.e. library
-imageSynth_SOURCES = \
-  imageSynth.c \
-  engine.c \
-  glibProxy.c \
-  engineParams.c \
-  imageFormat.c
-
-
 #lib_LTLIBRARIES = libimagesynth-1.0.la
 #libimagesynth_1_0_la_SOURCES = \
 #  imageSynth.c \
@@ -250,7 +266,7 @@ INCLUDES = \
 	@GIMP_CFLAGS@		\
 	-I$(includedir)
 
-LDADD = $(GIMP_LIBS)
+LDADD = $(GIMP_LIBS) libimagesynth.a
 all: all-am
 
 .SUFFIXES:
@@ -285,6 +301,13 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+libimagesynth.a: $(libimagesynth_a_OBJECTS) $(libimagesynth_a_DEPENDENCIES) 
+	-rm -f libimagesynth.a
+	$(libimagesynth_a_AR) libimagesynth.a $(libimagesynth_a_OBJECTS) $(libimagesynth_a_LIBADD)
+	$(RANLIB) libimagesynth.a
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
@@ -337,7 +360,9 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engineParams.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glibProxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imageFormat.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imageSynth.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resynth-gui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resynthesizer.Po@am__quote@
 
@@ -439,7 +464,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LIBRARIES) $(PROGRAMS)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -471,7 +496,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -541,17 +567,17 @@ uninstall-am: uninstall-binPROGRAMS
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic ctags distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS
+	clean-generic clean-noinstLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-binPROGRAMS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -27,5 +27,7 @@ imageSynth(
   ImageBuffer * imageBuffer,  // IN/OUT RGBA Pixels described by imageFormat
   ImageBuffer * mask,         // IN one mask Pixelel
   TImageFormat imageFormat,
-  TImageSynthParameters* parameters
+  TImageSynthParameters* parameters,
+  void (*progressCallback)(int, void*),   // int percentDone, void *contextInfo
+  void *contextInfo
   );
