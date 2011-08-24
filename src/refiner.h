@@ -81,7 +81,8 @@ refiner(
   
     // nil unless DEBUG
     print_pass_stats(pass, repetition_params[pass][1], betters);
-  
+    printf("Pass %d betters %d\n", pass, betters);
+    
     /* Break if a small fraction of target is bettered
     This is a fraction of total target points, 
     not the possibly smaller count of target attempts this pass.
