@@ -24,6 +24,10 @@ Innermost routines of image synthesis.
 #include <mmintrin.h> // intrinsics for assembly language MMX op codes, for sse2 xmmintrin.h
 #endif
 
+#include <pthread.h>
+
+pthread_mutex_t mutex;
+
 // Match result kind
 typedef enum  BettermentKindEnum 
 {
@@ -143,6 +147,7 @@ new_neighbor(
   )
 {
   neighbors[index].offset = offset;
+  pthread_mutex_lock(&mutex);  // Set color and source atomically
   set_neighbor_state(index, neighbor_point, sourceOfMap, neighbors);
   // !!! Copy the whole Pixel, all the pixelels
   {
@@ -150,6 +155,7 @@ new_neighbor(
   for (k=0; k<indices->total_bpp; k++)
     neighbors[index].pixel[k] = pixmap_index(targetMap, neighbor_point)[k];
   }
+  pthread_mutex_unlock(&mutex);
 }
 
 
@@ -175,11 +181,18 @@ prepare_neighbors(
 {
   guint j;
   guint count = 0;
+  Coordinates offset;
+  Coordinates neighbor_point;
   
-  for(j=0; j<sortedOffsets->len; j++)
+  // Target point is always its own first neighbor, even though on startup and first pass it doesn't have a value.
+  offset = g_array_index(sortedOffsets, Coordinates, 0);
+  new_neighbor(count, offset, position, indices, targetMap, sourceOfMap, neighbors);
+  count++;
+  
+  for(j=1; j<sortedOffsets->len; j++) // !!! Start at 1
   {
-    Coordinates offset = g_array_index(sortedOffsets, Coordinates, j);
-    Coordinates neighbor_point = add_points(position, offset);
+    offset = g_array_index(sortedOffsets, Coordinates, j);
+    neighbor_point = add_points(position, offset);
 
     // !!! Note side effects: clipToTargetOrWrapIfTiled might change neighbor_point coordinates !!!
     if (clipToTargetOrWrapIfTiled(parameters, targetMap, &neighbor_point)  // is neighbor in target image or wrappable
@@ -368,15 +381,35 @@ computeBestFit(
 }
 
 
+static inline void
+setColor(
+  TFormatIndices* indices,
+  Map* targetMap,
+  Coordinates targetPosition,
+  Map* corpusMap,
+  Coordinates corpusPosition
+  )
+{
+  TPixelelIndex j;
+  
+  // For all color pixelels (channels)
+  for(j=FIRST_PIXELEL_INDEX; j<indices->colorEndBip; j++)
+    // Overwrite prior with new color
+    pixmap_index(targetMap, targetPosition)[j] = 
+      pixmap_index(corpusMap, corpusPosition)[j];  
+}
+
+
 /*
 The heart of the algorithm.
 Called repeatedly: many passes over the data.
 */
 static guint
 synthesize(
-  guint pass, // IN
   TImageSynthParameters *parameters,  // IN
-  TRepetionParameters repetition_params,  // IN
+  gboolean isStartup,
+  guint startTargetIndex,  // IN
+  guint endTargetIndex,  // IN
   TFormatIndices* indices,  // IN
   Map * targetMap,      // IN/OUT
   Map* corpusMap,       // IN
@@ -413,7 +446,14 @@ synthesize(
   /* ALT: count progress once at start of pass countTargetTries += repetition_params[pass][1]; */
   reset_color_change();
   
-  for(target_index=0; target_index<repetition_params[pass][1]; target_index++) 
+  // On startup, set the color of the first target pixel to a random color
+  // The colors aren't matched anyway
+  /*
+  if (isStartup)
+    setColor( indices, targetMap, position, corpusMap, bestMatchCorpusPoint);
+  */
+    
+  for(target_index=startTargetIndex; target_index<endTargetIndex; target_index++) 
   {
 #ifdef STATS
     countTargetTries += 1;
@@ -437,7 +477,8 @@ synthesize(
     but also means that below, we put offset (0,0) in vector of neighbors !!!
     i.e. this makes a target point it's own neighbor (with a source in later passes.)
     */
-    setHasValue(&position, TRUE, hasValueMap);  
+    /* */
+    // setHasValue(&position, TRUE, hasValueMap);
     
     countNeighbors = prepare_neighbors(position, parameters, indices, 
       targetMap, hasValueMap, sourceOfMap, sortedOffsets,
@@ -551,18 +592,13 @@ synthesize(
         repeatCountBetters++;   /* feedback for termination. */
         integrate_color_change(position); // Must be before we store the new color values.
         /* Save the new color values (!!! not the alpha) for this target point */
-        {
-          TPixelelIndex j;
-          
-          // For all color pixelels (channels)
-          for(j=FIRST_PIXELEL_INDEX; j<indices->colorEndBip; j++)
-            // Overwrite prior with new color
-            pixmap_index(targetMap, position)[j] = 
-              pixmap_index(corpusMap, bestMatchCorpusPoint)[j];  
-        }
+        pthread_mutex_lock(&mutex);
+        setColor( indices, targetMap, position, corpusMap, bestMatchCorpusPoint);
         setSourceOf(position, bestMatchCorpusPoint, sourceOfMap); /* Remember new source */
+        pthread_mutex_unlock(&mutex);
       } /* else same source for target */
     } /* else match is same or worse */
+    setHasValue(&position, TRUE, hasValueMap);
   } /* end for each target pixel */
   return repeatCountBetters;
 }

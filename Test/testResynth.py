@@ -137,7 +137,7 @@ def runtest(filename, testname, testcommand, testparameters, select=None):
   except RuntimeError:
     record_test_result(testname, "EXCEPTION")
     return
-  logging.info("Processor time: " + str(time.time() - start))
+  logging.info("Elapsed time: " + str(time.time() - start))
   
   '''
   !!! Note that the test string can assign to image if the test returns a new image
