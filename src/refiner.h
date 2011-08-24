@@ -354,15 +354,18 @@ refiner(
     
     // nil unless DEBUG
     print_pass_stats(pass, repetition_params[pass][1], betters);
-  
+    printf("Pass %d betters %d\n", pass, betters);
+    
     /* Break if a small fraction of target is bettered
     This is a fraction of total target points, 
     not the possibly smaller count of target attempts this pass.
     Or break on small integral change: if ( targetPoints_size / integralColorChange < 10 ) {
     */
-    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) )
+    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) ) 
+    {
       printf("Quitting early after %d passes. Betters %ld\n", pass+1, betters);
       break;
+    }
     
     // Simple progress: percent of passes complete.
     // This is not ideal, a maximum of MAX_PASSES callbacks, typically six.
