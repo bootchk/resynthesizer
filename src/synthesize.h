@@ -561,6 +561,7 @@ synthesize(
               pixmap_index(corpusMap, bestMatchCorpusPoint)[j];  
         }
         setSourceOf(position, bestMatchCorpusPoint, sourceOfMap); /* Remember new source */
+        printf("Position %d %d source %d %d\n", position.x, position.y, bestMatchCorpusPoint.x, bestMatchCorpusPoint.y);
       } /* else same source for target */
     } /* else match is same or worse */
   } /* end for each target pixel */
