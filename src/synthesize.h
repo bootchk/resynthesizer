@@ -18,6 +18,7 @@ Innermost routines of image synthesis.
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#define ORIGINAL_START
 
 #ifdef VECTORIZED
 
@@ -184,12 +185,16 @@ prepare_neighbors(
   Coordinates offset;
   Coordinates neighbor_point;
   
+#ifndef ORIGINAL_START
   // Target point is always its own first neighbor, even though on startup and first pass it doesn't have a value.
   offset = g_array_index(sortedOffsets, Coordinates, 0);
   new_neighbor(count, offset, position, indices, targetMap, sourceOfMap, neighbors);
   count++;
-  
+    
   for(j=1; j<sortedOffsets->len; j++) // !!! Start at 1
+#else
+  for(j=0; j<sortedOffsets->len; j++) // !!! Start at 0
+#endif
   {
     offset = g_array_index(sortedOffsets, Coordinates, j);
     neighbor_point = add_points(position, offset);
@@ -477,8 +482,9 @@ synthesize(
     but also means that below, we put offset (0,0) in vector of neighbors !!!
     i.e. this makes a target point it's own neighbor (with a source in later passes.)
     */
-    /* */
-    // setHasValue(&position, TRUE, hasValueMap);
+#ifdef ORIGINAL_START
+    setHasValue(&position, TRUE, hasValueMap);
+#endif
     
     countNeighbors = prepare_neighbors(position, parameters, indices, 
       targetMap, hasValueMap, sourceOfMap, sortedOffsets,
@@ -595,10 +601,13 @@ synthesize(
         pthread_mutex_lock(&mutex);
         setColor( indices, targetMap, position, corpusMap, bestMatchCorpusPoint);
         setSourceOf(position, bestMatchCorpusPoint, sourceOfMap); /* Remember new source */
+        printf("Position %d %d source %d %d\n", position.x, position.y, bestMatchCorpusPoint.x, bestMatchCorpusPoint.y);
         pthread_mutex_unlock(&mutex);
       } /* else same source for target */
     } /* else match is same or worse */
+#ifndef ORIGINAL_START
     setHasValue(&position, TRUE, hasValueMap);
+#endif
   } /* end for each target pixel */
   return repeatCountBetters;
 }

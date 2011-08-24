@@ -249,6 +249,8 @@ refiner(
     pthread_t threadID4;
     */
     
+    pthread_mutex_init(&mutex, NULL);
+    
     // Threads split the work in the middle of targetPoints
     guint split1 = endTargetIndex / 4 + 1;
     guint split2 = endTargetIndex / 2 + 1;
@@ -319,7 +321,6 @@ refiner(
       );
     */
     
-    pthread_mutex_init(&mutex, NULL);
     pthread_join(threadID1, (void**)&temp);
     betters += temp;
     /*
