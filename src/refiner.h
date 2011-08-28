@@ -224,8 +224,6 @@ refiner(
 {
   guint pass;
   TRepetionParameters repetition_params;
-  gulong betters = 0;
-  gulong temp;
   
   SynthArgs args1;
   SynthArgs args2;
@@ -240,14 +238,14 @@ refiner(
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
     guint endTargetIndex = repetition_params[pass][1];
+    gulong betters = 0;
+    gulong temp;
     
     // Synthesize in threads
     pthread_t threadID1;
-    /*
     pthread_t threadID2;
     pthread_t threadID3;
     pthread_t threadID4;
-    */
     
     pthread_mutex_init(&mutex, NULL);
     
@@ -257,7 +255,7 @@ refiner(
     guint split3 = (3/4.0 ) * endTargetIndex + 1;
     
     startThread(
-      &args1, &threadID1, 0, endTargetIndex, pass, // thread specific
+      &args1, &threadID1, 0, split1, pass, // thread specific
       &parameters,
       indices,
       targetMap,
@@ -271,7 +269,7 @@ refiner(
       prng,
       corpusTargetMetric, mapsMetric
       );
-    /*
+   
     startThread(
       &args2, &threadID2, split1, split2, pass,  // thread specific
       &parameters,
@@ -319,18 +317,15 @@ refiner(
       prng,
       corpusTargetMetric, mapsMetric
       );
-    */
     
     pthread_join(threadID1, (void**)&temp);
     betters += temp;
-    /*
     pthread_join(threadID2, (void**)&temp);
     betters += temp;
     pthread_join(threadID3, (void**)&temp);
     betters += temp;
     pthread_join(threadID4, (void**)&temp);
     betters += temp;
-    */
     
     // See def of synthesize() to understand which parameters are 
     // initialized before the first pass and updated by synthesize()
@@ -354,7 +349,7 @@ refiner(
     
     // nil unless DEBUG
     print_pass_stats(pass, repetition_params[pass][1], betters);
-    printf("Pass %d betters %d\n", pass, betters);
+    printf("Pass %d betters %ld\n", pass, betters);
     
     /* Break if a small fraction of target is bettered
     This is a fraction of total target points, 

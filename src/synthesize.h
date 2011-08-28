@@ -18,16 +18,28 @@ Innermost routines of image synthesis.
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#define ORIGINAL_START
+// The original start logic is to set has_value before the color.
+// In that case, for multiple threads, there is more chance
+// that another thread will read a color that another thread is synthesizing.
+// #define ORIGINAL_START
 
 #ifdef VECTORIZED
-
 #include <mmintrin.h> // intrinsics for assembly language MMX op codes, for sse2 xmmintrin.h
 #endif
 
 #include <pthread.h>
 
 pthread_mutex_t mutex;
+
+// Without locking, redefined mutex function to nil.
+// Without locking, a very small chance that color will be scrambled,
+// resulting in a color not found in the original.
+#define NO_LOCKING
+#ifdef NO_LOCKING
+#define pthread_mutex_lock(A) 
+#define pthread_mutext_unlock(A)
+#endif
+
 
 // Match result kind
 typedef enum  BettermentKindEnum 
@@ -601,7 +613,7 @@ synthesize(
         pthread_mutex_lock(&mutex);
         setColor( indices, targetMap, position, corpusMap, bestMatchCorpusPoint);
         setSourceOf(position, bestMatchCorpusPoint, sourceOfMap); /* Remember new source */
-        printf("Position %d %d source %d %d\n", position.x, position.y, bestMatchCorpusPoint.x, bestMatchCorpusPoint.y);
+        // printf("Position %d %d source %d %d\n", position.x, position.y, bestMatchCorpusPoint.x, bestMatchCorpusPoint.y);
         pthread_mutex_unlock(&mutex);
       } /* else same source for target */
     } /* else match is same or worse */
