@@ -1,6 +1,8 @@
 /*
   A texture synthesizing engine for bitmapped images.
   
+  The algorithm is due to Paul Harrison and others.
+
   Copyright (C) 2010, 2011  Lloyd Konneker
 
   This program is free software; you can redistribute it and/or modify
@@ -515,7 +517,11 @@ clippedOrMaskedCorpus(
 // imageSynth()->engine()->refiner()->synthesize
 #include "passes.h"
 #include "synthesize.h"
-#include "refiner.h"
+#ifdef SYNTH_THREADED
+  #include "refinerThreaded.h"
+#else
+  #include "refiner.h"
+#endif
 
 /*
 The engine.

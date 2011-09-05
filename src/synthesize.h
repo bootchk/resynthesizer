@@ -18,26 +18,32 @@ Innermost routines of image synthesis.
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// The original start logic is to set has_value before the color.
-// In that case, for multiple threads, there is more chance
-// that another thread will read a color that another thread is synthesizing.
-// #define ORIGINAL_START
-
 #ifdef VECTORIZED
 #include <mmintrin.h> // intrinsics for assembly language MMX op codes, for sse2 xmmintrin.h
 #endif
 
-#include <pthread.h>
+#ifdef SYNTH_THREADED
+   /*
+   * Threaded synthesis uses mutex on read and write to certain shared data among threads.
+   * You can also use threads without mutex.
+   * Then there is a very small chance that color will be scrambled, resulting in a color not found in corpus.
+   * Also, if integer writes are not atomic, there is a small chance that sourceOf will be scrambled,
+   * resulting in soft errors.
+   * And since locking is fast in Linux, we use it rather than risk soft errors.
+   */
 
-pthread_mutex_t mutex;
+  #ifdef SYNTH_USE_GLIB_THREADS
+    GStaticMutex mutex;
+  #else
+    // Use POSIX instead
+    #include <pthread.h>
+    pthread_mutex_t mutex;
+    // proxies for glib mutex functions are in glibProxy.c, .h
+  #endif
 
-// Without locking, redefined mutex function to nil.
-// Without locking, a very small chance that color will be scrambled,
-// resulting in a color not found in the original.
-#define NO_LOCKING
-#ifdef NO_LOCKING
-#define pthread_mutex_lock(A) 
-#define pthread_mutext_unlock(A)
+#else   // No threads: redefine mutex functions to nil
+  #define g_static_mutex_lock(A)
+  #define g_static_mutex_unlock(A)
 #endif
 
 
@@ -160,15 +166,14 @@ new_neighbor(
   )
 {
   neighbors[index].offset = offset;
-  pthread_mutex_lock(&mutex);  // Set color and source atomically
+  g_static_mutex_lock(&mutex);  // Read color and source atomically
   set_neighbor_state(index, neighbor_point, sourceOfMap, neighbors);
-  // !!! Copy the whole Pixel, all the pixelels
   {
   TPixelelIndex k;
-  for (k=0; k<indices->total_bpp; k++)
+  for (k=0; k<indices->total_bpp; k++)  // !!! Copy whole Pixel, all pixelels
     neighbors[index].pixel[k] = pixmap_index(targetMap, neighbor_point)[k];
   }
-  pthread_mutex_unlock(&mutex);
+  g_static_mutex_unlock(&mutex);
 }
 
 
@@ -197,16 +202,12 @@ prepare_neighbors(
   Coordinates offset;
   Coordinates neighbor_point;
   
-#ifndef ORIGINAL_START
   // Target point is always its own first neighbor, even though on startup and first pass it doesn't have a value.
   offset = g_array_index(sortedOffsets, Coordinates, 0);
   new_neighbor(count, offset, position, indices, targetMap, sourceOfMap, neighbors);
   count++;
     
   for(j=1; j<sortedOffsets->len; j++) // !!! Start at 1
-#else
-  for(j=0; j<sortedOffsets->len; j++) // !!! Start at 0
-#endif
   {
     offset = g_array_index(sortedOffsets, Coordinates, j);
     neighbor_point = add_points(position, offset);
@@ -424,10 +425,10 @@ Called repeatedly: many passes over the data.
 static guint
 synthesize(
   TImageSynthParameters *parameters,  // IN
-  gboolean isStartup,
+  guint threadIndex,       // IN
   guint startTargetIndex,  // IN
-  guint endTargetIndex,  // IN
-  TFormatIndices* indices,  // IN
+  guint endTargetIndex,    // IN
+  TFormatIndices* indices, // IN
   Map * targetMap,      // IN/OUT
   Map* corpusMap,       // IN
   Map* recentProberMap, // IN/OUT
@@ -438,7 +439,8 @@ synthesize(
   pointVector sortedOffsets, // IN
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
-  TMapPixelelMetricFunc mapsMetric
+  TMapPixelelMetricFunc mapsMetric,
+  void (*deepProgressCallback)()
   )
 {
   guint target_index;
@@ -462,41 +464,31 @@ synthesize(
   
   /* ALT: count progress once at start of pass countTargetTries += repetition_params[pass][1]; */
   reset_color_change();
-  
-  // On startup, set the color of the first target pixel to a random color
-  // The colors aren't matched anyway
-  /*
-  if (isStartup)
-    setColor( indices, targetMap, position, corpusMap, bestMatchCorpusPoint);
-  */
-    
-  for(target_index=startTargetIndex; target_index<endTargetIndex; target_index++) 
+
+  // Each thread works on a slice of targetPoints.  Starting at the threadIndex, incremented by count of threads.
+  // If there is no threads or only one thread, starts at startTargetIndex, increments by 1
+  for(target_index=startTargetIndex + threadIndex % THREAD_LIMIT;
+      target_index<endTargetIndex;
+      target_index += THREAD_LIMIT)
   {
 #ifdef STATS
     countTargetTries += 1;
 #endif
     
     #ifdef DEEP_PROGRESS
-    if ((target_index&4095) == 0) 
-    {
-      /* Progress over all passes, not just within this pass.
-      Towards the maximum expected tries, but we might omit latter passes.
-      */
-      // gimp_progress_update((float)countTargetTries/total_targets);
-      progressUpdate(0, (void*) 0); 
-    }
+    if ((target_index&4095) == 0)   deepProgressCallback();
     #endif
     
     position = g_array_index(targetPoints, Coordinates, target_index);
      
     /*
-    This means we are about to give it a value (and a source),
-    but also means that below, we put offset (0,0) in vector of neighbors !!!
-    i.e. this makes a target point it's own neighbor (with a source in later passes.)
+    In the original algorithm, here we called setHasValue(&position, TRUE, hasValueMap);
+    Which meant we are about to give it a value (and a source),
+    but also was a flag that meant to put offset (0,0) in vector of neighbors !!!
+    Now, we always put offset(0,0) in neighbors, and don't call setHasValue
+    until after we actually synthesize the pixel.
+    This is safer for threading: it eliminates a window where hasValue is set but color is unitialized.
     */
-#ifdef ORIGINAL_START
-    setHasValue(&position, TRUE, hasValueMap);
-#endif
     
     countNeighbors = prepare_neighbors(position, parameters, indices, 
       targetMap, hasValueMap, sourceOfMap, sortedOffsets,
@@ -559,6 +551,12 @@ synthesize(
         Heuristic 2: all target neighbors with values might come from the same corpus locus,
         called a "continuation" in Harrison's thesis.
         */
+        /*
+         * Shared and written but no mutex.  It should not be a problem,
+         * even if garbled, the value written is not used except for a comparison.
+         * At most, it would reduce the value of heuristic2.
+         * Different threads are probably working in different continuations and not contending.
+         */
         *intmap_index(recentProberMap, corpus_point) = target_index;
       }
       // Else the neighbor is not in the target (has no source) so we can't use the heuristic 1.
@@ -609,17 +607,19 @@ synthesize(
       {
         repeatCountBetters++;   /* feedback for termination. */
         integrate_color_change(position); // Must be before we store the new color values.
-        /* Save the new color values (!!! not the alpha) for this target point */
-        pthread_mutex_lock(&mutex);
+
+        g_static_mutex_lock(&mutex);    // Atomic write to color and sourceOf
+        // Save the new color values (!!! not the alpha) for this target point
         setColor( indices, targetMap, position, corpusMap, bestMatchCorpusPoint);
         setSourceOf(position, bestMatchCorpusPoint, sourceOfMap); /* Remember new source */
         // printf("Position %d %d source %d %d\n", position.x, position.y, bestMatchCorpusPoint.x, bestMatchCorpusPoint.y);
-        pthread_mutex_unlock(&mutex);
+        g_static_mutex_unlock(&mutex);
+
       } /* else same source for target */
     } /* else match is same or worse */
-#ifndef ORIGINAL_START
+
+    // Shared, but no mutex lock because all writers are setting to the same value, TRUE
     setHasValue(&position, TRUE, hasValueMap);
-#endif
   } /* end for each target pixel */
   return repeatCountBetters;
 }

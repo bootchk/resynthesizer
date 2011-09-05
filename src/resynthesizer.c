@@ -69,16 +69,7 @@ to the opposite side.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
 
-#include "buildSwitches.h"
-
-
-/*
-Uncomment this before release.  I'm not sure if it the build environment
-defines it on the command line to gcc.
-Also, uncomment when using splint.
-Leave it commented for development and testing, to enable assertions.
-*/
-// #define G_DISABLE_ASSERT      // To disable g_assert macro, uncomment this.
+#include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
 
 #include "../config.h" // GNU buildtools local configuration
 #include "plugin-intl.h" // i18n macros
@@ -315,6 +306,12 @@ static void run(
   Map targetMaskMap;
   Map corpusMaskMap;
   
+  #ifdef SYNTH_THREADED
+  // This is as early as it can be called.  Not sure it needs to be called.  See later call to it.
+  // Call it early since calls to gdk, gtk might require this?
+  g_thread_init(NULL);
+  #endif
+
   #ifdef DEBUG
   gimp_message_set_handler(1); // To console instead of GUI
   start_time = clock();

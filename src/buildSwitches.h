@@ -55,13 +55,33 @@ then run >automake from the top directory.
 // Only for using resynthesizer plugin for testing adaption to independent engine.
 
 // Bring in alternative code: experimental, debugging, etc.
-//#define DEEP_PROGRESS // call progressCallback often, from inside synthesis()
+#define DEEP_PROGRESS // call progressCallback often, from inside synthesis()
 //#define ANIMATE    // Animate image while processing, for debugging.
 // #define DEBUG
 
 // VECTORIZED requires SYMMETRIC_METRIC_TABLE
 // #define SYMMETRIC_METRIC_TABLE
 // #define VECTORIZED
+
+// Threaded implementation.
+// Requires file refinerThreaded.h
+// Primarily affects file synthesize.h
+// Whether threading is POSIX threads or glib threads depends on SYNTH_USE_GLIB
+// #define SYNTH_THREADED TRUE
+// If not defined, uses POSIX threads
+#define SYNTH_USE_GLIB_THREADS
+
+// Count threads to start.
+#ifdef SYNTH_THREADED
+  // A reasonable guess that most current processors have no more than 8 cores.
+  // More threads than cores does not seem to hurt performance.
+  // glib doesn't seem to support knowing the count of cores
+  #define THREAD_LIMIT    8
+#else
+  // This MUST be defined to 1 if not threaded, it affects how synthesize() iterates over target
+  #define THREAD_LIMIT 1
+#endif
+
 
 /*
 Uncomment this before release.  

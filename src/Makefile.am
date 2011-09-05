@@ -9,10 +9,12 @@ noinst_LIBRARIES = libimagesynth.a
 libimagesynth_a_SOURCES = \
   imageSynth.c \
   engine.c \
-  glibProxy.c \
   engineParams.c \
   imageFormat.c
-  
+
+# Set buildswitches.h and use glibProxy.c for a library not dependent on glib
+
+
 bin_PROGRAMS = resynthesizer resynthesizer_gui
 
 bindir = $(GIMP_LIBDIR)/plug-ins
