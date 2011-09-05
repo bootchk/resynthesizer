@@ -12,7 +12,7 @@ There are three configurations:
 1) resynthesizer plugin and engine uses gimp and glib and not glibProxy (original configuration)
 2) resynthesizer plugin uses gimp but engine uses glibProxy to redefine most of glib
 	(This is for testing using a gimp plugin harness to the gimp independent engine and glibProxy)
-3) Engine uses glibProxy, not gimp or glib.  (a platform independent engine.)
+3) libsynth.a (inner engine) uses glibProxy, not gimp or glib.  (platform independent engine.)
 
   Copyright (C) 2010, 2011  Lloyd Konneker
 
@@ -68,7 +68,7 @@ then run >automake from the top directory.
 // Primarily affects file synthesize.h
 // Whether threading is POSIX threads or glib threads depends on SYNTH_USE_GLIB
 // #define SYNTH_THREADED TRUE
-// If not defined, uses POSIX threads
+// If not defined, uses POSIX threads.  Moot unless SYNTH_THREADED
 #define SYNTH_USE_GLIB_THREADS
 
 // Count threads to start.

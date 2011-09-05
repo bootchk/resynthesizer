@@ -11,6 +11,7 @@ This is a limited subset: only what is used in synth.
 #define gint int
 #define gint32 int
 #define gushort short unsigned int
+#define gulong long unsigned int
 
 #define gfloat float
 #define gdouble double

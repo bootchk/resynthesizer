@@ -25,11 +25,11 @@ Innermost routines of image synthesis.
 #ifdef SYNTH_THREADED
    /*
    * Threaded synthesis uses mutex on read and write to certain shared data among threads.
-   * You can also use threads without mutex.
+   * You COULD use threads without mutex.
    * Then there is a very small chance that color will be scrambled, resulting in a color not found in corpus.
    * Also, if integer writes are not atomic, there is a small chance that sourceOf will be scrambled,
    * resulting in soft errors.
-   * And since locking is fast in Linux, we use it rather than risk soft errors.
+   * And since mutex locking is fast in Linux, we use mutex rather than risk soft errors.
    */
 
   #ifdef SYNTH_USE_GLIB_THREADS
@@ -425,7 +425,7 @@ Called repeatedly: many passes over the data.
 static guint
 synthesize(
   TImageSynthParameters *parameters,  // IN
-  guint threadIndex,       // IN
+  guint threadIndex,       // IN Zero if not threaded
   guint startTargetIndex,  // IN
   guint endTargetIndex,    // IN
   TFormatIndices* indices, // IN
@@ -476,6 +476,7 @@ synthesize(
 #endif
     
     #ifdef DEEP_PROGRESS
+    // Callback to the level which calculates percent and forwards to the ultimate calling process.
     if ((target_index&4095) == 0)   deepProgressCallback();
     #endif
     
@@ -484,10 +485,10 @@ synthesize(
     /*
     In the original algorithm, here we called setHasValue(&position, TRUE, hasValueMap);
     Which meant we are about to give it a value (and a source),
-    but also was a flag that meant to put offset (0,0) in vector of neighbors !!!
+    but also was a flag that meant to put offset (0,0) in neighbors !!!
     Now, we always put offset(0,0) in neighbors, and don't call setHasValue
     until after we actually synthesize the pixel.
-    This is safer for threading: it eliminates a window where hasValue is set but color is unitialized.
+    This is safer for threading: it eliminates a window where hasValue is set but color is uninitialized.
     */
     
     countNeighbors = prepare_neighbors(position, parameters, indices, 
@@ -512,7 +513,6 @@ synthesize(
     from the corpus region (continuation) where neighbors of the target pixel came from.
     
     Subtle: The target pixel is its own first neighbor (offset 0,0).
-    It also has_value (since we set_has_value() above, but it really doesn't have color on the first pass.)
     On the first pass, it has no source.
     On subsequent passes, it has a source and thus its source is the first corpus point to be probed again,
     and that will set bestPatchDiff to a low value!!!

@@ -517,6 +517,7 @@ clippedOrMaskedCorpus(
 // imageSynth()->engine()->refiner()->synthesize
 #include "passes.h"
 #include "synthesize.h"
+// Both files define the same function refiner()
 #ifdef SYNTH_THREADED
   #include "refinerThreaded.h"
 #else
@@ -526,6 +527,7 @@ clippedOrMaskedCorpus(
 /*
 The engine.
 Independent of platform, calling app, and graphics libraries.
+This is mostly preparation: real work done by refiner() and synthesize().
 */
 
 int
