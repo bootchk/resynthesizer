@@ -647,7 +647,7 @@ prepare_sorted_offsets(void)
   gint width = (corpus.width<image.width ? corpus.width : image.width);
   gint height = (corpus.height<image.height ? corpus.height : image.height);
   
-  sorted_offsets_size = 2*2*width*height; 
+  sorted_offsets_size = (2*width-1)*(2*height-1);
   sorted_offsets = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), sorted_offsets_size); /* Reserve */
   
   {
