@@ -466,6 +466,13 @@ synthesize(
   /* ALT: count progress once at start of pass countTargetTries += repetition_params[pass][1]; */
   reset_color_change();
 
+#ifdef SYNTH_THREADED2
+  // Changes part of alternative 2.  See refinerThreaded.c
+  for(target_index=startTargetIndex;
+        target_index<endTargetIndex;
+        target_index += 1)
+#endif
+
   // Each thread works on a slice of targetPoints.  Starting at the threadIndex, incremented by count of threads.
   // If there is no threads or only one thread, starts at startTargetIndex, increments by 1
   for(target_index=startTargetIndex + threadIndex % THREAD_LIMIT;

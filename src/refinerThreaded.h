@@ -228,6 +228,7 @@ startThread(
 #endif
 }
 
+// Alternative 1
 
 static void 
 refiner(
@@ -362,3 +363,120 @@ refiner(
     // progressCallback( (int) ((pass+1.0)/(MAX_PASSES+1)*100), contextInfo);
   }
 }
+
+
+#ifdef SYNTH_THREADED2
+// Alternative 2
+// Sept. 2011.  One experiment shows it is no faster, and produces different, grainy results.
+
+static void
+refiner(
+  TImageSynthParameters parameters,
+  TFormatIndices* indices,
+  Map* targetMap,
+  Map* corpusMap,
+  Map* recentProberMap,
+  Map* hasValueMap,
+  Map* sourceOfMap,
+  pointVector targetPoints,
+  pointVector corpusPoints,
+  pointVector sortedOffsets,
+  GRand *prng,
+  TPixelelMetricFunc corpusTargetMetric,  // array pointers
+  TMapPixelelMetricFunc mapsMetric,
+  void (*progressCallback)(int, void*),
+  void *contextInfo
+  )
+{
+  TRepetionParameters repetition_params;
+
+
+  // Synthesize in threads.  Note proxies in glibProxy.h for POSIX threads
+#ifdef SYNTH_USE_GLIB_THREADS
+  GThread* threads[THREAD_LIMIT];
+#else
+  pthread_t threads[THREAD_LIMIT];
+#endif
+  // If not using glib proxied to pthread by glibProxy.h
+  GStaticMutex mutexProgress;
+  g_static_mutex_init(&mutex);  // defined in synthesize.h
+  g_static_mutex_init(&mutexProgress);
+
+
+  SynthArgs synthArgs[THREAD_LIMIT];
+
+
+  // For progress
+  guint estimatedPixelCountToCompletion;
+  guint completedPixelCount = 0;
+  guint priorReportedPercentComplete = 0;
+
+  /*
+   * Nested function is gcc extension.
+   * Called from inside synthesize() every 4k target pixels.
+   * Convert to a percent of estimated total pixels to synthesis.
+   * Callback invoking process every 1 percent.
+   * Note synthesis may quit early: then progress makes a large jump.
+   */
+  void
+  deepProgressCallback()
+  {
+    completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
+    guint percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
+    if ( percentComplete > priorReportedPercentComplete )
+    {
+      g_static_mutex_lock(&mutexProgress);       // mutex calls to GUI i.e. gdk, gtk which are thread aware but not thread safe
+      // Alternatively, use gdk_thread_enter()
+      progressCallback((int) percentComplete, contextInfo);  // Forward deep progress callback to calling process
+      g_static_mutex_unlock(&mutexProgress);
+      priorReportedPercentComplete = percentComplete;
+    }
+  }
+
+
+  g_thread_init(NULL);
+
+  prepare_repetition_parameters(repetition_params, targetPoints->len);
+  estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
+
+  // Start one thread for what were formerly passes
+  g_assert(THREAD_LIMIT > MAX_PASSES);
+
+  gulong betters = 0;
+  guint threadIndex;
+  for (threadIndex=0; threadIndex<MAX_PASSES; threadIndex++)
+  {
+    startThread(
+      &synthArgs[threadIndex], &threads[threadIndex],
+      threadIndex,        // Every thread does not split modulo, see refinerThreaded.c changes
+      0, repetition_params[threadIndex][1], // Every thread works on a prefix of targetPoints
+      &parameters,
+      indices,
+      targetMap,
+      corpusMap,
+      recentProberMap,
+      hasValueMap,
+      sourceOfMap,
+      targetPoints,
+      corpusPoints,
+      sortedOffsets,
+      prng,
+      corpusTargetMetric, mapsMetric,
+      deepProgressCallback
+      );
+  }
+
+  // Wait for threads to complete; rejoin them
+  for (threadIndex=0; threadIndex<MAX_PASSES; threadIndex++)
+  {
+    gulong temp;
+
+  #ifdef SYNTH_USE_GLIB_THREADS
+     temp = (gulong) g_thread_join(threads[threadIndex]);       // cast return value from gpointer to gulong
+  #else
+     pthread_join(threads[threadIndex], (void**)&temp);
+  #endif
+     betters += temp;
+  }
+}
+#endif
