@@ -50,8 +50,7 @@ ARFLAGS = cru
 libimagesynth_a_AR = $(AR) $(ARFLAGS)
 libimagesynth_a_LIBADD =
 am_libimagesynth_a_OBJECTS = imageSynth.$(OBJEXT) engine.$(OBJEXT) \
-	glibProxy.$(OBJEXT) engineParams.$(OBJEXT) \
-	imageFormat.$(OBJEXT)
+	engineParams.$(OBJEXT) imageFormat.$(OBJEXT)
 libimagesynth_a_OBJECTS = $(am_libimagesynth_a_OBJECTS)
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
@@ -201,22 +200,20 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libimagesynth.a
 
-# Standalone engine i.e. static library
+# Standalone engine is a static library
 libimagesynth_a_SOURCES = \
   imageSynth.c \
   engine.c \
-  glibProxy.c \
   engineParams.c \
   imageFormat.c
 
+
+# resynthesizer is a GIMP plugin calling libimagesynth
 resynthesizer_SOURCES = \
   resynthesizer.c \
   engineParams.c \
   imageFormat.c
 
-
-# resynthesizer depends on imageSynth library
-# resynthesizer_LDADD = libimagesynth.a
 
 # For certain configurations (not using glib),
 # resynthesizer_SOURCES should include
@@ -250,6 +247,7 @@ resynthesizer_gui_SOURCES = \
 #  resynth-parameters.c
 #  resynth-constants.h 
 
+# Work in progress building a shared dynamic library
 #lib_LTLIBRARIES = libimagesynth-1.0.la
 #libimagesynth_1_0_la_SOURCES = \
 #  imageSynth.c \
@@ -266,6 +264,8 @@ INCLUDES = \
 	@GIMP_CFLAGS@		\
 	-I$(includedir)
 
+
+# resynthesizer depends on imagesynth library
 LDADD = $(GIMP_LIBS) libimagesynth.a
 all: all-am
 
@@ -360,7 +360,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/engineParams.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glibProxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imageFormat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imageSynth.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resynth-gui.Po@am__quote@

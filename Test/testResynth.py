@@ -137,7 +137,7 @@ def runtest(filename, testname, testcommand, testparameters, select=None):
   except RuntimeError:
     record_test_result(testname, "EXCEPTION")
     return
-  logging.info("Processor time: " + str(time.time() - start))
+  logging.info("Elapsed time: " + str(time.time() - start))
   
   '''
   !!! Note that the test string can assign to image if the test returns a new image
@@ -214,6 +214,12 @@ def main():
   runtest('zap-texture', 'resynthfull', test, parameters, select1)
   
   return
+  
+  # Resynthesis of small file from full context
+  test = "pdb.plug_in_resynthesizer"
+  # !!! Note we want the ID of the drawable
+  parameters = "0,0, True, drawable_of_file_with_anti_selection('"+ zappath + "', select1).ID, -1, -1, 0.0, 0.117, 16, 500" 
+  runtest('zap-texture', 'resynthfull', test, parameters, select1)
   
   # Resynthesis of ufo from full context
   test = "pdb.plug_in_resynthesizer"

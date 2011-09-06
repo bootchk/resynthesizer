@@ -49,6 +49,18 @@ TODO experiments on other ways of repeating synthesis.
 #define MAX_PASSES 6
 typedef guint TRepetionParameters[MAX_PASSES][2] ;
 
+static guint
+estimatePixelsToSynth(TRepetionParameters repetition_params)
+{
+  guint pass;
+  guint pixelCount=0;
+
+  for (pass=0; pass<MAX_PASSES; pass++)
+    pixelCount += repetition_params[pass][1];
+  return pixelCount;
+}
+
+
 
 static guint
 prepare_repetition_parameters(

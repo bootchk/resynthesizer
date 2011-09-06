@@ -31,6 +31,10 @@ resynthesizing early synthesized pixels early.
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+/*
+Non threaded version, but with same signature and calls to synthesize()
+*/
+
 static void 
 refiner(
   TImageSynthParameters parameters,
@@ -53,47 +57,78 @@ refiner(
   guint pass;
   TRepetionParameters repetition_params;
   
-  prepare_repetition_parameters(repetition_params, targetPoints->len);
+  // For progress
+  guint estimatedPixelCountToCompletion;
+  guint completedPixelCount = 0;
+  guint priorReportedPercentComplete = 0;
+
   
-  // Get progress started with small percent
-  progressCallback( 2, contextInfo);
+  /*
+   * Nested function is gcc extension.
+   * Called from inside synthesis every 4k target pixels.
+   * Convert to a percent of estimated total pixels to synthesis.
+   * Callback invoking process every 1 percent.
+   * Note synthesis may quit early: then progress makes a large jump.
+   */
+  void
+  deepProgressCallback()
+  {
+    completedPixelCount += 4096;
+    guint percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
+    if ( percentComplete > priorReportedPercentComplete )
+    {
+      progressCallback((int) percentComplete, contextInfo);  // Forward callback to calling process
+      priorReportedPercentComplete = percentComplete;
+    }
+  }
+
+
+  prepare_repetition_parameters(repetition_params, targetPoints->len);
+  estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
-    // See def of synthesize() to understand which parameters are 
-    // initialized before the first pass and updated by synthesize()
-    guint betters = synthesize(
-      pass, 
-      &parameters, 
-      repetition_params,
-      indices,
-      targetMap,
-      corpusMap,
-      recentProberMap,
-      hasValueMap,
-      sourceOfMap,
-      targetPoints,
-      corpusPoints,
-      sortedOffsets,
-      prng,
-      corpusTargetMetric, mapsMetric
-      );
-  
+    guint endTargetIndex = repetition_params[pass][1];
+    gulong betters = 0; // gulong so can be cast to void *
+    
+    betters = synthesize(
+        &parameters,
+        0,      // Unthreaded synthesis is threadIndex 0
+        0,      // Unthreaded synthesis startTargetIndex is 0
+        endTargetIndex,
+        indices,
+        targetMap,
+        corpusMap,
+        recentProberMap,
+        hasValueMap,
+        sourceOfMap,
+        targetPoints,
+        corpusPoints,
+        sortedOffsets,
+        prng,
+        corpusTargetMetric,
+        mapsMetric,
+        deepProgressCallback
+        );
+
     // nil unless DEBUG
     print_pass_stats(pass, repetition_params[pass][1], betters);
-    printf("Pass %d betters %d\n", pass, betters);
+    // printf("Pass %d betters %ld\n", pass, betters);
     
     /* Break if a small fraction of target is bettered
     This is a fraction of total target points, 
     not the possibly smaller count of target attempts this pass.
     Or break on small integral change: if ( targetPoints_size / integralColorChange < 10 ) {
     */
-    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) )
+    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) ) 
+    {
+      // printf("Quitting early after %d passes. Betters %ld\n", pass+1, betters);
       break;
+    }
     
     // Simple progress: percent of passes complete.
     // This is not ideal, a maximum of MAX_PASSES callbacks, typically six.
     // And the later passes are much shorter than earlier passes.
-    progressCallback( (int) ((pass+1.0)/(MAX_PASSES+1)*100), contextInfo);
-  }
+    // progressCallback( (int) ((pass+1.0)/(MAX_PASSES+1)*100), contextInfo);
+  } // end pass
 }

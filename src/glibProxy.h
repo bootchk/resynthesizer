@@ -11,6 +11,7 @@ This is a limited subset: only what is used in synth.
 #define gint int
 #define gint32 int
 #define gushort short unsigned int
+#define gulong long unsigned int
 
 #define gfloat float
 #define gdouble double
@@ -139,4 +140,10 @@ s_array_free(
   int   cascade
   );		   
 
-
+// Proxies for thread mutex
+// Redefine glib mutex to use POSIX pthread mutex
+// Depends on <pthread.h>
+// Other differences between glib and POSIX threading are #ifdefed in the code
+#define g_static_mutex_init(A)      pthread_mutex_init(A, NULL);        // POSIX additional parameter
+#define g_static_mutex_lock(A)      pthread_mutex_lock(A)
+#define g_static_mutex_unlock(A)    pthread_mutex_unlock(A)
