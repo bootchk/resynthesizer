@@ -213,8 +213,6 @@ def main():
   parameters = "0,0, True, drawable_of_file_with_anti_selection('"+ zappath + "', select1).ID, -1, -1, 0.0, 0.117, 16, 500" 
   runtest('zap-texture', 'resynthfull', test, parameters, select1)
   
-  return
-  
   # Resynthesis of small file from full context
   test = "pdb.plug_in_resynthesizer"
   # !!! Note we want the ID of the drawable

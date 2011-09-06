@@ -95,3 +95,6 @@ for banded randomization of target points.
 #define IMAGE_SYNTH_BAND_FRACTION 0.1
 
 
+// Count of target pixels synthesized per deep progress callback
+// !!! This must in binary all x lower bits ones i.e. 2^12-1
+#define IMAGE_SYNTH_CALLBACK_COUNT 4095

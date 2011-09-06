@@ -478,7 +478,10 @@ synthesize(
     
     #ifdef DEEP_PROGRESS
     // Callback to the level which calculates percent and forwards to the ultimate calling process.
-    if ((target_index&4095) == 0)   deepProgressCallback();
+    // Modulo is the intuitive way to do this.
+    // But here, we are testing for x lower bits all 1, say 4095, 1111111111.
+    // Don't AND with an arbitrary single bit, say 4096, since one bit is often set.
+    if ((target_index&IMAGE_SYNTH_CALLBACK_COUNT) == 0)   deepProgressCallback();
     #endif
     
     position = g_array_index(targetPoints, Coordinates, target_index);

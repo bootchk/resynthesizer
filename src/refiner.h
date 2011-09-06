@@ -73,7 +73,9 @@ refiner(
   void
   deepProgressCallback()
   {
-    completedPixelCount += 4096;
+    // !!! Note if estimatedPixelCountToCompletion is small
+    // this calls back once for each pass with a percentComplete greater than 100.
+    completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
     guint percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
     if ( percentComplete > priorReportedPercentComplete )
     {
