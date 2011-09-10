@@ -21,6 +21,28 @@ This is shared by the gui control plugin and the engine plugin.
 */
 
 
+/*
+Parameters passed from a Gimp plugin
+to the adapter from Gimp to the innermost engine.
+*/
+typedef struct GIMPAdapterParametersStruct {
+  
+  int h_tile;
+  int v_tile; 
+  int use_border;   
+  
+  /* GIMP.  gint32 */
+  int corpus_id, input_map_id, output_map_id;
+
+  double map_weight;
+  double autism;
+  
+  int neighbours;
+  int trys;
+} TGimpAdapterParameters;
+
+
+
 static GimpParamDef resynth_paramdefs[] = 
 {
   { GIMP_PDB_INT32,     (gchar*)"run_mode",   (gchar*)"Interactive, non-interactive" },
@@ -51,39 +73,60 @@ static GimpParamDef resynth_paramdefs[] =
 };
   
 
-struct ParametersStruct {
-  gint h_tile, v_tile; /* c++ was bool */
-  gint use_border;   /* c++ was bool */
-  
-  gint32 corpus_id, input_map_id, output_map_id;
+/*
+Set the default parameters for the GIMP plugin that adapts the engine.
+The parameters to the plugin are distinct from parameters to the engine.
+*/
+static void
+setDefaultPluginParams(
+  TGimpAdapterParameters* param
+  )
+{
+  /* 
+  Following are unique to the plugin.
+  These are 3 of the 4 images that can be passed to the engine.
+  The 4th image is always passed to every plugin and is not listed here.
+  */
+  param->corpus_id = -1;
+  param->input_map_id = -1;
+  param->output_map_id = -1;
+  // Following are similar to parameters to engine.
+  param->v_tile = FALSE;  // lkk was TRUE
+  param->h_tile = FALSE;
+  param->use_border = 1;    // lkk was true, now is an enum
+  param->map_weight = 0.5;
+  param->autism = 0.117; // 30/256 
+  param->neighbours = 30;
+  param->trys = 200;
+}
 
-  gdouble map_weight;
-  gdouble autism;
-  gint32 neighbours, trys;
-};
+static void
+adaptParameters(
+  TGimpAdapterParameters* p1,
+  TImageSynthParameters* p2
+  )
+{
+  p2->isMakeSeamlesslyTileableHorizontally = p1->h_tile;
+  p2->isMakeSeamlesslyTileableVertically   = p1->v_tile;
+  p2->matchContextType                     = p1->use_border;
+  p2->mapWeight                            = p1->map_weight;
+  p2->sensitivityToOutliers                = p1->autism;
+  p2->patchSize                            = p1->neighbours;
+  p2->maxProbeCount                        = p1->trys;
+}
 
 
-typedef struct ParametersStruct Parameters;
 
 /* Restore the last parameters used, get from GIMP. */
 static gboolean 
 get_last_parameters(
-  Parameters *param, 
+  TGimpAdapterParameters* param, 
   gint default_drawable,
   gchar * plugin_name
   ) 
 {
   /* Defaults in case this is our first run */
-  param->corpus_id = -1;
-  param->input_map_id = -1;
-  param->output_map_id = -1;
-  param->v_tile = TRUE;
-  param->h_tile = TRUE;
-  param->use_border = 1;    // lkk was true, now is an enum
-  param->map_weight = 0.5;
-  param->autism = 0.117; /* 30/256 */
-  param->neighbours = 30;
-  param->trys = 200;
+  setDefaultPluginParams(param);
  
   if ( ! gimp_get_data(plugin_name, param))
     /* No data was stored previously, not an exception. */
@@ -102,7 +145,10 @@ Only called for runmode INTERACTIVE, by the control plugin,
 not by the engine plugin.
 */
 static void
-set_last_parameters(Parameters *params, gint drawable_id)
+set_last_parameters(
+  TGimpAdapterParameters* params, 
+  gint drawable_id
+  )
 {
   /* 
   The GUI defaults the corpus drawable to the same as the target drawable.
@@ -116,7 +162,7 @@ set_last_parameters(Parameters *params, gint drawable_id)
   */
   if (params->corpus_id == drawable_id)
     params->corpus_id = -1;
-  gimp_set_data(RESYNTH_CONTROLS_PDB_NAME, params, sizeof(Parameters));
+  gimp_set_data(RESYNTH_CONTROLS_PDB_NAME, params, sizeof(TGimpAdapterParameters));
   if (params->corpus_id == -1)
     params->corpus_id = drawable_id;
 }
@@ -125,7 +171,7 @@ set_last_parameters(Parameters *params, gint drawable_id)
 /* Convert argument list into internal parameters */
 static gboolean 
 get_parameters_from_list(
-  Parameters *param, 
+  TGimpAdapterParameters *param, 
   gint n_args, 
   const GimpParam *args
   ) 
@@ -158,7 +204,7 @@ and its too small (nargs ==3 for INTERACTIVE.)
 */
 static void
 set_parameters_to_list(
-  const Parameters *param, // IN  parameter values user chose
+  const TGimpAdapterParameters *param, // IN  parameter values user chose
   const GimpParam *args,  // IN   args: parameters passed to control plugin
   const gint nargs,       // IN
   gint runmode,           // IN
@@ -200,4 +246,7 @@ set_parameters_to_list(
     temp[i].type = resynth_paramdefs[i].type;
   }
 }
+
+
+
 

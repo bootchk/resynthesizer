@@ -1,0 +1,67 @@
+# Makefile for synth: platform independent texture synthesizer
+# Copyright 2011 Lloyd Konneker
+
+EXEC      = testSynth
+SHAREDLIB = libimagesynth.so
+STATICLIB = libimagesynth.a
+
+SRC_FILES = imageSynth.c engine.c glibProxy.c engineParams.c imageFormat.c
+O_FILES   = $(SRC_FILES:%.c=%.o)
+
+H_FILES   = imageSynth.h imageBuffer.h engineParams.h imageSynthConstants.h glibProxy.h map.h mapIndex.h mapOps.h engine.h adaptSimple.h stats.h orderTarget.h engineTypes.h matchWeighting.h passes.h synthesize.h refiner.h imageFormat.h
+
+CC = gcc
+
+# These are more or less arbitrary, change them at will
+# except we use inline hints extensively
+CFLAGS= -g -O3 -Wall -std=c99 -fno-common -ffast-math -frename-registers -msse3 -Winline
+
+LDFLAGS= -lm -g
+
+all: $(EXEC)
+	@echo
+	@echo 'Done building testSynth'
+	@echo 
+
+# test harness, linked to static library
+$(EXEC): $(STATICLIB) testSynth.c
+	$(CC) $(CFLAGS) -L. -lm -o testSynth testSynth.c -limagesynth 
+	
+# library: image synthesis
+
+# Shared library
+$(SHAREDLIB): CFLAGS+=-fPIC -shared
+$(SHAREDLIB): $(O_FILES)
+	$(CC) $(CFLAGS) -o $@ $^
+
+# Static library
+$(STATICLIB): CFLAGS+=-fPIC
+$(STATICLIB): $(O_FILES)
+	ar rcs $(STATICLIB) $(O_FILES)
+
+# !!! These dependencies are not complete.
+# .h are missing
+# some of the .h files are definitions, not just declarations
+
+
+
+# Get source files from development directory
+# !!! Except for buildSwitches.h and Makefile
+source:
+	for file in testSynth.c $(SRC_FILES) $(H_FILES) ; do \
+		cp ../../synth/src/$$file . ; \
+	done
+
+# OLD
+#synth: synth.o engine.o glibProxy.o engineParams.o imageFormat.o
+#	$(CC) -Wextra $(CFLAGS) synth.o engine.o glibProxy.o engineParams.o imageFormat.o -o $@  $(LDFLAGS)
+
+# rm source except Makefile 
+# Used when source is copied into this build directory.
+# !!! This deletes buildSwitches.h
+refreshsource:
+	rm -f *.c *.h
+	
+clean:
+	-rm -f *~ *.o core $(EXEC) $(SHAREDLIB) $(STATICLIB)
+

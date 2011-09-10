@@ -15,3 +15,23 @@
 # Ignore logs
 *.log
 
+# Ignore object files
+*.o
+
+# Ignore
+*.Po
+
+# http://www.gnu.org/software/automake
+# Track all Makefile.in because users won't have automake to generate them
+
+# http://www.gnu.org/software/autoconf
+# Don't track autoconf generated temporary files.
+# Users don't need them, developers must generate their own
+
+/autom4te.cache
+/aclocal.m4
+/compile
+/configure
+/depcomp
+/install-sh
+/missing
