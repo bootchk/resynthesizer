@@ -15,6 +15,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -147,6 +148,7 @@ POFILES = @POFILES@
 POSUB = @POSUB@
 PO_IN_DATADIR_FALSE = @PO_IN_DATADIR_FALSE@
 PO_IN_DATADIR_TRUE = @PO_IN_DATADIR_TRUE@
+RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@

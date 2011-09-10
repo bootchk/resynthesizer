@@ -3,6 +3,39 @@ ChangeLog for the resynthesizer
 
 2010 Lloyd Konneker bootch@nc.rr.com
 
+  version 2.0
+  
+  This version is a major rewrite but with little functional change.
+  
+  * Functional changes:
+  
+    * If compiled with threading, the algorithm is once again non-deterministic.
+    Since threads run in any order, you can't get repeatable results.
+    The results are not necessarily better or worse.
+    Because of nondeterminism, the test suite reports FAILED for all tests: a human must look at the results.
+    See buildswitches.h to compile without threading (defaults to 8 threads.)
+    
+  * Structural changes:
+  
+    * Threaded using glib threads (or POSIX threads)
+    
+    * The innermost engine is now a static library (libimagesynth.a), independent of gimp. 
+    
+    It is compiled separately and statically linked into the resynthesizer plugin (an adapter.)
+    With a little work, it can be compiled independently of glib.
+    
+    * The innermost engine is now reentrant (uses no global, static variables.)
+    
+    With a little work, it could be compiled as a shared library.
+    However, the API is poorly documented and needs improvement.
+    
+  version 1.0.1
+  
+    * fix off-by-one bug in allocation of sortedOffsets.
+    The bug was unreported and not noticeable by most users.
+    Only affects a few cases using maps.
+    The fix makes the results different in those cases, not necessarily better.
+    
 	version 1.0 (Many, major changes.)
 	
 	* Functional changes:
