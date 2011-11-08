@@ -51,7 +51,8 @@ refiner(
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
   void (*progressCallback)(int, void*),
-  void *contextInfo
+  void *contextInfo,
+  int* cancelFlag
   ) 
 {
   guint pass;
@@ -110,7 +111,8 @@ refiner(
         prng,
         corpusTargetMetric,
         mapsMetric,
-        deepProgressCallback
+        deepProgressCallback,
+        cancelFlag
         );
 
     // nil unless DEBUG

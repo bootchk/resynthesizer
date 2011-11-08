@@ -7,5 +7,6 @@ engine(
   Map* targetMap,
   Map* corpusMap,
   void (*progressCallback)(int, void*),   // int percentDone, void *contextInfo
-  void *contextInfo
+  void *contextInfo,
+  int * cancelFlag
   );

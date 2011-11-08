@@ -441,7 +441,8 @@ synthesize(
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
-  void (*deepProgressCallback)()
+  void (*deepProgressCallback)(),
+  int *cancelFlag
   )
 {
   guint target_index;
@@ -488,7 +489,11 @@ synthesize(
     // Modulo is the intuitive way to do this.
     // But here, we are testing for x lower bits all 1, say 4095, 1111111111.
     // Don't AND with an arbitrary single bit, say 4096, since one bit is often set.
-    if ((target_index&IMAGE_SYNTH_CALLBACK_COUNT) == 0)   deepProgressCallback();
+    if ((target_index&IMAGE_SYNTH_CALLBACK_COUNT) == 0)
+    {
+      deepProgressCallback();
+      if (*cancelFlag) break; // for each target pixel
+    }
     #endif
     
     position = g_array_index(targetPoints, Coordinates, target_index);

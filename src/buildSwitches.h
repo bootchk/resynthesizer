@@ -43,6 +43,7 @@ then run >automake from the top directory.
 /* config 2 */
 /*
 #define SYNTH_USE_GLIB TRUE
+
 #define USE_GLIB_PROXY TRUE
 */
 
@@ -67,9 +68,9 @@ then run >automake from the top directory.
 // Requires file refinerThreaded.h
 // Primarily affects file synthesize.h
 // Whether threading is POSIX threads or glib threads depends on SYNTH_USE_GLIB
-#define SYNTH_THREADED TRUE
+// #define SYNTH_THREADED TRUE
 // If not defined, uses POSIX threads.  Moot unless SYNTH_THREADED
-#define SYNTH_USE_GLIB_THREADS
+// #define SYNTH_USE_GLIB_THREADS
 
 // Count threads to start.
 #ifdef SYNTH_THREADED

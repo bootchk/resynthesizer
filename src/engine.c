@@ -537,7 +537,8 @@ engine(
   Map* targetMap,
   Map* corpusMap,
   void (*progressCallback)(int, void*),
-  void *contextInfo
+  void *contextInfo,
+  int *cancelFlag
   )
 {
   // Engine private data. On stack (and heap), not global, so engine is reentrant.
@@ -661,7 +662,8 @@ engine(
     corpusTargetMetric,
     mapMetric,
     progressCallback,
-    contextInfo
+    contextInfo,
+    cancelFlag
     );
     
   // Free internal mallocs.
@@ -678,7 +680,7 @@ engine(
   g_rand_free(prng);
   #endif
   
-  return 0; // Success
+  return 0; // Success, even if canceled
 }
 
 

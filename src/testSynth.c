@@ -69,11 +69,12 @@ static void test(
 {
   ;
   int error;
+  int cancelFlag = 0;
 	
   printf("\n");  printf("%s", description); printf("\n");
 	printf("Before:\n");
 	dumpBuffer(buffer, pixelelCount);
-	error = imageSynth(buffer, mask, format, parameters, progressCallback, (void*) 0);
+	error = imageSynth(buffer, mask, format, parameters, progressCallback, (void*) 0, &cancelFlag);
 	if (error) printf("!!!! imageSynth returned error: %d\n", error);
 	printf("Expect:\n"); printf("%s", expect); printf("\n");
 	printf("Result:\n");
@@ -157,10 +158,14 @@ int main(
 	TImageSynthParameters parameters;
 	setDefaultParams(&parameters);
 	
+	{
+	int cancelFlag = 1;
+	
 	printf("\nTest center pixel synthesized but alpha unchanged.\n");
 	printf("Before\n");
 	dumpBuffer(&testImage, 4);
-	imageSynth(&testImage, &testMask, T_RGBA, &parameters, progressCallback, (void*) 0);
+	imageSynth(&testImage, &testMask, T_RGBA, &parameters, progressCallback, (void*) 0, &cancelFlag);
+	}
 	// dumpImage(45);	// 45 pixelels 3x3x5
 	printf("After\n");
 	dumpBuffer(&testImage, 4);

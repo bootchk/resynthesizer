@@ -306,6 +306,8 @@ static void run(
   Map targetMaskMap;
   Map corpusMaskMap;
   
+  int cancelFlag = 0;
+  
   #ifdef SYNTH_THREADED
   // This is as early as it can be called.  Not sure it needs to be called.  See later call to it.
   // Call it early since calls to gdk, gtk might require this?
@@ -497,7 +499,8 @@ static void run(
     &targetMap, 
     &corpusMap,
     progressUpdate,
-    (void *) 0
+    (void *) 0,
+    &cancelFlag
     );
   
   if (result == IMAGE_SYNTH_ERROR_EMPTY_CORPUS)
