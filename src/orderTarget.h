@@ -26,6 +26,8 @@ TODO ordering by a thinning, or brushfire, algorithm, i.e. distance from context
 */
 
 
+#include "brushfire.h"
+
 /*
 Order vector of target pixels: shuffle randomly
 This is the single, original method of randomizing.
@@ -143,28 +145,7 @@ targetPoints_from_offsets(
       add_points(g_array_index(targetPoints, Coordinates, i), center);
   }
 
-/* Calc array of max distance along radii over all target points. */
-static void
-prepare_max_cartesian_along_ray(pointVector targetPoints)
-{
-  guint i;
-  Coordinates center = get_center(targetPoints, targetPoints->len);
-  
-  for(i=0; i<401; i++)
-    max_cartesian_along_ray[i] = 0;
-  
-  for(i=0; i<targetPoints->len; i++)
-  {
-    Coordinates point = g_array_index(targetPoints, Coordinates, i);
-    Coordinates offset = subtract_points(point, center);
-    guint cartesian = offset.x * offset.x + offset.y * offset.y;
-    guint ray = grad(offset);
-    if ( cartesian > max_cartesian_along_ray[ray] )
-      max_cartesian_along_ray[ray] = cartesian; 
-  }
-  /* Not all radii in grad units will have points on them, i.e. may have 0 max cartesian */
-  /* dump_max_grad(); */
-}
+
 
 /*
 Order target points by 2D distance from target center, then randomize in bands.
@@ -199,6 +180,28 @@ orderTargetPointsRandomDirectional(
 
 
 
+
+static void
+orderTargetPointsRandomBrushfire(
+  // c++ bool (*compare) (const Coordinates, const Coordinates)
+  gint (*compare)(const void*, const void*),
+  pointVector targetPoints,
+  GRand *prng
+  )
+{
+  Coordinates center = get_center(targetPoints, targetPoints->len);
+  targetPoints_to_offsets(center, targetPoints);
+  // Coordinates are now offsets.
+  GArray* sortArray = targetPointsToSortArray(targetPoints);
+  g_array_sort(sortArray, compare);  // outward or inward  compare function
+  targetPointsFromSortArray(targetPoints, sortArray);
+  targetPoints_from_offsets(center, targetPoints);
+  randomizeBandsTargetPoints(targetPoints, prng);
+}
+
+
+
+
 /* 
 Random squeeze: order the target points both directions, in and out by distance from center.
 Used if the target is a donut, with context inside and outside.
@@ -213,15 +216,14 @@ static void orderTargetPointsRandomSqueeze(
   
   Coordinates center = get_center(targetPoints, targetPoints->len);
   
-  prepare_max_cartesian_along_ray(targetPoints);
-  
   targetPoints_to_offsets(center, targetPoints); // Temporarily: Coords => to offsets from center
+  GArray* sortArray = targetPointsToSortArray(targetPoints);
       
   // Algorithm: shuffle (one from each end alternatively, not random.)
   
   // Sort ascending on distance from center
   // c++ sort(targetPoints.begin(), targetPoints.end(), lessCartesian);   
-  g_array_sort(targetPoints, (gint (*)(const void*, const void*)) moreInward);
+  g_array_sort(sortArray, (gint (*)(const void*, const void*)) moreInward);
   
   // Copy targetPoints vector
   target_temp = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), targetPoints->len);
@@ -253,6 +255,7 @@ static void orderTargetPointsRandomSqueeze(
     }
   }
   
+  targetPointsFromSortArray(targetPoints, sortArray);
   targetPoints_from_offsets(center, targetPoints); // offsets => coordinates
   randomizeBandsTargetPoints(targetPoints, prng);
   g_array_free(target_temp, TRUE);
@@ -276,8 +279,7 @@ orderTargetPoints(
         orderTargetPointsRandom(targetPoints, prng);  
         break;
     case 2: /* Randomized bands, concentric, inward */
-        prepare_max_cartesian_along_ray(targetPoints);
-        orderTargetPointsRandomDirectional( 
+        orderTargetPointsRandomBrushfire(
           (gint (*)(const void*, const void*)) moreInward,
           targetPoints,
           prng
@@ -301,8 +303,7 @@ orderTargetPoints(
         // randomized bands, vertically, inwards.  IE squeezing from sides.
         break;
     case 5:
-        prepare_max_cartesian_along_ray(targetPoints);
-        orderTargetPointsRandomDirectional(
+        orderTargetPointsRandomBrushfire(
           (gint (*)(const void*, const void*)) lessInward,
           targetPoints,
           prng

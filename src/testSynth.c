@@ -159,9 +159,10 @@ int main(
 	setDefaultParams(&parameters);
 	
 	{
-	int cancelFlag = 1;
+	// !!!! Set this to 1 to test cancellation !!!!
+	int cancelFlag = 0;
 	
-	printf("\nTest center pixel synthesized but alpha unchanged.\n");
+	printf("\nTest center pixel synthesized but alpha unchanged (OR test cancellation).\n");
 	printf("Before\n");
 	dumpBuffer(&testImage, 4);
 	imageSynth(&testImage, &testMask, T_RGBA, &parameters, progressCallback, (void*) 0, &cancelFlag);

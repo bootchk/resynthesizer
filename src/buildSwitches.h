@@ -57,7 +57,7 @@ then run >automake from the top directory.
 
 // Bring in alternative code: experimental, debugging, etc.
 #define DEEP_PROGRESS // call progressCallback often, from inside synthesis()
-//#define ANIMATE    // Animate image while processing, for debugging.
+// #define ANIMATE    // Animate image while processing, for debugging.
 // #define DEBUG
 
 // VECTORIZED requires SYMMETRIC_METRIC_TABLE
