@@ -1227,11 +1227,16 @@ static void run(
   
   // internationalization i18n
   // Note these constants are defined in the build environment.
+  /*  Initialize i18n support  */
+#if defined(G_OS_WIN32)
+  bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
+#else
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-  #ifdef HAVE_BIND_TEXTDOMAIN_CODESET
-    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-  #endif
-  textdomain (GETTEXT_PACKAGE);   // Equivalent to: textdomain("resynthesizer") ;  
+#endif
+#ifdef HAVE_BIND_TEXTDOMAIN_CODESET
+  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+#endif
+  textdomain (GETTEXT_PACKAGE);
 
   *nreturn_vals = 1;
   *return_vals = values;

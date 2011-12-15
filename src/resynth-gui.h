@@ -193,14 +193,14 @@ static gboolean get_parameters_by_asking(Parameters *param, int default_drawable
   gtk_box_pack_end(GTK_BOX(GTK_DIALOG(window)->action_area),button_box, 
     FALSE,FALSE,0);
 
-  ok = gtk_button_new_with_label(_("OK"));
+  ok = gtk_button_new_with_mnemonic(_("_OK"));
   GTK_WIDGET_SET_FLAGS(ok, GTK_CAN_DEFAULT);
   gtk_signal_connect(GTK_OBJECT(ok), "clicked",
     GTK_SIGNAL_FUNC(click_func_quit), 0);
   gtk_box_pack_start(GTK_BOX(button_box), ok, FALSE,FALSE,0);
   gtk_widget_grab_default(ok);
 
-  cancel = gtk_button_new_with_label(_("Cancel"));
+  cancel = gtk_button_new_with_mnemonic(_("_Cancel"));
   GTK_WIDGET_SET_FLAGS(cancel, GTK_CAN_DEFAULT);
   gtk_signal_connect(GTK_OBJECT(cancel), "clicked",
     GTK_SIGNAL_FUNC(click_func_quit), &cancelled);
