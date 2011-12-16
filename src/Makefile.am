@@ -34,7 +34,10 @@ INCLUDES =\
 	@GIMP_CFLAGS@		\
 	-I$(includedir)
 
-LDADD = $(GIMP_LIBS)
+# lkk Make explicit dependency on libm for atan2()
+# Fixes change to linker ld on some platforms that causes libm not to be found through other libraries.
+# resynthesizer-gui does not actually depend on libm
+LDADD = $(GIMP_LIBS) -lm
 
 
 
