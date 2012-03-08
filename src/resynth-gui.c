@@ -66,6 +66,17 @@ static void run(
   *return_vals = values;
   values[0].type = GIMP_PDB_STATUS;
   values[0].data.d_status = GIMP_PDB_SUCCESS;
+
+    /*  Initialize i18n support  */
+#if defined(G_OS_WIN32)
+  bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
+#else
+  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+#endif
+#ifdef HAVE_BIND_TEXTDOMAIN_CODESET
+  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+#endif
+  textdomain (GETTEXT_PACKAGE);
   
   /* Don't really need the drawable or its tiles until we get to the engine. */
   gint32 drawable_id;

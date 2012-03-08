@@ -77,8 +77,11 @@ INCLUDES =\
 	@GIMP_CFLAGS@		\
 	-I$(includedir)
 
-# resynthesizer depends on imagesynth library
-LDADD = $(GIMP_LIBS) libimagesynth.a
+# resynthesizer depends on imagesynth and math libraries.
+# Make explicit dependency on libm for atan2()
+# Fixes change to linker ld on some platforms that causes libm not to be found through other libraries.
+# resynthesizer-gui does not actually depend on libm
+LDADD = $(GIMP_LIBS) libimagesynth.a -lm
 
 
 
