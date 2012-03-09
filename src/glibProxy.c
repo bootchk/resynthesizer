@@ -40,6 +40,8 @@ s_rand_int_range(
   guint upperBound  // !!! Exclusive
   )
 {
+  if (upperBound<1) return 0; // Prevent division by zero when both bounds 0
+  
   // return rand() % upperBound;   // POOR not adequate if upperBound > RAND_MAX, and cyclical
   upperBound -= 1; // Make it inclusive
   // Conventional formula for random int in range [lowerBound, upperBound] inclusive

@@ -21,6 +21,11 @@ In earlier versions, this was mostly c++ vector and operators on it.
 */
 
 
+typedef struct SortElementStruct {
+  Coordinates   targetPoint;
+  gfloat        proportionToCenter;
+} TSortElementStruct;
+
 
 gboolean 
 equal_points(const Coordinates a, const Coordinates b) 
@@ -59,32 +64,6 @@ to_invert_sort_result
 }
 
 
-/*The grad (radial from 0..400) or angle of this vector (point) */
-static guint
-grad (Coordinates a)
-{ 
-  /* !!! x and y order in atan2 */
-  return (guint) (atan2( (gfloat) a.y, (gfloat) a.x) * 200 / G_PI + 200);
-}
-
-
-/* Array of computed maximum distances over all points along a ray (radius) */
-guint max_cartesian_along_ray[401];
-
-/* 
-Ratio of this offset's distance from center to max distance of any point along
-the radial through this offset.
-Float in range (0,1]
-Note a is an offset, i.e. a vector from center, not from the origin.
-*/
-static gfloat
-proportion_inward(const Coordinates *a)
-{
-  guint ray = grad(*a);
-  g_assert( max_cartesian_along_ray[ray] > 0 );
-  return (gfloat) ((a->y * a->y) + (a->x * a->x)) / max_cartesian_along_ray[ray];
-}
-
 /*  
 These functions cannot be inline because they are passed to sort. 
 Besides, the sorting is not a bottleneck.
@@ -110,22 +89,22 @@ moreCartesian(
 }
 
 /* 
-less/more proportional distance along radii to the center 
-!!! Require a prior call to prepare_max_cartesian_along_ray
+less/more proportional distance along ray to the center
+!!! Requires a sort element with that value
 */
 CompareResult
 lessInward(
-  const Coordinates *a, 
-  const Coordinates *b
+  const TSortElementStruct *a,
+  const TSortElementStruct *b
   ) 
 {
-  return to_sort_result( proportion_inward(a) < proportion_inward(b) );
+  return to_sort_result( a->proportionToCenter < b->proportionToCenter );
 }
 
 CompareResult
 moreInward(
-  const Coordinates *a, 
-  const Coordinates *b
+  const TSortElementStruct *a,
+  const TSortElementStruct *b
   ) 
 {
   return to_invert_sort_result( lessInward(a,b) );
@@ -227,7 +206,7 @@ get_bounds (
     bounds.lrx = MAX(bounds.lrx, coords.x);
     bounds.lry = MAX(bounds.lry, coords.y);
   }
-  g_assert(bounds.ulx >= 0);  /* TODO other checks */
+  // NOT g_assert(bounds.ulx >= 0); since this may be called for offsets, not just positive coordinates
   return bounds;
 }
 

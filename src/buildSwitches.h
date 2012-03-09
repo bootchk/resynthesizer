@@ -43,6 +43,7 @@ then run >automake from the top directory.
 /* config 2 */
 /*
 #define SYNTH_USE_GLIB TRUE
+
 #define USE_GLIB_PROXY TRUE
 */
 
@@ -56,7 +57,7 @@ then run >automake from the top directory.
 
 // Bring in alternative code: experimental, debugging, etc.
 #define DEEP_PROGRESS // call progressCallback often, from inside synthesis()
-//#define ANIMATE    // Animate image while processing, for debugging.
+// #define ANIMATE    // Animate image while processing, for debugging.
 // #define DEBUG
 
 // VECTORIZED requires SYMMETRIC_METRIC_TABLE
@@ -69,7 +70,7 @@ then run >automake from the top directory.
 // Whether threading is POSIX threads or glib threads depends on SYNTH_USE_GLIB
 // #define SYNTH_THREADED TRUE
 // If not defined, uses POSIX threads.  Moot unless SYNTH_THREADED
-#define SYNTH_USE_GLIB_THREADS
+// #define SYNTH_USE_GLIB_THREADS
 
 // Count threads to start.
 #ifdef SYNTH_THREADED

@@ -64,7 +64,8 @@ imageSynth(
   TImageFormat imageFormat,
   TImageSynthParameters* parameters,  // or NULL to use defaults
   void (*progressCallback)(int, void*),   // int percentDone, void *contextInfo
-  void *contextInfo
+  void *contextInfo,
+  int *cancelFlag // flag to check periodically for abort
   )
 {
   Map targetMap;
@@ -99,10 +100,11 @@ imageSynth(
     &targetMap, 
     &corpusMap,
     progressCallback,
-    contextInfo
+    contextInfo,
+    cancelFlag
     );
   
-  if (! error)
+  if (! error && ! (*cancelFlag))
   {
     // assert targetMap holds results
     
