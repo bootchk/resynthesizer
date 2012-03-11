@@ -1,7 +1,7 @@
 ChangeLog for the resynthesizer
 
 
-2010 Lloyd Konneker bootch@nc.rr.com
+2012 Lloyd Konneker bootch nc.rr.com
 
   version 2.0
   
@@ -10,8 +10,8 @@ ChangeLog for the resynthesizer
   * Functional changes:
   
     * If compiled with threading, the algorithm is once again non-deterministic.
-    Since threads run in any order, you can't get repeatable results.
-    The results are not necessarily better or worse.
+    Since threads run in random order depending on system conditions, you can't get repeatable results.
+    The results are, in a few odd cases, worse quality.
     Because of nondeterminism, the test suite reports FAILED for all tests: a human must look at the results.
     See buildswitches.h to compile without threading (defaults to 8 threads.)
     

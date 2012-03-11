@@ -21,6 +21,9 @@
 # Ignore
 *.Po
 
+# Ignore eclipse project
+.project
+
 # http://www.gnu.org/software/automake
 # Track all Makefile.in because users won't have automake to generate them
 

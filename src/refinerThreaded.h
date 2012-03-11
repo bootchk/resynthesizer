@@ -46,7 +46,7 @@ where early synthesized pixels are repeated sooner rather than after all pixels 
 There would be more contention, and write contention, over target pixels.
 Probably each thread would need to lag already running threads.
 Each thread would not have the same amount of work.
-I haven't tried this alternative.
+Sept. 2011.  One experiment shows it is no faster, and produces different, grainy results.
 */
 
 #ifndef SYNTH_USE_GLIB_THREADS
@@ -75,6 +75,7 @@ typedef struct synthArgsStruct {
   gushort * corpusTargetMetric;   // array pointers TPixelelMetricFunc
   guint * mapsMetric;             // TMapPixelelMetricFunc
   void (*deepProgressCallback)();         // void func(void)
+  int* cancelFlag;  // flag set when canceled
 } SynthArgs;
 
 // Pack args into wrapper struct to pass to thread func
@@ -97,7 +98,8 @@ newSynthesisArgs(
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
-  void (*deepProgressCallback)()
+  void (*deepProgressCallback)(),
+  int* cancelFlag
   )
 {
   args->parameters = parameters;
@@ -117,6 +119,7 @@ newSynthesisArgs(
   args->corpusTargetMetric = corpusTargetMetric;
   args->mapsMetric = mapsMetric;
   args->deepProgressCallback = deepProgressCallback;
+  args->cancelFlag = cancelFlag;
 }
 
 
@@ -143,7 +146,8 @@ synthesisThread(void * uncastArgs)
   GRand *prng                         = args->prng;
   gushort * corpusTargetMetric        = args->corpusTargetMetric; // array pointers TPixelelMetricFunc
   guint * mapsMetric                  = args->mapsMetric;
-  void (*deepProgressCallback)()     = args->deepProgressCallback;
+  void (*deepProgressCallback)()      = args->deepProgressCallback;
+  int* cancelFlag                     = args->cancelFlag;
 
   
   gulong betters = synthesize(  // gulong so can be cast to void *
@@ -163,7 +167,8 @@ synthesisThread(void * uncastArgs)
       prng,
       corpusTargetMetric, 
       mapsMetric,
-      deepProgressCallback
+      deepProgressCallback,
+      cancelFlag
       );
   return (void*) betters;
 }
@@ -192,7 +197,8 @@ startThread(
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
-  void (*deepProgressCallback)()
+  void (*deepProgressCallback)(),
+  int* cancelFlag
   )
 {
   newSynthesisArgs(
@@ -213,7 +219,8 @@ startThread(
     prng,
     corpusTargetMetric, 
     mapsMetric,
-    deepProgressCallback
+    deepProgressCallback,
+    cancelFlag
     );
 
 #ifdef SYNTH_USE_GLIB_THREADS
@@ -246,7 +253,8 @@ refiner(
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
   void (*progressCallback)(int, void*),
-  void *contextInfo
+  void *contextInfo,
+  int* cancelFlag
   ) 
 {
   guint pass;
@@ -270,33 +278,45 @@ refiner(
 
   // For progress
   guint estimatedPixelCountToCompletion;
-  guint completedPixelCount = 0;
-  guint priorReportedPercentComplete = 0;
+  // !!! These are global (in the parent) updated by child threads executing callback function deepProgressCallback.
+  // The callback must synchronize over them.
+  guint completedPixelCount = 0;  // use atomic add
+  guint priorReportedPercentComplete = 0; // use mutexProgress
   
   /*
-   * Nested function is gcc extension.
-   * Called from inside synthesize() every 4k target pixels.
-   * Convert to a percent of estimated total pixels to synthesis.
-   * Callback invoking process every 1 percent.
-   * Note synthesis may quit early: then progress makes a large jump.
-   */
+  Nested function is gcc extension.
+  Called from inside synthesize() every 4k target pixels.
+  Convert to a percent of estimated total pixels to synthesis.
+  Callback invoking process every 1 percent.
+  Engine may quit early (not complete all passes): then progress makes a large jump.
+   
+  This function has local variables that are threadsafe, but the global variables are in the parent thread
+  and must be synchronized.
+  */
   void
   deepProgressCallback()
   {
-    completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
-    guint percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
+    guint percentComplete;
+    
+    // Nonsynchronized: completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
+    (void)__sync_add_and_fetch(&completedPixelCount, IMAGE_SYNTH_CALLBACK_COUNT);
+    percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
     if ( percentComplete > priorReportedPercentComplete )
     {
-      g_static_mutex_lock(&mutexProgress);       // mutex calls to GUI i.e. gdk, gtk which are thread aware but not thread safe
+      // mutex lock for two reasons:
+      // 1) calls to libgmp, gdk, gtk which are thread aware but not thread safe
+      // 2) incrementing global variable priorReportedPercentComplete
+      // Note threads can still underreport percent complete but it is inconsequential.
+      g_static_mutex_lock(&mutexProgress);       
       // Alternatively, use gdk_thread_enter()
       progressCallback((int) percentComplete, contextInfo);  // Forward deep progress callback to calling process
-      g_static_mutex_unlock(&mutexProgress);
       priorReportedPercentComplete = percentComplete;
+      g_static_mutex_unlock(&mutexProgress);
     }
   }
 
 
-  g_thread_init(NULL);
+  g_thread_init(NULL);  // Init threading system, not necessary after glib 2.32
 
   prepare_repetition_parameters(repetition_params, targetPoints->len);
   estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
@@ -324,7 +344,8 @@ refiner(
         sortedOffsets,
         prng,
         corpusTargetMetric, mapsMetric,
-        deepProgressCallback
+        deepProgressCallback,
+        cancelFlag
         );
    }
 
@@ -367,7 +388,7 @@ refiner(
 
 #ifdef SYNTH_THREADED2
 // Alternative 2
-// Sept. 2011.  One experiment shows it is no faster, and produces different, grainy results.
+
 
 static void
 refiner(
@@ -385,7 +406,8 @@ refiner(
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
   void (*progressCallback)(int, void*),
-  void *contextInfo
+  void *contextInfo,
+  int* cancelFlag
   )
 {
   TRepetionParameters repetition_params;
@@ -462,7 +484,8 @@ refiner(
       sortedOffsets,
       prng,
       corpusTargetMetric, mapsMetric,
-      deepProgressCallback
+      deepProgressCallback,
+      cancelFlag
       );
   }
 

@@ -64,13 +64,19 @@ then run >automake from the top directory.
 // #define SYMMETRIC_METRIC_TABLE
 // #define VECTORIZED
 
-// Threaded implementation.
-// Requires file refinerThreaded.h
-// Primarily affects file synthesize.h
-// Whether threading is POSIX threads or glib threads depends on SYNTH_USE_GLIB
-// #define SYNTH_THREADED TRUE
+/*
+Threading.
+Requires file refinerThreaded.h
+Primarily affects file synthesize.h
+Whether threading is POSIX threads or glib threads depends on SYNTH_USE_GLIB
+
+On Linux and other platforms having glib, define SYNTH_THREADED TRUE and SYNTH_USE_GLIB_THREADS
+On other platforms not having glib, define SYNTH_THREADED TRUE and use glibproxy
+The latter has not been tested.
+*/
+#define SYNTH_THREADED TRUE
 // If not defined, uses POSIX threads.  Moot unless SYNTH_THREADED
-// #define SYNTH_USE_GLIB_THREADS
+#define SYNTH_USE_GLIB_THREADS
 
 // Count threads to start.
 #ifdef SYNTH_THREADED
