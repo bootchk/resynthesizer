@@ -17,6 +17,8 @@ The package includes:
 Version
 =======
 
+Version 2.0 is a complete rewrite and is multithreaded.  Otherwise, functionally the same except when compiled threaded it is nondeterministic.  See ChangeLog for more discussion.
+
 Version 1.0 derives from version 0.16 maintained by the original author.
 
 See the NEWS file.
