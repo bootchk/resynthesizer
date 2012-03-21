@@ -44,7 +44,7 @@ def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
   pdb.gimp_image_set_active_layer(timg, tdrawable)
   
   # alpha to selection
-  pdb.gimp_selection_layer_alpha(tdrawable)
+  pdb.gimp_image_select_item(timg, CHANNEL_OP_REPLACE, tdrawable)
   # Want the transparent, not the opaque.  
   pdb.gimp_selection_invert(timg)
   # Since transparency was probably anti-aliased (dithered with partial transpancy),
@@ -61,7 +61,7 @@ def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
   # Restore image to initial conditions of user, except for later cleanup.
   
   # restore selection
-  pdb.gimp_selection_load(org_selection)
+  pdb.gimp_image_select_item(timg, CHANNEL_OP_REPLACE, org_selection)
  
   # Clean up (comment out to debug)
   pdb.gimp_image_undo_group_end(timg)
