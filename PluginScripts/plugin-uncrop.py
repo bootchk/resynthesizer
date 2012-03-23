@@ -82,7 +82,7 @@ def uncrop(orgImage, drawable, percentEnlargeParam=10):
     which does the substantive work.
     '''
     
-    if not pdb.gimp_drawable_is_layer(drawable):
+    if not pdb.gimp_item_is_layer(drawable):
       pdb.gimp_message(_("A layer must be active, not a channel."))
       return
       
@@ -103,7 +103,7 @@ def uncrop(orgImage, drawable, percentEnlargeParam=10):
     # Resize image alone doesn't resize layer, so resize layer also
     resizeImageCentered(orgImage, percentEnlargeParam)
     pdb.gimp_layer_resize_to_image_size(drawable)
-    pdb.gimp_selection_load(selectAllPrior)
+    pdb.gimp_image_select_item(orgImage, CHANNEL_OP_REPLACE, selectAllPrior)
     # select outer band, the new blank canvas.
     pdb.gimp_selection_invert(orgImage)
     # Assert target image is ready.
