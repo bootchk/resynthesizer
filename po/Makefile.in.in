@@ -49,8 +49,8 @@ MSGFMT = @MSGFMT@
 XGETTEXT = @XGETTEXT@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
-MSGMERGE = INTLTOOL_EXTRACT=$(INTLTOOL_EXTRACT) srcdir=$(srcdir) $(INTLTOOL_UPDATE) --gettext-package $(GETTEXT_PACKAGE) --dist
-GENPOT   = INTLTOOL_EXTRACT=$(INTLTOOL_EXTRACT) srcdir=$(srcdir) $(INTLTOOL_UPDATE) --gettext-package $(GETTEXT_PACKAGE) --pot
+MSGMERGE = INTLTOOL_EXTRACT="$(INTLTOOL_EXTRACT)" XGETTEXT="$(XGETTEXT)" srcdir=$(srcdir) $(INTLTOOL_UPDATE) --gettext-package $(GETTEXT_PACKAGE) --dist
+GENPOT   = INTLTOOL_EXTRACT="$(INTLTOOL_EXTRACT)" XGETTEXT="$(XGETTEXT)" srcdir=$(srcdir) $(INTLTOOL_UPDATE) --gettext-package $(GETTEXT_PACKAGE) --pot
 
 ALL_LINGUAS = @ALL_LINGUAS@
 
@@ -73,15 +73,20 @@ CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$l
 .SUFFIXES:
 .SUFFIXES: .po .pox .gmo .mo .msg .cat
 
+AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
+INTLTOOL_V_MSGFMT = $(INTLTOOL__v_MSGFMT_$(V))
+INTLTOOL__v_MSGFMT_= $(INTLTOOL__v_MSGFMT_$(AM_DEFAULT_VERBOSITY))
+INTLTOOL__v_MSGFMT_0 = @echo "  MSGFMT" $@;
+
 .po.pox:
 	$(MAKE) $(GETTEXT_PACKAGE).pot
 	$(MSGMERGE) $< $(GETTEXT_PACKAGE).pot -o $*.pox
 
 .po.mo:
-	$(MSGFMT) -o $@ $<
+	$(INTLTOOL_V_MSGFMT)$(MSGFMT) -o $@ $<
 
 .po.gmo:
-	file=`echo $* | sed 's,.*/,,'`.gmo \
+	$(INTLTOOL_V_MSGFMT)file=`echo $* | sed 's,.*/,,'`.gmo \
 	  && rm -f $$file && $(GMSGFMT) -o $$file $<
 
 .po.cat:
