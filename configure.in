@@ -57,7 +57,8 @@ changequote([,])dnl
 GIMP_REQUIRED_VERSION=2.2.0
 
 PKG_CHECK_MODULES(GIMP,
-  gimp-2.0 >= $GIMP_REQUIRED_VERSION gimpui-2.0 >= $GIMP_REQUIRED_VERSION)
+  gimp-2.0 >= $GIMP_REQUIRED_VERSION gimpui-2.0 >= $GIMP_REQUIRED_VERSION,
+  ,AC_MSG_ERROR(GIMP development libraries not found; please install.))
 
 AC_SUBST(GIMP_CFLAGS)
 AC_SUBST(GIMP_LIBS)
