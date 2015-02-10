@@ -34,7 +34,15 @@
 /autom4te.cache
 /aclocal.m4
 /compile
+/config.h
+/config.h.in
+/config.status
 /configure
 /depcomp
 /install-sh
 /missing
+
+/po/*.gmo
+
+Makefile.in
+Makefile
