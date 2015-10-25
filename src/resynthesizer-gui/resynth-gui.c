@@ -1,15 +1,19 @@
 /*
   Settings (control panel) GUI for the resynthesizer.
 
-  Resynthesizer GUI is a separate plugin from the engine.
-  There are many other plugins that use the resynthesizer engine.
-  Only this plugin exposes all the settings of the engine, for expert users.
+  Resynthesizer GUI plugin is separate from the engine plugin.
+  There are many other plugins that use the resynthesizer engine plugin.
+  Only this plugin displays all the settings of the engine, for expert users.
 
-  The engine and gui have the same parameters (settings).
+  The engine plugin and gui have the same parameters (settings).
   The gui, when called interactively, 
   lets the use change the settings before invoking engine.
   The gui, when called noninteractively, simply passes settings on to engine.
   
+  The GUI plugin invokes the engine plugin via the GIMP PDB;
+  it does NOT call the engine library directly.
+  The engine plugin calls the engine library.
+
   TODO replace this with a Python language GUI.
 
   Copyright (C) 2010  Lloyd Konneker
@@ -31,20 +35,14 @@
 */
 
 #include "config.h" // GNU buildtools local configuration
-#include "plugin-intl.h"  // i18n macros
+#include "../plugin-intl.h"  // i18n macros
 
 #include <libgimp/gimp.h>
 #include <libgimp/gimpui.h>
 
-/* Shared with engine */
-#include "imageFormat.h"
-#include "map.h"
-#include "engineParams.h"
-#include "engine.h"
-
 /* Shared with engine plugin. */
-#include "resynth-constants.h"
-#include "resynth-parameters.h"
+#include "../resynth-constants.h"
+#include "../resynth-parameters.h"
 
 /* Resynthesizer GUI gtk code: ask user for parameters. */
 #include "resynth-gui.h"  

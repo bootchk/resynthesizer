@@ -76,7 +76,8 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 #ifdef SYNTH_USE_GLIB
   #include "../config.h" // GNU buildtools local configuration
   // Use glib via gimp.h
-  #include <libgimp/gimp.h>
+  // #include <libgimp/gimp.h>
+  #include <glib.h>
 #endif
 
 

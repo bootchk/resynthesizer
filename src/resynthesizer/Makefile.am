@@ -1,0 +1,37 @@
+## Process this file with automake to produce Makefile.in
+
+bin_PROGRAMS = resynthesizer
+
+bindir = $(GIMP_LIBDIR)/plug-ins
+
+# resynthesizer is a GIMP plugin calling libimagesynth
+resynthesizer_SOURCES = resynthesizer.c 
+
+
+# lkk Note glibProxy.c not needed for resynthesizer for GIMP
+# but IS needed when using GIMP as a test harness to the standalone engine
+  
+
+# These are for the resynthesizer plugin adaption to engine
+#  resynth-pdb.h
+#  resynth-parameters.c
+#  resynth-constants.h
+
+# resynthesizer plugin uses libimagesynth
+resynthesizer_CPPFLAGS =\
+	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
+	-DDATADIR=\""$(DATADIR)"\"  \
+	-I$(top_srcdir)		\
+	@GIMP_CFLAGS@		\
+	-I$(includedir) \
+	-I$(srcdir)/../../lib
+
+
+# resynthesizer GIMP plugin calls GIMP lib and convenience library (i.e. local) libimagesynth
+# libimagesynth in turn depends on math and gthread-2.0
+LDADD = $(GIMP_LIBS) ../../lib/libimagesynth.a -lm -lgthread-2.0
+
+
+
+
+

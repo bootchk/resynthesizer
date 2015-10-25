@@ -26,8 +26,8 @@ AC_DEFINE(PLUGIN_MAJOR_VERSION, plugin_major_version, [Plug-In major version])
 AC_DEFINE(PLUGIN_MINOR_VERSION, plugin_minor_version, [Plug-In minor version])
 AC_DEFINE(PLUGIN_MICRO_VERSION, plugin_micro_version, [Plug-In micro version])
 
-dnl lkk 2011 changed name
-AC_CONFIG_SRCDIR([src/resynthesizer.c])
+dnl lkk This macro only confirms that the given file is in configure's notion of source dir
+AC_CONFIG_SRCDIR([src/resynthesizer/resynthesizer.c])
 AM_CONFIG_HEADER(config.h)
 
 AM_INIT_AUTOMAKE(no-define)
@@ -129,9 +129,13 @@ AC_PROG_RANLIB
 dnl AC_PROG_LIBTOOL
 
 dnl lkk 2011 Added PluginScripts/Makefile
+dnl lkk 2015 Break src into lib, src/resynthesizer, src/resynthesizer-gui
 AC_CONFIG_FILES([
 Makefile
+lib/Makefile
 src/Makefile
+src/resynthesizer/Makefile
+src/resynthesizer-gui/Makefile
 po/Makefile.in
 help/Makefile
 help/en/Makefile

@@ -69,20 +69,22 @@ to the opposite side.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
 
-#include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
+//#include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
 
-#include "../config.h" // GNU buildtools local configuration
-#include "plugin-intl.h" // i18n macros
+#include "../../config.h" // GNU buildtools local configuration
+#include "../plugin-intl.h" // i18n macros
 
 #include <libgimp/gimp.h>
 #include <glib/gprintf.h>
 
-/* Shared with resynth-gui plugin, resynthesizer engine plugin, and engine. */
-#include "resynth-constants.h"
+/* Shared with resynth-gui plugin, resynthesizer engine plugin. */
+#include "../resynth-constants.h"
 
 /*
 True header files: types, function prototypes, and in-line functions only.
 No definitions of non in-line functions or data.
+
+Types, etc. from resynthesizer (image_synth) library
 */
 // FIXME need to include glibProxy.h here so everything else uses glibless Map?
 #ifdef USE_GLIB_PROXY
@@ -99,9 +101,10 @@ Source included, not compiled separately.
 Is separate to reduce file sizes and later, coupling. 
 */
 
-#include "mapIndex.h"
+#include "mapIndex.h"	// from resynthesizer library
 #include "adaptGimp.h"  // requires mapIndex.h
-#include "resynth-parameters.h" // Depends on engine.h
+#include "../resynth-parameters.h" // requires engine.h
+#include "adaptParameters.c"
 
 /* See below for more includes. */
 
@@ -486,7 +489,7 @@ static void run(
     free_map(&corpusMaskMap);
     free_map(&targetMaskMap);
     
-    adaptParameters(&pluginParameters, &engineParameters);
+    adaptPluginToLibraryParameters(&pluginParameters, &engineParameters);
     
   #endif
   
@@ -544,5 +547,5 @@ static void run(
 } 
 
 /* PDB registration and MAIN() */
-#include "resynth-pdb.h"
+#include "../resynth-pdb.h"
 
