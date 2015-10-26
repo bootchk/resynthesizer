@@ -10,7 +10,7 @@
 
 PROJECT="resynthesizer"
 TEST_TYPE=-f
-FILE=src/resynthesizer.c
+FILE=src/resynthesizer/resynthesizer.c
 
 AUTOCONF_REQUIRED_VERSION=2.54
 AUTOMAKE_REQUIRED_VERSION=1.6
