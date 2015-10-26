@@ -1,5 +1,5 @@
 /*
-Test harness for libimagesynth
+Test harness for libresynthesizer
 */
 #include <stddef.h>  // size_t
 #include <stdio.h>	// printf

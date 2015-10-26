@@ -3,12 +3,11 @@
 ## lkk 2011
 ## Note many .h files are not just declarations but definitions, that is, not pure header files.
 
-
 # engine is a 'convenience' (not installed), static library
 
-noinst_LIBRARIES = libimagesynth.a
+noinst_LIBRARIES = libresynthesizer.a
 
-libimagesynth_a_SOURCES = \
+libresynthesizer_a_SOURCES = \
   imageSynth.c \
   engine.c \
   engineParams.c \
@@ -27,8 +26,8 @@ libimagesynth_a_SOURCES = \
 
 
 # Work in progress building a shared dynamic library
-#lib_LTLIBRARIES = libimagesynth-1.0.la
-#libimagesynth_1_0_la_SOURCES = \
+#lib_LTLIBRARIES = libresynthesizer-1.0.la
+#libresynthesizer_1_0_la_SOURCES = \
 #  imageSynth.c \
 #  engine.c \
 #  glibProxy.c \
@@ -41,7 +40,7 @@ AM_CPPFLAGS = \
 	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
 	-DDATADIR=\""$(DATADIR)"\"
 
-libimagesynth_a_CPPFLAGS =\
+libresynthesizer_a_CPPFLAGS =\
 	-I$(top_srcdir)		\
 	@GIMP_CFLAGS@		\
 	-I$(includedir)
@@ -55,7 +54,7 @@ libimagesynth_a_CPPFLAGS =\
 
 # LIBADD is for additional objects to link into library.
 # This library creates a dependency, but doesn't link these external libraries.
-#libimagesynth_a_LIBADD = -lm -lgthread-2.0
+#libresynthesizer_a_LIBADD = -lm -lgthread-2.0
 
 
 

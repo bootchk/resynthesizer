@@ -4,7 +4,7 @@ bin_PROGRAMS = resynthesizer
 
 bindir = $(GIMP_LIBDIR)/plug-ins
 
-# resynthesizer is a GIMP plugin calling libimagesynth
+# resynthesizer is a GIMP plugin calling libresynthesizer
 resynthesizer_SOURCES = resynthesizer.c 
 
 
@@ -17,7 +17,7 @@ resynthesizer_SOURCES = resynthesizer.c
 #  resynth-parameters.c
 #  resynth-constants.h
 
-# resynthesizer plugin uses libimagesynth
+# resynthesizer plugin uses libresynthesizer
 resynthesizer_CPPFLAGS =\
 	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
 	-DDATADIR=\""$(DATADIR)"\"  \
@@ -27,9 +27,9 @@ resynthesizer_CPPFLAGS =\
 	-I$(srcdir)/../../lib
 
 
-# resynthesizer GIMP plugin calls GIMP lib and convenience library (i.e. local) libimagesynth
-# libimagesynth in turn depends on math and gthread-2.0
-LDADD = $(GIMP_LIBS) ../../lib/libimagesynth.a -lm -lgthread-2.0
+# resynthesizer GIMP plugin calls GIMP lib and convenience library (i.e. local) libresynthesizer
+# libresynthesizer in turn depends on math and gthread-2.0
+LDADD = $(GIMP_LIBS) ../../lib/libresynthesizer.a -lm -lgthread-2.0
 
 
 

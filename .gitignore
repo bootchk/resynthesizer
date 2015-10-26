@@ -21,8 +21,11 @@
 # Ignore
 *.Po
 
-# Ignore eclipse project
+# Ignore eclipse project artifacts
 .project
+.cproject
+.settings
+.autotools
 
 # http://www.gnu.org/software/automake
 # Track all Makefile.in because users won't have automake to generate them
@@ -46,3 +49,6 @@
 
 Makefile.in
 Makefile
+
+# ignore separate build directory 
+/build

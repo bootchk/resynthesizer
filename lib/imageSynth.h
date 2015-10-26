@@ -1,5 +1,5 @@
 /*
-Header for libimagesynth
+Header for the simple API to libresynthesizer
 
   Copyright (C) 2010, 2011  Lloyd Konneker
 
@@ -18,10 +18,15 @@ Header for libimagesynth
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+// The simple API takes one image and heals the selection.
+// The full API takes two images (target and corpus) and can do many things.
+// The simple API munges one image into two and calls the full API.
 
+// Type defs of struct you must pass
 #include "imageBuffer.h"
 #include "imageFormat.h"
 
+// Signature of the only simple API function
 int
 imageSynth(
   ImageBuffer * imageBuffer,  // IN/OUT RGBA Pixels described by imageFormat
@@ -29,6 +34,6 @@ imageSynth(
   TImageFormat imageFormat,
   TImageSynthParameters* parameters,
   void (*progressCallback)(int, void*),   // int percentDone, void *contextInfo
-  void *contextInfo,
-  int *cancelFlag
+  void *contextInfo,	// opaque to engine, passed in progressCallback
+  int *cancelFlag		// polled by engine: engine quits if ever becomes True
   );

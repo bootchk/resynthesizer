@@ -2,7 +2,7 @@
 A generic data structure for passing images.
 
 Data is a stream of unpadded pixels.
-Interpretation of pixels (order and count of pixelels (unsigned bytes)) is given by a format code.
+Interpretation of pixels (order and count of pixelels (unsigned bytes)) is given by a enum of type TImageFormat.
 Rows padded.
 */
 

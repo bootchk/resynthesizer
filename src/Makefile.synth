@@ -2,8 +2,8 @@
 # Copyright 2011 Lloyd Konneker
 
 EXEC      = testSynth
-SHAREDLIB = libimagesynth.so
-STATICLIB = libimagesynth.a
+SHAREDLIB = libresynthesizer.so
+STATICLIB = libsynthesizer.a
 
 SRC_FILES = imageSynth.c engine.c glibProxy.c engineParams.c imageFormat.c
 O_FILES   = $(SRC_FILES:%.c=%.o)

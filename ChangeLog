@@ -19,7 +19,7 @@ ChangeLog for the resynthesizer
   
     * Threaded using glib threads (or POSIX threads)
     
-    * The innermost engine is now a static library (libimagesynth.a), independent of gimp. 
+    * The innermost engine is now a static library (libresynthesizer.a), independent of gimp. 
     
     It is compiled separately and statically linked into the resynthesizer plugin (an adapter.)
     With a little work, it can be compiled independently of glib.

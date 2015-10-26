@@ -24,7 +24,7 @@ resynthesizer_gui_CPPFLAGS =\
 	-I$(includedir)
 
 
-# resynthesizer-gui GIMP plugin calls GIMP lib but NOT convenience i.e. local libimagesynth
+# resynthesizer-gui GIMP plugin calls GIMP lib but NOT convenience i.e. local libresynthesizer
 # resynthesizer-gui invokes resynthesizer plugin via GIMP.
 LDADD = $(GIMP_LIBS)
 
