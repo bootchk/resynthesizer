@@ -1,4 +1,6 @@
 language: c
 
+install: apt-get install intltool && apt-get install glib2.0-dev && apt-get install libgimp2.0-dev
+
 script: ./autogen.sh && ./configure && make
 
