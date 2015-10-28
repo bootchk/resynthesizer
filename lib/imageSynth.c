@@ -45,6 +45,7 @@ To make:
 #include "glibProxy.h"  // glibProxy.c
 
 #include "imageFormat.h"
+#include "imageFormatIndicies.h"
 #include "map.h"  // header for mapOps.h included by engine.c
 #include "engineParams.h" // engineParams.c
 #include "engine.h" // engine.c

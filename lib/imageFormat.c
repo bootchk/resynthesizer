@@ -34,6 +34,7 @@ The internal Pixel aggregates color, mask, and map pixelels; for memory locality
 #include "imageSynthConstants.h"
 #include "engineParams.h"
 #include "imageFormat.h"
+#include "imageFormatIndicies.h"
 
 extern unsigned int
 countPixelelsPerPixelForFormat(

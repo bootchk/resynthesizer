@@ -6,6 +6,9 @@ Interpretation of pixels (order and count of pixelels (unsigned bytes)) is given
 Rows padded.
 */
 
+#ifndef __SYNTH_IMAGE_BUFFER_H__
+#define __SYNTH_IMAGE_BUFFER_H__
+
 typedef struct _ImageBuffer 
 {
   unsigned char * data; // data must be sequential RGBA for image, sequence of bytes for a mask
@@ -17,3 +20,4 @@ ImageBuffer;
 
 // Mask same as image except only one pixelel per pixel (different, or assumed format code of on pixelel per pixel.)
 
+#endif

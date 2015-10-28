@@ -99,6 +99,8 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 
 // True header files
 #include "imageFormat.h"
+#include "imageFormatIndicies.h"
+
 #include "map.h"
 #include "engineParams.h"
 #include "engine.h"

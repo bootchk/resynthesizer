@@ -91,6 +91,7 @@ Types, etc. from resynthesizer (image_synth) library
 	#include "glibProxy.h"
 #endif
 #include "imageFormat.h"
+#include "imageFormatIndicies.h"
 #include "map.h"
 #include "engineParams.h"
 #include "engine.h" // requires map.h

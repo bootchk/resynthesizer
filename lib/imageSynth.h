@@ -22,9 +22,10 @@ Header for the simple API to libresynthesizer
 // The full API takes two images (target and corpus) and can do many things.
 // The simple API munges one image into two and calls the full API.
 
-// Type defs of struct you must pass
+// Type defs of structs passed to imageSynth()
 #include "imageBuffer.h"
 #include "imageFormat.h"
+#include "engineParams.h"
 
 // Signature of the only simple API function
 int
