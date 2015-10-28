@@ -1,8 +1,8 @@
 language: c
 
 before_install:
-	- sudo apt-get update -qq
-	- sudo apt-get install -qq intltool glib2.0-dev libgimp2.0-dev
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq intltool glib2.0-dev libgimp2.0-dev
 
 script: ./autogen.sh && ./configure && make
 
