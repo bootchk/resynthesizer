@@ -7,6 +7,8 @@ A set of plugins for the GIMP image editing app.
   Copyright 2002  David Rodríguez García  
   Copyright 2010-2011  Lloyd Konneker <bootch@nc.rr.com>  
 
+[![Build Status](https://travis-ci.org/bootchk/resynthesizer.svg?branch=master)](https://travis-ci.org/bootchk/resynthesizer)
+
 ## Acknowledgements
 
 Paul Harrison had the original idea and implementation.  He did the hard work, took the leap of faith and experimented with a new algorithm.  His [website](http://www.logarithmic.net/pfh/) has many examples of using the Resynthesizer, links to an explanation of the algorithm, and other cool ideas.
