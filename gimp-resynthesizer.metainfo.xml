@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2016 Lloyd Konneker <bootch@nc.rr.com>
+-->
+<component type="addon">
+<id>gimp-resynthesizer</id>
+<extends>gimp.desktop</extends>
+<name>Resynthesizer</name>
+<summary>Set of GIMP plug-ins that heal (in-paint), synthesize texture, theme an image, and more</summary>
+<url type="homepage">http://logarithmic.net/pfh/resynthesizer</url>
+<url type="bugtracker">https://bugzilla.gnome.org/enter_bug.cgi?product=gimp&amp;component=Plugins</url>
+<url type="faq">https://github.com/bootchk/resynthesizer.git</url>
+<metadata_license>CC0-1.0</metadata_license>
+<project_license>GPL-3.0+</project_license>
+<updatecontact>bootch_AT_nc.rr.com</updatecontact>
+​</component>
