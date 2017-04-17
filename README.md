@@ -19,11 +19,11 @@ Several people have helped with the build process.
 
 ## For users
 
-###Acquiring
+### Acquiring
 
 The plugins do _not_ come with GIMP.   You often can get them precompiled for your platform, with an installer.  You often can get them included in a larger package of plugins, such as the package gimp-plugin-registry for Linux, or GIMP Extensions Pack for Windows at SourceForge.
 
-###What they do
+### What they do
 
 Includes many plugins that do seemingly unrelated things, but all based on one powerful algorithm.  Provides these menu items in the GIMP Filter menu:
 
@@ -42,7 +42,7 @@ Includes many plugins that do seemingly unrelated things, but all based on one p
 
 
 
-###Installing
+### Installing
 
 Instructions for most users who received a pre-built distribution (with resynthesizer.exe and resynthesizer-gui.exe already compiled) but without an installer.
 
@@ -54,7 +54,7 @@ Instructions for most users who received a pre-built distribution (with resynthe
 c:\Doc...Settings\username\gimp-2.6\plug-ins (Windows)  
 
 
-###Removing older versions
+### Removing older versions
 
 
 You should manually remove these older versions before installing this package.  They probably do NOT still work, and are duplicates at best.
@@ -96,9 +96,9 @@ c:\Doc...Settings\username\gimp-2.6\scripts  (.scm)
 
 
 
-##Building
+## Building
 
-###Versions
+### Versions
 
 Version 2.0 is a complete rewrite and is multithreaded.  Otherwise, functionally the same except when compiled threaded it is nondeterministic.  See ChangeLog for more discussion.
 
@@ -106,7 +106,7 @@ Version 1.0 derives from version 0.16 maintained by the original author.
 
 See the NEWS file.
 
-###Linux
+### Linux
 
 Builds with GNU build tools.  Many of the build files (Makefile.am, configure.ac, etc.) were hacked from the gimp-plugin-template 2.2.0.
 
@@ -127,7 +127,7 @@ To optimize more, pass the CFLAGS (perogative of the builder to alter compilatio
 make CFLAGS=-O3
 
 
-###Other platforms
+### Other platforms
 
 Other people build and package for Windows and OSX.
 
