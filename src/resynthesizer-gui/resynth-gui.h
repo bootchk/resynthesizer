@@ -55,8 +55,16 @@ static gint map_menu_constrain(gint32 image_id, gint32 drawable_id, gpointer dat
     gimp_drawable_is_gray(drawable_id);
 }
 
-static void menu_callback(gint32 id, gpointer data) {
+static void image_menu_callback(gint32 id, gpointer data) {
   *((gint32*)data) = id;
+}
+
+static void context_menu_callback(GtkComboBox *widget, gpointer data) {
+    //gboolean status;
+    //status = gimp_int_combo_box_get_active(GIMP_INT_COMBO_BOX(widget), data);
+    //if (!status)
+    //    g_printf("No active item on the context menu\n");
+    gimp_int_combo_box_get_active(GIMP_INT_COMBO_BOX(widget), data);
 }
 
 static void checkbutton_callback(GtkWidget *widget, gpointer data) {
@@ -89,13 +97,49 @@ static GtkWidget *make_image_menu(char *text, GimpConstraintFunc constraint,
   TODO also need to change types and call get_active
   #else
   menu = gimp_drawable_menu_new(constraint,
-    menu_callback, value, *value);
+    image_menu_callback, value, *value);
   option_menu = gtk_option_menu_new();
   gtk_option_menu_set_menu(GTK_OPTION_MENU(option_menu), menu);
   gtk_box_pack_end(GTK_BOX(box), option_menu, FALSE,FALSE,0);
   #endif
 
   return box;
+}
+
+static GtkWidget *make_context_menu(int *use_border) {
+    GtkWidget *box, *label, *menu;
+
+    box = gtk_hbox_new(FALSE, 0);
+    gtk_container_set_border_width(GTK_CONTAINER(box), 4);
+
+    label = gtk_label_new(_("Context: "));
+    gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+
+    // See `matchContextType` in "lib/engineParams.h" and "lib/orderTarget.h".
+    // The adaptation of `use_border` to `matchContextType` occurs in
+    // "src/resynthesizer/adaptParameters.c" via `RESYNTH_ENGINE_PDB_NAME` in
+    // "src/resynthesizer/resynthesizer.c".
+    menu = gimp_int_combo_box_new
+        ( _("Random order, without context"), 0
+        , _("Random order, with context"), 1
+        , _("Randomized bands, concentric, inwards"), 2
+        , _("Randomized bands, horizontally, inwards (i.e. squeezing from top and bottom)"), 3
+        , _("Randomized bands, vertically, inwards (i.e. squeezing from left and right)"), 4
+        , _("Randomized bands, concentric, outwards (e.g. for uncrop)"), 5
+        , _("Randomized bands, horizontally, outwards, (i.e. expanding to top and bottom)"), 6
+        , _("Randomized bands, vertically, outwards (i.e. expanding to left and right)"), 7
+        , _("Randomized bands, concentric, inwards and outwards (i.e. squeezing in and out a donut)"), 8
+        , NULL
+        );
+    gimp_int_combo_box_connect
+        ( GIMP_INT_COMBO_BOX(menu)
+        , (gint)(*use_border)
+        , G_CALLBACK(context_menu_callback)
+        , (gpointer)use_border
+        );
+    gtk_box_pack_end(GTK_BOX(box), menu, FALSE, FALSE, 0);
+
+    return box;
 }
 
 static GtkWidget *
@@ -168,7 +212,7 @@ static gboolean get_parameters_by_asking(TGimpAdapterParameters *param, int defa
             *button_box, *ok, *cancel,
             *notebook, *main_box, *tweaks_box,
             *input_frame, 
-            *output_frame, *output_box,  *h_tile_button, *v_tile_button, *border_button,
+            *output_frame, *output_box,  *h_tile_button, *v_tile_button, *border_menu,
 	          *map_frame, *map_box, *map_button,
             *personality_slider, *neighbours_slider, *trys_slider;
   #ifdef REFACTOR_DEPRECATED
@@ -247,9 +291,8 @@ static gboolean get_parameters_by_asking(TGimpAdapterParameters *param, int defa
     &param->v_tile);
   gtk_box_pack_start_defaults(GTK_BOX(output_box), v_tile_button);
 
-  border_button = make_checkbutton(_("Fit output to bordering pixels"),
-    &param->use_border);
-  gtk_box_pack_start_defaults(GTK_BOX(output_box), border_button);
+  border_menu = make_context_menu(&param->use_border);
+  gtk_box_pack_start_defaults(GTK_BOX(output_box), border_menu);
  
   map_frame = gtk_frame_new(_("Texture transfer"));
   gtk_frame_set_shadow_type(GTK_FRAME(map_frame), GTK_SHADOW_ETCHED_IN);
