@@ -72,7 +72,7 @@ def heal_selection(timg, tdrawable, samplingRadiusParam=50, directionParam=0, or
   
   # Cut hole where the original selection was, so we don't sample from it.
   # !!! Note that gimp enums/constants are not prefixed with GIMP_
-  pdb.gimp_selection_combine(orgSelection, CHANNEL_OP_SUBTRACT)
+  pdb.gimp_image_select_item(tempImage, CHANNEL_OP_SUBTRACT, orgSelection)
   
   '''
   Selection (to be the corpus) is donut or frisket around the original target T
