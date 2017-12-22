@@ -142,7 +142,7 @@ def make_grayscale_map(image, drawable):
   pdb.gimp_selection_all(image) # copy requires selection
   pdb.gimp_edit_copy(drawable)
   if original_selection:
-    pdb.gimp_selection_load(original_selection) # restore selection in image
+    pdb.gimp_image_select_item(image, CHANNEL_OP_REPLACE, original_selection) # restore selection in image
     pdb.gimp_image_remove_channel(image, original_selection) # cleanup the copied selection mask
     # !!! Note remove_channel not drawable_delete
   
