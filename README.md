@@ -9,6 +9,26 @@ A set of plugins for the GIMP image editing app.
 
 [![Build Status](https://travis-ci.org/bootchk/resynthesizer.svg?branch=master)](https://travis-ci.org/bootchk/resynthesizer)
 
+
+## Quickstart
+
+This repository is for developers and users who are familiar with building, especially on Linux.  
+
+If you are a GIMP user who would like to download an installer for just the Resynthesizer plugin, please see:
+
+* Linux: http://registry.gimp.org/node/27986
+* Windows: http://registry.gimp.org/node/27986
+
+If you want to install a package of third-party plugins (that includes Resynthesizer):
+
+* Linux: install the package "gimp-plugin-repository" (available for most distributions, including Debian and Ubuntu).  
+
+If you use OSX and want to install GIMP and a set of third-party plugins (including Resynthesizer) see:
+
+* http://gimp.lisanet.de/Website/Download.html
+
+Building this repository for Windows and OSX is not easy, and not documented here.
+
 ## Acknowledgements
 
 Paul Harrison had the original idea and implementation.  He did the hard work, took the leap of faith and experimented with a new algorithm.  His [website](http://www.logarithmic.net/pfh/) has many examples of using the Resynthesizer, links to an explanation of the algorithm, and other cool ideas.
