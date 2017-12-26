@@ -31,6 +31,15 @@ resynthesizing early synthesized pixels early.
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+
+
+struct ProgressRecord {
+  guint estimatedPixelCountToCompletion;
+  guint completedPixelCount = 0;
+  guint priorReportedPercentComplete = 0;
+};
+
+
 /*
 Non threaded version, but with same signature and calls to synthesize()
 */
@@ -58,10 +67,7 @@ refiner(
   guint pass;
   TRepetionParameters repetition_params;
   
-  // For progress
-  guint estimatedPixelCountToCompletion;
-  guint completedPixelCount = 0;
-  guint priorReportedPercentComplete = 0;
+  struct ProgressRecord progressRecord;
 
   
   /*
@@ -76,18 +82,20 @@ refiner(
   {
     // !!! Note if estimatedPixelCountToCompletion is small
     // this calls back once for each pass with a percentComplete greater than 100.
-    completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
-    guint percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
-    if ( percentComplete > priorReportedPercentComplete )
+    progressRecord.completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
+    guint percentComplete = ((float)progressRecord.completedPixelCount/progressRecord.estimatedPixelCountToCompletion)*100;
+    if ( percentComplete > progressRecord.priorReportedPercentComplete )
     {
       progressCallback((int) percentComplete, contextInfo);  // Forward callback to calling process
-      priorReportedPercentComplete = percentComplete;
+      progressRecord.priorReportedPercentComplete = percentComplete;
     }
   }
 
 
   prepare_repetition_parameters(repetition_params, targetPoints->len);
-  estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
+
+  // Initialize progressRecord
+  progressRecord.estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
