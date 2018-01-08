@@ -73,6 +73,8 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 // Compiling switch #defines
 #include "buildSwitches.h"
 
+#include <math.h>
+
 #ifdef SYNTH_USE_GLIB
   #include "../config.h" // GNU buildtools local configuration
   // Use glib via gimp.h
