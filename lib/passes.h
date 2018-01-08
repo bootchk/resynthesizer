@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Prepare parameters of repetition (passes over the target.)
 The algorithm repeats synthesis because very early synthesized points

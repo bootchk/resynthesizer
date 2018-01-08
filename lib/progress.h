@@ -3,6 +3,8 @@
 Types for GUI progress callbacks.
 */
 
+#include "passes.h"
+
 
 struct ProgressRecord {
   guint estimatedPixelCountToCompletion;
@@ -16,5 +18,11 @@ struct ProgressRecord {
 typedef struct ProgressRecord ProgressRecordT;
 
 void deepProgressCallback(ProgressRecordT*);
-
+void deepProgressCallbackThreaded(ProgressRecordT*);
+void initializeProgressRecord(
+     ProgressRecordT* progressRecord,
+     TRepetionParameters repetitionParams,
+     void (*progressCallback)(int, void*),
+     void * contextInfo);
+     
 

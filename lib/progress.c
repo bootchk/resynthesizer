@@ -45,3 +45,17 @@ deepProgressCallback(ProgressRecordT * progressRecord)
 }
 
 
+
+void 
+initializeProgressRecord(
+     ProgressRecordT* progressRecord,
+     TRepetionParameters repetitionParams,
+     void (*progressCallback)(int, void*),
+     void * contextInfo)
+{
+  progressRecord->completedPixelCount = 0;
+  progressRecord->priorReportedPercentComplete = 0;
+  progressRecord->estimatedPixelCountToCompletion = estimatePixelsToSynth(repetitionParams);
+  progressRecord->progressCallback = progressCallback;
+  progressRecord->context = contextInfo;
+}

@@ -66,13 +66,11 @@ refiner(
 
   prepare_repetition_parameters(repetition_params, targetPoints->len);
 
-  // Initialize progressRecord
-  progressRecord.completedPixelCount = 0;
-  progressRecord.priorReportedPercentComplete = 0;
-  progressRecord.estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
-  progressRecord.progressCallback = progressCallback;
-  progressRecord.context = contextInfo;
-  
+  initializeProgressRecord(
+    &progressRecord,
+    repetition_params,
+    progressCallback,
+    contextInfo);
 
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
