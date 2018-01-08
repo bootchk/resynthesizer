@@ -11,6 +11,7 @@
   #include <glib.h>
 #endif
 
+
 #include "imageSynthConstants.h"
 #include "progress.h"
 
@@ -28,7 +29,7 @@
  * Here the same result (the context of the call is known to the progress callback)
  * is implemented by putting all the progress data (including the app's callback and parameters (context) for that call)
  * into a ProgressRecord
- * and passing both a callback function and its parameters to synthesize()
+ * and passing both a callback function and its parameters (the ProgressRecord) to synthesize()
  */
 void
 deepProgressCallback(ProgressRecordT * progressRecord)
@@ -45,6 +46,44 @@ deepProgressCallback(ProgressRecordT * progressRecord)
 }
 
 
+#ifdef SYNTH_THREADED
+/*
+  Threaded version.
+   
+  This function has local variables that are threadsafe, 
+  but progressRecord is in the parent thread and must be synchronized.
+  */
+  void
+  deepProgressCallbackThreaded(ProgressRecordT * progressRecord)
+  {
+    guint percentComplete;
+    
+    // Thread-safe increment completedPixelCount
+    (void)__sync_add_and_fetch(&progressRecord->completedPixelCount, IMAGE_SYNTH_CALLBACK_COUNT);
+
+    percentComplete = ((float)progressRecord->completedPixelCount/progressRecord->estimatedPixelCountToCompletion)*100;
+    if ( percentComplete > progressRecord->priorReportedPercentComplete )
+    {
+      // mutex lock for two reasons:
+      // 1) calls (in progressCallback()) to libgmp, gdk, gtk which are thread aware but not thread safe
+      // 2) thread-safe incrementing global variable priorReportedPercentComplete
+      // Note threads can still underreport percent complete but it is inconsequential.
+
+      // pass pointer to mutex
+      g_static_mutex_lock(progressRecord->mutexProgress);       
+      // Alternatively, use gdk_thread_enter()
+
+      // Forward deep progress callback to calling process
+      progressRecord->progressCallback(
+        (int) percentComplete, 
+        progressRecord->context);
+
+      progressRecord->priorReportedPercentComplete = percentComplete;
+      g_static_mutex_unlock(progressRecord->mutexProgress);
+    }
+  }
+#endif
+
 
 void 
 initializeProgressRecord(
@@ -58,4 +97,19 @@ initializeProgressRecord(
   progressRecord->estimatedPixelCountToCompletion = estimatePixelsToSynth(repetitionParams);
   progressRecord->progressCallback = progressCallback;
   progressRecord->context = contextInfo;
+}
+
+void 
+initializeThreadedProgressRecord(
+     ProgressRecordT* progressRecord,
+     TRepetionParameters repetitionParams,
+     void (*progressCallback)(int, void*),
+     void * contextInfo,
+     GStaticMutex *mutexProgress)
+{
+    // init common fields
+    initializeProgressRecord(progressRecord, repetitionParams, progressCallback, contextInfo);
+
+    // also init additional field for threading
+    progressRecord->mutexProgress = mutexProgress;
 }

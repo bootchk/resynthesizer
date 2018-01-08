@@ -62,7 +62,7 @@ refiner(
   guint pass;
   TRepetionParameters repetition_params;
   
-  struct ProgressRecord progressRecord;
+  ProgressRecordT progressRecord;
 
   prepare_repetition_parameters(repetition_params, targetPoints->len);
 

@@ -75,8 +75,12 @@ typedef struct synthArgsStruct {
   gushort * corpusTargetMetric;   // array pointers TPixelelMetricFunc
   guint * mapsMetric;             // TMapPixelelMetricFunc
   void (*deepProgressCallback)();         // void func(void)
+  ProgressRecordT *progressRecord;
   int* cancelFlag;  // flag set when canceled
 } SynthArgs;
+
+
+
 
 // Pack args into wrapper struct to pass to thread func
 static void
@@ -99,6 +103,7 @@ newSynthesisArgs(
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
   void (*deepProgressCallback)(),
+  ProgressRecordT* progressRecord,
   int* cancelFlag
   )
 {
@@ -119,6 +124,7 @@ newSynthesisArgs(
   args->corpusTargetMetric = corpusTargetMetric;
   args->mapsMetric = mapsMetric;
   args->deepProgressCallback = deepProgressCallback;
+  args->progressRecord = progressRecord;
   args->cancelFlag = cancelFlag;
 }
 
@@ -147,6 +153,7 @@ synthesisThread(void * uncastArgs)
   gushort * corpusTargetMetric        = args->corpusTargetMetric; // array pointers TPixelelMetricFunc
   guint * mapsMetric                  = args->mapsMetric;
   void (*deepProgressCallback)()      = args->deepProgressCallback;
+  ProgressRecordT * progressRecord    = args->progressRecord;
   int* cancelFlag                     = args->cancelFlag;
 
   
@@ -168,6 +175,7 @@ synthesisThread(void * uncastArgs)
       corpusTargetMetric, 
       mapsMetric,
       deepProgressCallback,
+      progressRecord,	// parameters to progress callback.  progressRecord is in stack frame of refinerThreaded().
       cancelFlag
       );
   return (void*) betters;
@@ -198,6 +206,7 @@ startThread(
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
   void (*deepProgressCallback)(),
+  ProgressRecordT *progressRecord,
   int* cancelFlag
   )
 {
@@ -220,6 +229,7 @@ startThread(
     corpusTargetMetric, 
     mapsMetric,
     deepProgressCallback,
+    progressRecord,
     cancelFlag
     );
 
@@ -234,6 +244,10 @@ startThread(
     pthread_create(thread, NULL, synthesisThread, (void * __restrict__) args);
 #endif
 }
+
+
+
+
 
 // Alternative 1
 
@@ -259,6 +273,10 @@ refiner(
 {
   guint pass;
   TRepetionParameters repetition_params;
+
+  // Threaded: use atomic add and mutexProgress when updating progress
+  // !!! This is owned by parent, updated by child threads executing callback function deepProgressCallback.
+  ProgressRecordT progressRecord;
   
 
   // Synthesize in threads.  Note proxies in glibProxy.h for POSIX threads
@@ -268,58 +286,24 @@ refiner(
   pthread_t threads[THREAD_LIMIT];
 #endif
   // If not using glib proxied to pthread by glibProxy.h
-  GStaticMutex mutexProgress;
   g_static_mutex_init(&mutex);  // defined in synthesize.h
+
+  GStaticMutex mutexProgress;
   g_static_mutex_init(&mutexProgress);
 
 
   SynthArgs synthArgs[THREAD_LIMIT];
 
+  prepare_repetition_parameters(repetition_params, targetPoints->len);
 
-  // For progress
-  guint estimatedPixelCountToCompletion;
-  // !!! These are global (in the parent) updated by child threads executing callback function deepProgressCallback.
-  // The callback must synchronize over them.
-  guint completedPixelCount = 0;  // use atomic add
-  guint priorReportedPercentComplete = 0; // use mutexProgress
-  
-  /*
-  Nested function is gcc extension.
-  Called from inside synthesize() every 4k target pixels.
-  Convert to a percent of estimated total pixels to synthesis.
-  Callback invoking process every 1 percent.
-  Engine may quit early (not complete all passes): then progress makes a large jump.
-   
-  This function has local variables that are threadsafe, but the global variables are in the parent thread
-  and must be synchronized.
-  */
-  void
-  deepProgressCallback()
-  {
-    guint percentComplete;
-    
-    // Nonsynchronized: completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
-    (void)__sync_add_and_fetch(&completedPixelCount, IMAGE_SYNTH_CALLBACK_COUNT);
-    percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
-    if ( percentComplete > priorReportedPercentComplete )
-    {
-      // mutex lock for two reasons:
-      // 1) calls to libgmp, gdk, gtk which are thread aware but not thread safe
-      // 2) incrementing global variable priorReportedPercentComplete
-      // Note threads can still underreport percent complete but it is inconsequential.
-      g_static_mutex_lock(&mutexProgress);       
-      // Alternatively, use gdk_thread_enter()
-      progressCallback((int) percentComplete, contextInfo);  // Forward deep progress callback to calling process
-      priorReportedPercentComplete = percentComplete;
-      g_static_mutex_unlock(&mutexProgress);
-    }
-  }
-
+  initializeThreadedProgressRecord(
+    &progressRecord,
+    repetition_params,
+    progressCallback,
+    contextInfo,
+    &mutexProgress);
 
   g_thread_init(NULL);  // Init threading system, not necessary after glib 2.32
-
-  prepare_repetition_parameters(repetition_params, targetPoints->len);
-  estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
@@ -345,6 +329,7 @@ refiner(
         prng,
         corpusTargetMetric, mapsMetric,
         deepProgressCallback,
+        &progressRecord,
         cancelFlag
         );
    }
@@ -384,6 +369,13 @@ refiner(
     // progressCallback( (int) ((pass+1.0)/(MAX_PASSES+1)*100), contextInfo);
   }
 }
+
+
+
+
+
+
+
 
 
 #ifdef SYNTH_THREADED2
