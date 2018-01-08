@@ -33,11 +33,6 @@ resynthesizing early synthesized pixels early.
 
 
 
-struct ProgressRecord {
-  guint estimatedPixelCountToCompletion;
-  guint completedPixelCount = 0;
-  guint priorReportedPercentComplete = 0;
-};
 
 
 /*
@@ -69,34 +64,16 @@ refiner(
   
   struct ProgressRecord progressRecord;
 
-  
-  /*
-   * Nested function is gcc extension.
-   * Called from inside synthesis every 4k target pixels.
-   * Convert to a percent of estimated total pixels to synthesis.
-   * Callback invoking process every 1 percent.
-   * Note synthesis may quit early: then progress makes a large jump.
-   */
-  void
-  deepProgressCallback()
-  {
-    // !!! Note if estimatedPixelCountToCompletion is small
-    // this calls back once for each pass with a percentComplete greater than 100.
-    progressRecord.completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
-    guint percentComplete = ((float)progressRecord.completedPixelCount/progressRecord.estimatedPixelCountToCompletion)*100;
-    if ( percentComplete > progressRecord.priorReportedPercentComplete )
-    {
-      progressCallback((int) percentComplete, contextInfo);  // Forward callback to calling process
-      progressRecord.priorReportedPercentComplete = percentComplete;
-    }
-  }
-
-
   prepare_repetition_parameters(repetition_params, targetPoints->len);
 
   // Initialize progressRecord
+  progressRecord.completedPixelCount = 0;
+  progressRecord.priorReportedPercentComplete = 0;
   progressRecord.estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);
+  progressRecord.progressCallback = progressCallback;
+  progressRecord.context = contextInfo;
   
+
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
     guint endTargetIndex = repetition_params[pass][1];
@@ -120,6 +97,7 @@ refiner(
         corpusTargetMetric,
         mapsMetric,
         deepProgressCallback,
+	&progressRecord,	// parameters to progress callback.  progressRecord is on stack.
         cancelFlag
         );
 

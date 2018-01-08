@@ -11,7 +11,8 @@ libresynthesizer_a_SOURCES = \
   imageSynth.c \
   engine.c \
   engineParams.c \
-  imageFormat.c
+  imageFormat.c \
+  progress.c
 
 # Set buildswitches.h and use glibProxy.c for a library not dependent on glib
   

@@ -519,6 +519,7 @@ clippedOrMaskedCorpus(
 // Descending levels of the engine
 // imageSynth()->engine()->refiner()->synthesize
 #include "passes.h"
+#include "progress.h"
 #include "synthesize.h"
 // Both files define the same function refiner()
 #ifdef SYNTH_THREADED

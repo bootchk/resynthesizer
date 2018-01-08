@@ -441,7 +441,8 @@ synthesize(
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
-  void (*deepProgressCallback)(),
+  void (*deepProgressCallback)(ProgressRecordT*),
+  ProgressRecordT * progressCallbackParams,
   int *cancelFlag
   )
 {
@@ -491,7 +492,7 @@ synthesize(
     // Don't AND with an arbitrary single bit, say 4096, since one bit is often set.
     if ((target_index&IMAGE_SYNTH_CALLBACK_COUNT) == 0)
     {
-      deepProgressCallback();
+      deepProgressCallback(progressCallbackParams);
       if (*cancelFlag) break; // for each target pixel
     }
     #endif
