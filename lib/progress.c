@@ -70,7 +70,7 @@ deepProgressCallback(ProgressRecordT * progressRecord)
       // Note threads can still underreport percent complete but it is inconsequential.
 
       // pass pointer to mutex
-      g_static_mutex_lock(progressRecord->mutexProgress);       
+      g_mutex_lock(progressRecord->mutexProgress);       
       // Alternatively, use gdk_thread_enter()
 
       // Forward deep progress callback to calling process
@@ -79,7 +79,7 @@ deepProgressCallback(ProgressRecordT * progressRecord)
         progressRecord->context);
 
       progressRecord->priorReportedPercentComplete = percentComplete;
-      g_static_mutex_unlock(progressRecord->mutexProgress);
+      g_mutex_unlock(progressRecord->mutexProgress);
     }
   }
 #endif
@@ -105,7 +105,7 @@ initializeThreadedProgressRecord(
      TRepetionParameters repetitionParams,
      void (*progressCallback)(int, void*),
      void * contextInfo,
-     GStaticMutex *mutexProgress)
+     GMutex *mutexProgress)
 {
     // init common fields
     initializeProgressRecord(progressRecord, repetitionParams, progressCallback, contextInfo);

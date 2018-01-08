@@ -34,7 +34,7 @@ Innermost routines of image synthesis.
    */
 
   #ifdef SYNTH_USE_GLIB_THREADS
-    GStaticMutex mutex;
+    static GMutex mutex;
   #else
     // Use POSIX instead
     #include <pthread.h>
@@ -43,8 +43,8 @@ Innermost routines of image synthesis.
   #endif
 
 #else   // No threads: redefine mutex functions to nil
-  #define g_static_mutex_lock(A)
-  #define g_static_mutex_unlock(A)
+  #define g_mutex_lock(A)
+  #define g_mutex_unlock(A)
 #endif
 
 
@@ -167,14 +167,14 @@ new_neighbor(
   )
 {
   neighbors[index].offset = offset;
-  g_static_mutex_lock(&mutex);  // Read color and source atomically
+  g_mutex_lock(&mutex);  // Read color and source atomically
   set_neighbor_state(index, neighbor_point, sourceOfMap, neighbors);
   {
   TPixelelIndex k;
   for (k=0; k<indices->total_bpp; k++)  // !!! Copy whole Pixel, all pixelels
     neighbors[index].pixel[k] = pixmap_index(targetMap, neighbor_point)[k];
   }
-  g_static_mutex_unlock(&mutex);
+  g_mutex_unlock(&mutex);
 }
 
 
@@ -625,12 +625,12 @@ synthesize(
         repeatCountBetters++;   /* feedback for termination. */
         integrate_color_change(position); // Must be before we store the new color values.
 
-        g_static_mutex_lock(&mutex);    // Atomic write to color and sourceOf
+        g_mutex_lock(&mutex);    // Atomic write to color and sourceOf
         // Save the new color values (!!! not the alpha) for this target point
         setColor( indices, targetMap, position, corpusMap, bestMatchCorpusPoint);
         setSourceOf(position, bestMatchCorpusPoint, sourceOfMap); /* Remember new source */
         // printf("Position %d %d source %d %d\n", position.x, position.y, bestMatchCorpusPoint.x, bestMatchCorpusPoint.y);
-        g_static_mutex_unlock(&mutex);
+        g_mutex_unlock(&mutex);
 
       } /* else same source for target */
     } /* else match is same or worse */

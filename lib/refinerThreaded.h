@@ -237,9 +237,14 @@ startThread(
   GError* error = NULL;
 
   g_assert(g_thread_supported());
-  *thread = g_thread_create(synthesisThread, (void * __restrict__) args, TRUE, &error);
-  if (error != NULL)
+  // old, deprecated: *thread = g_thread_create(synthesisThread, (void * __restrict__) args, TRUE, &error);
+  *thread = g_thread_try_new(NULL, synthesisThread, (void * __restrict__) args, &error);
+  if (error != NULL) 
+  {
     printf("Error creating thread: %s\n", error->message);
+    // Only for debugging:  app will likely crash.  Caller does not handle this error sufficiently.
+    // *thread is probably NULL
+  }
 #else
     pthread_create(thread, NULL, synthesisThread, (void * __restrict__) args);
 #endif
@@ -286,10 +291,10 @@ refiner(
   pthread_t threads[THREAD_LIMIT];
 #endif
   // If not using glib proxied to pthread by glibProxy.h
-  g_static_mutex_init(&mutex);  // defined in synthesize.h
+  g_mutex_init(&mutex);  // defined in synthesize.h
 
-  GStaticMutex mutexProgress;
-  g_static_mutex_init(&mutexProgress);
+  static GMutex mutexProgress;
+  g_mutex_init(&mutexProgress);
 
 
   SynthArgs synthArgs[THREAD_LIMIT];
@@ -303,7 +308,7 @@ refiner(
     contextInfo,
     &mutexProgress);
 
-  g_thread_init(NULL);  // Init threading system, not necessary after glib 2.32
+  // Assert threading system is init at startup time, after glib 2.32
   
   for (pass=0; pass<MAX_PASSES; pass++)
   { 
@@ -412,9 +417,9 @@ refiner(
   pthread_t threads[THREAD_LIMIT];
 #endif
   // If not using glib proxied to pthread by glibProxy.h
-  GStaticMutex mutexProgress;
-  g_static_mutex_init(&mutex);  // defined in synthesize.h
-  g_static_mutex_init(&mutexProgress);
+  GMutex mutexProgress;
+  g_mutex_init(&mutex);  // defined in synthesize.h
+  g_mutex_init(&mutexProgress);
 
 
   SynthArgs synthArgs[THREAD_LIMIT];
@@ -439,16 +444,13 @@ refiner(
     guint percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;
     if ( percentComplete > priorReportedPercentComplete )
     {
-      g_static_mutex_lock(&mutexProgress);       // mutex calls to GUI i.e. gdk, gtk which are thread aware but not thread safe
+      g_mutex_lock(&mutexProgress);       // mutex calls to GUI i.e. gdk, gtk which are thread aware but not thread safe
       // Alternatively, use gdk_thread_enter()
       progressCallback((int) percentComplete, contextInfo);  // Forward deep progress callback to calling process
-      g_static_mutex_unlock(&mutexProgress);
+      g_mutex_unlock(&mutexProgress);
       priorReportedPercentComplete = percentComplete;
     }
   }
-
-
-  g_thread_init(NULL);
 
   prepare_repetition_parameters(repetition_params, targetPoints->len);
   estimatedPixelCountToCompletion = estimatePixelsToSynth(repetition_params);

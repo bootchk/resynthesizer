@@ -16,7 +16,7 @@ struct ProgressRecord {
 
 #ifdef SYNTH_THREADED
   // mutually exclude threads over certain other fields of struct
-  GStaticMutex *mutexProgress;
+  GMutex *mutexProgress;
 #endif
 };
 
@@ -36,7 +36,7 @@ void initializeThreadedProgressRecord(
      TRepetionParameters repetitionParams,
      void (*progressCallback)(int, void*),
      void * contextInfo,
-     GStaticMutex *mutexProgress
+     GMutex *mutexProgress
 );
      
 
