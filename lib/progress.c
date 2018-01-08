@@ -15,6 +15,23 @@
 #include "imageSynthConstants.h"
 #include "progress.h"
 
+
+
+void 
+initializeProgressRecord(
+     ProgressRecordT* progressRecord,
+     TRepetionParameters repetitionParams,
+     void (*progressCallback)(int, void*),
+     void * contextInfo)
+{
+  progressRecord->completedPixelCount = 0;
+  progressRecord->priorReportedPercentComplete = 0;
+  progressRecord->estimatedPixelCountToCompletion = estimatePixelsToSynth(repetitionParams);
+  progressRecord->progressCallback = progressCallback;
+  progressRecord->context = contextInfo;
+}
+
+
 /*
  * Intermediate between deeper engine and calling app's progress callback.
  * Called from inside synthesis() every 4k target pixels i.e. with raw progress increments.
@@ -47,6 +64,23 @@ deepProgressCallback(ProgressRecordT * progressRecord)
 
 
 #ifdef SYNTH_THREADED
+
+void 
+initializeThreadedProgressRecord(
+     ProgressRecordT* progressRecord,
+     TRepetionParameters repetitionParams,
+     void (*progressCallback)(int, void*),
+     void * contextInfo,
+     GMutex *mutexProgress)
+{
+    // init fields common to unthreaded and threaded
+    initializeProgressRecord(progressRecord, repetitionParams, progressCallback, contextInfo);
+
+    // also init additional field for thread safety
+    progressRecord->mutexProgress = mutexProgress;
+}
+
+
 /*
   Threaded version.
    
@@ -82,34 +116,5 @@ deepProgressCallback(ProgressRecordT * progressRecord)
       g_mutex_unlock(progressRecord->mutexProgress);
     }
   }
+
 #endif
-
-
-void 
-initializeProgressRecord(
-     ProgressRecordT* progressRecord,
-     TRepetionParameters repetitionParams,
-     void (*progressCallback)(int, void*),
-     void * contextInfo)
-{
-  progressRecord->completedPixelCount = 0;
-  progressRecord->priorReportedPercentComplete = 0;
-  progressRecord->estimatedPixelCountToCompletion = estimatePixelsToSynth(repetitionParams);
-  progressRecord->progressCallback = progressCallback;
-  progressRecord->context = contextInfo;
-}
-
-void 
-initializeThreadedProgressRecord(
-     ProgressRecordT* progressRecord,
-     TRepetionParameters repetitionParams,
-     void (*progressCallback)(int, void*),
-     void * contextInfo,
-     GMutex *mutexProgress)
-{
-    // init common fields
-    initializeProgressRecord(progressRecord, repetitionParams, progressCallback, contextInfo);
-
-    // also init additional field for threading
-    progressRecord->mutexProgress = mutexProgress;
-}

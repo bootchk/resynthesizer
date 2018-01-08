@@ -3,9 +3,16 @@ ChangeLog for the resynthesizer
 
 2012 Lloyd Konneker bootch nc.rr.com
 
-  version 2.0
+  version 2.0.3 Not used nested function (unsafe gcc extension) for progress callbacks, issues #11,45
+
+  version 2.0.2 Remove deprecated PyGimp functions so users of unstable GIMP do not see warnings, pull request #7
+                Change Map>Resynthesize GUI to include hidden options, pull request #42 
+
+  version 2.0.1 Fixes build scripts to support distribution builders, issue 31.  Changes structure to build a library.
+
+  version 2.0.1 forward:  see also the Github notes for the release
   
-  This version is a major rewrite but with little functional change.
+  version 2.0  is a major rewrite but with little functional change.
   
   * Functional changes:
   
