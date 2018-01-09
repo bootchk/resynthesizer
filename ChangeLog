@@ -3,7 +3,9 @@ ChangeLog for the resynthesizer
 
 2012 Lloyd Konneker bootch nc.rr.com
 
-  version 2.0.3 Not used nested function (unsafe gcc extension) for progress callbacks, issues #11,45
+  version 2.0.3 Not use nested function (unsafe gcc extension) for progress callbacks, issues #11,45
+                Replace GLib functions deprecated since 2.32 to avoid compiler warnings.
+                Include math.h to avoid compiler warnings.
 
   version 2.0.2 Remove deprecated PyGimp functions so users of unstable GIMP do not see warnings, pull request #7
                 Change Map>Resynthesize GUI to include hidden options, pull request #42 
@@ -13,6 +15,12 @@ ChangeLog for the resynthesizer
   version 2.0.1 forward:  see also the Github notes for the release
   
   version 2.0  is a major rewrite but with little functional change.
+
+     !!! Doesn't break API but gives different results when built multithreaded. 
+     Usually users will not notice different results, but the test suite notices.
+
+     Multithreading, because of the nature of the algorithm, in my experience does not provide much performance gain.
+     For example, the speedup is at best 2x, even with say 8 threads.
   
   * Functional changes:
   
@@ -43,7 +51,14 @@ ChangeLog for the resynthesizer
     Only affects a few cases using maps.
     The fix makes the results different in those cases, not necessarily better.
     
-	version 1.0 (Many, major changes.)
+
+
+  version 1.0 (Many, major changes.)
+
+      !!! Changes API from version 0.16 so any old Python and Scheme plugins may not work,
+      and users of full control panel Map>Resynthesize will need to adjust.
+      The API change is that the engine does not now invert the selection in the corpus.
+      
 	
 	* Functional changes:
 	
