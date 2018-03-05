@@ -21,7 +21,7 @@ If you are a GIMP user who would like to download an installer for just the Resy
 
 If you want to install a package of third-party plugins (that includes Resynthesizer):
 
-* Linux: install the package "gimp-plugin-repository" (available for most distributions, including Debian and Ubuntu).  
+* Linux: install the package "gimp-plugin-registry" (available for most distributions, including Debian and Ubuntu).  
 
 If you use OSX and want to install GIMP and a set of third-party plugins (including Resynthesizer) see:
 
