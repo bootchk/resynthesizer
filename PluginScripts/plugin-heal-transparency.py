@@ -62,6 +62,9 @@ def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
   
   # restore selection
   pdb.gimp_image_select_item(timg, CHANNEL_OP_REPLACE, org_selection)
+  
+  # restore alpha
+  pdb.gimp_layer_add_alpha(tdrawable)
  
   # Clean up (comment out to debug)
   pdb.gimp_image_undo_group_end(timg)
