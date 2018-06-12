@@ -29,7 +29,7 @@ from gimpfu import *
 
 gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
 
-def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
+def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2, remove_alpha=1):
 
   # precondition should be enforced by Gimp according to image modes allowed.
   if not pdb.gimp_drawable_has_alpha(tdrawable):
@@ -64,7 +64,8 @@ def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
   pdb.gimp_image_select_item(timg, CHANNEL_OP_REPLACE, org_selection)
   
   # restore alpha
-  pdb.gimp_layer_add_alpha(tdrawable)
+  if not remove_alpha :
+    pdb.gimp_layer_add_alpha(tdrawable)
  
   # Clean up (comment out to debug)
   pdb.gimp_image_undo_group_end(timg)
@@ -72,7 +73,7 @@ def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
 
 register(
   "python_fu_heal_transparency",
-  N_("Removes alpha channel by synthesis.  Fill outward for edges, inward for holes."),
+  N_("Removes transparency by synthesis.  Fill outward for edges, inward for holes."),
   "Requires separate resynthesizer plugin.",
   "Lloyd Konneker",
   "Copyright 2010 Lloyd Konneker",
@@ -84,7 +85,8 @@ register(
     (PF_DRAWABLE, "drawable", "Input drawable", None),
     (PF_INT, "samplingRadiusParam", _("Context sampling width (pixels):"), 50),
     (PF_OPTION, "orderParam",   _("Filling order:"), 2, [_("Random"),
-      _("Inwards towards center"), _("Outwards from center") ])
+      _("Inwards towards center"), _("Outwards from center") ]),
+    (PF_TOGGLE, "remove_alpha", _("Remove alpha channel:"), 1)
   ],
   [],
   heal_transparency,

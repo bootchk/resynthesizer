@@ -102,23 +102,27 @@ msgid "Above and below"
 msgstr ""
 
 #: ../PluginScripts/plugin-heal-selection.py:169
-#: ../PluginScripts/plugin-heal-transparency.py:83
+#: ../PluginScripts/plugin-heal-transparency.py:87
 msgid "Filling order:"
 msgstr ""
 
 #: ../PluginScripts/plugin-heal-selection.py:169
-#: ../PluginScripts/plugin-heal-transparency.py:83
+#: ../PluginScripts/plugin-heal-transparency.py:87
 msgid "Random"
 msgstr ""
 
 #: ../PluginScripts/plugin-heal-selection.py:170
-#: ../PluginScripts/plugin-heal-transparency.py:84
+#: ../PluginScripts/plugin-heal-transparency.py:88
 msgid "Inwards towards center"
 msgstr ""
 
 #: ../PluginScripts/plugin-heal-selection.py:170
-#: ../PluginScripts/plugin-heal-transparency.py:84
+#: ../PluginScripts/plugin-heal-transparency.py:88
 msgid "Outwards from center"
+msgstr ""
+
+#: ../PluginScripts/plugin-heal-transparency.py:89
+msgid "Remove alpha channel:"
 msgstr ""
 
 #: ../PluginScripts/plugin-resynth-sharpen.py:94
@@ -217,12 +221,12 @@ msgstr ""
 msgid "Brightness only"
 msgstr ""
 
-#: ../PluginScripts/plugin-heal-transparency.py:72
+#: ../PluginScripts/plugin-heal-transparency.py:76
 msgid ""
-"Removes alpha channel by synthesis.  Fill outward for edges, inward for "
+"Removes transparency by synthesis.  Fill outward for edges, inward for "
 "holes."
 msgstr ""
 
-#: ../PluginScripts/plugin-heal-transparency.py:77
+#: ../PluginScripts/plugin-heal-transparency.py:81
 msgid "Heal transparency..."
 msgstr ""
