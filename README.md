@@ -16,8 +16,9 @@ This repository is for developers and users who are familiar with building, espe
 
 If you are a GIMP user who would like to download an installer for just the Resynthesizer plugin, please see:
 
-* Linux: http://registry.gimp.org/node/27986
-* Windows: http://registry.gimp.org/node/27986
+* Plugin page: https://web.archive.org/web/20180225174428/http://registry.gimp.org/node/27986
+* Linux: https://github.com/pixlsus/registry.gimp.org_static/blob/master/registry.gimp.org/files/resynthesizer.tar_0.gz
+* Windows: https://github.com/pixlsus/registry.gimp.org_static/blob/master/registry.gimp.org/files/Resynthesizer_v1.0-i686.zip
 
 If you want to install a package of third-party plugins (that includes Resynthesizer):
 
@@ -25,7 +26,7 @@ If you want to install a package of third-party plugins (that includes Resynthes
 
 If you use OSX and want to install GIMP and a set of third-party plugins (including Resynthesizer) see:
 
-* http://gimp.lisanet.de/Website/Download.html
+* https://sourceforge.net/projects/gimponosx/
 
 Building this repository for Windows and OSX is not easy, and not documented here.
 
