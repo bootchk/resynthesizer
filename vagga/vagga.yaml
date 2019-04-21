@@ -1,0 +1,127 @@
+# See accompanying readme.txt
+
+# a chain of containers, to minimize rebuilding as changes are made.
+# Each container depends on previous as specified by "!Container foo"
+
+containers:
+  
+  # basic OS with dev (compiling)
+  baseOS:
+    setup:
+    # base OS is ubuntu 18.10
+    # - !Ubuntu cosmic
+    - !Ubuntu disco
+    # enable universe repository (where gimp lives)
+    - !UbuntuUniverse
+    # tools for dev (C compiler)
+    - !Install [build-essential]
+    
+
+
+  # with gimp and gimp dev
+  gimpdev:
+    setup:
+    - !Container baseOS
+
+    # gimp is only a run-time requirement, but install it early
+    - !Install [gimp]
+
+    # install prereqs for building any gimp plugin
+    # As documented in resynthesizer/readme.md
+    - !Install [libgimp2.0-dev, libglib2.0-dev, automake, intltool]
+
+    # Define HOME.
+    # Without this, HOME is /root
+    # Gimp tries to write ~/.local/share (Gnome standard location for user data)
+    # Avoids error: "/root/.local/share: read-only file system"
+    environ:
+      HOME: /work/.home
+
+
+  # with resynthesizer plugin
+  resynth:
+    setup:
+    - !Container gimpdev
+
+    # Not used: this works, but doesn't keep the repository (with test images)
+    # Clone repository into temp directory and execute build script
+    #- !GitInstall
+    #  url: git://github.com/bootchk/resynthesizer
+    #  script: ./autogen.sh && ./configure && make && make install
+
+    # Clone repository
+    - !Git
+      url: git://github.com/bootchk/resynthesizer
+      path: /home/resynthesizer
+
+    # cd to repository and build it
+    # Build script is a sequence of sh commands, "&&" means each depends on success of previous.
+    # As documented in build instructions in resynthesizer/readme.md
+    - !Sh cd /home/resynthesizer && ./autogen.sh && ./configure && make && make install
+
+    
+
+
+  # WORK IN PROGRESS  see TODO below
+  # with test program
+  resynthtest:
+    setup:
+    - !Container resynth
+    
+    # TODO install python in container
+    # Python is not needed to build resynthesizer, but is needed at runtime.
+
+    # Create file containing test program.
+    # Language is python, calling pygimp (pdb) functions
+    - !Text
+      /home/resynthesizer/test.py: |
+        from gimpfu import *
+        # TODO use images in /home/resynthesizer/Test/...
+        img = pdb.gimp_file_load("foo.png", "foo.png")
+        # invoke resynthesizer plugin
+        # TODO something like pdb.plugin_resynthesizer(img, ....)
+        pdb.gimp_quit(1)
+
+    # Define HOME,
+    # Without this HOME is /root
+    # Gimp tries to write ~/.local/share (Gnome standard location for user data)
+    # Avoids error: "/root/.local/share: read-only file system"
+    environ:
+      HOME: /work/.home
+     
+    
+
+
+
+
+commands:
+  testOS: !Command
+    description: Test sanity of OS in container baseOS
+    container: baseOS
+    run: |
+      which which
+
+  gimpVersion: !Command
+    description: Run gimp command line in gimpdev container
+    container: gimpdev
+    run: |
+      gimp --version
+
+  listResynth: !Command
+    description: ls installed resynthesizer components in container resynth
+    container: resynth
+    run: |
+      # c executables
+      ls /usr/lib/gimp/2.0/plug-ins/resy*
+      # python scripts  (location unique to Ubuntu)
+      ls /usr/local/lib/gimp/2.0/plug-ins
+
+  testResynth: !Command
+    description: Test that resynthesizer plugin will execute using gimp-console
+    container: resynthtest
+    # invoke headless (no gui) gimp, using python interpreter, on a python script
+    run: |
+      gimp-console -idf --verbose --batch-interpreter python-fu-eval  -b - </home/resynthesizer/test.py
+
+
+

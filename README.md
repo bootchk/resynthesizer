@@ -224,3 +224,7 @@ The algorithm knows (but does not return) the coordinates of a pixel's best matc
 Divorce the library from dependencies on glib and gthreads.
 
 
+### Using vagga to test building in containerized build environments
+
+See the vagga directory.
+
