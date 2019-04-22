@@ -37,6 +37,22 @@ containers:
     environ:
       HOME: /work/.home
 
+  # with package gimp-plugin-registry
+  thirdPartyPlugins:
+    setup:
+    - !Container gimpdev
+
+    # Intall package of third party plugins (includes resynthesizer) packaged by distributor
+    # See command listThirdParty; it installs .py to different place than build scripts
+    - !Install [gimp-plugin-registry]
+
+    # Define HOME.
+    # Without this, HOME is /root
+    # Gimp tries to write ~/.local/share (Gnome standard location for user data)
+    # Avoids error: "/root/.local/share: read-only file system"
+    environ:
+      HOME: /work/.home
+
 
   # with resynthesizer plugin
   resynth:
@@ -62,24 +78,28 @@ containers:
     
 
 
-  # WORK IN PROGRESS  see TODO below
-  # with test program
+  
+  # with a python script that invokes resynthesizer engine plugin
   resynthtest:
     setup:
     - !Container resynth
     
-    # TODO install python in container
-    # Python is not needed to build resynthesizer, but is needed at runtime.
+    # install python in container
+    # Python is not needed to build resynthesizer, but is needed at runtime to run some plugins
+    # !!! Ubuntu requires package gimp-python.  Package "python" will install but is not sufficient.
+    - !Install [gimp-python]
 
     # Create file containing test program.
-    # Language is python, calling pygimp (pdb) functions
+    # Language is python, calling pygimp (pdb object) functions
+    # The test program only proves that the resynthesizer plugin is registered properly, not that it works.
+    # Expect Python "TypeError: wrong number of parameters" and for gimp-console to hang ( you can Ctl-C it. )
     - !Text
       /home/resynthesizer/test.py: |
         from gimpfu import *
-        # TODO use images in /home/resynthesizer/Test/...
-        img = pdb.gimp_file_load("foo.png", "foo.png")
-        # invoke resynthesizer plugin
-        # TODO something like pdb.plugin_resynthesizer(img, ....)
+        # Use images from local resynthesizer repository clone
+        # img = pdb.gimp_file_load("/home/resynthesizer/Test/in_images/brick.png", "/home/resynthesizer/Test/in_images/brick.png")
+        # invoke resynthesizer plugin using its pdb registered name (but with improper parameters)
+        pdb.plug_in_resynthesizer()
         pdb.gimp_quit(1)
 
     # Define HOME,
@@ -108,16 +128,26 @@ commands:
       gimp --version
 
   listResynth: !Command
-    description: ls installed resynthesizer components in container resynth
+    description: ls built and installed resynthesizer components in container resynth (test build process)
     container: resynth
     run: |
       # c executables
-      ls /usr/lib/gimp/2.0/plug-ins/resy*
+      ls -al /usr/lib/gimp/2.0/plug-ins/resy*
       # python scripts  (location unique to Ubuntu)
-      ls /usr/local/lib/gimp/2.0/plug-ins
+      ls -al /usr/local/lib/gimp/2.0/plug-ins
+
+  listThirdParty: !Command
+    description: ls installed resynthesizer components from distributor package "gimp-plugin-registry"
+    container: thirdPartyPlugins
+    run: |
+      # c executables
+      ls -al /usr/lib/gimp/2.0/plug-ins/resy*
+      # python scripts  (location dictated by packaging)
+      ls -al /usr/lib/gimp/2.0/plug-ins/*.py
+      
 
   testResynth: !Command
-    description: Test that resynthesizer plugin will execute using gimp-console
+    description: Test built resynthesizer plugin will start from gimp-console (but throws wrong parameters)
     container: resynthtest
     # invoke headless (no gui) gimp, using python interpreter, on a python script
     run: |
