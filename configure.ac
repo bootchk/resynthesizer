@@ -76,7 +76,7 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
 				    [The gettext translation domain.])
 
 dnl Add the languages which your application supports here.
-ALL_LINGUAS="es ru"
+ALL_LINGUAS="es fr ru"
 
 AC_PROG_INTLTOOL
 AM_GLIB_GNU_GETTEXT

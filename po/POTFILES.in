@@ -1,8 +1,8 @@
 # List of source files containing translatable strings.
 
-src/resynth-gui.c
-src/resynth-gui.h
-src/resynthesizer.c
+src/resynthesizer-gui/resynth-gui.c
+src/resynthesizer-gui/resynth-gui.h
+src/resynthesizer/resynthesizer.c
 PluginScripts/plugin-heal-selection.py
 PluginScripts/plugin-resynth-sharpen.py
 PluginScripts/plugin-resynth-enlarge.py

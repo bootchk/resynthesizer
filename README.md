@@ -142,6 +142,10 @@ make install
 
 Installs to the shared Gimp directories.  Except on Ubuntu, it installs to /usr/local/lib/gimp/2.0/plug-ins and you may need to set the GIMP Edit>Preferences>Folders>Plugins> to include that path.
 
+For localization of the python scripts, you may also need to create a symbolic link to your prefered language file. Ex:
+
+sudo ln -s /usr/local/share/locale/fr/LC_MESSAGES/resynthesizer.mo /usr/share/locale/fr/LC_MESSAGES/resynthesizer.mo
+
 Note the default gcc flags seem to be: -g -O2 -Wall.
 To optimize more, pass the CFLAGS (perogative of the builder to alter compilation):
 
