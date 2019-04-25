@@ -189,7 +189,7 @@ msgid "_Heal selection..."
 msgstr "_Восстановить выделение…"
 
 #: ../PluginScripts/plugin-heal-selection.py:167
-#: ../PluginScripts/plugin-heal-transparency.py:82
+#: ../PluginScripts/plugin-heal-transparency.py:86
 msgid "Context sampling width (pixels):"
 msgstr "Ширина области заимствования (px):"
 
@@ -210,24 +210,28 @@ msgid "Above and below"
 msgstr "Верх и низ"
 
 #: ../PluginScripts/plugin-heal-selection.py:169
-#: ../PluginScripts/plugin-heal-transparency.py:83
+#: ../PluginScripts/plugin-heal-transparency.py:87
 msgid "Filling order:"
 msgstr "Порядок заполнения:"
 
 #: ../PluginScripts/plugin-heal-selection.py:169
-#: ../PluginScripts/plugin-heal-transparency.py:83
+#: ../PluginScripts/plugin-heal-transparency.py:87
 msgid "Random"
 msgstr "Случайный"
 
 #: ../PluginScripts/plugin-heal-selection.py:170
-#: ../PluginScripts/plugin-heal-transparency.py:84
+#: ../PluginScripts/plugin-heal-transparency.py:88
 msgid "Inwards towards center"
 msgstr "Вовнутрь к центру"
 
 #: ../PluginScripts/plugin-heal-selection.py:170
-#: ../PluginScripts/plugin-heal-transparency.py:84
+#: ../PluginScripts/plugin-heal-transparency.py:88
 msgid "Outwards from center"
 msgstr "Наружу от центра"
+
+#: ../PluginScripts/plugin-heal-transparency.py:89
+msgid "Remove alpha channel:"
+msgstr "Удалить альфа-канал:"
 
 #: ../PluginScripts/plugin-resynth-sharpen.py:94
 msgid "Sharpen image by synthesis."
@@ -332,15 +336,15 @@ msgstr "Цвет и яркость"
 msgid "Brightness only"
 msgstr "Только яркость"
 
-#: ../PluginScripts/plugin-heal-transparency.py:72
+#: ../PluginScripts/plugin-heal-transparency.py:76
 msgid ""
-"Removes alpha channel by synthesis.  Fill outward for edges, inward for "
+"Removes transparency by synthesis.  Fill outward for edges, inward for "
 "holes."
 msgstr ""
 "Заполнить прозрачную область при помощи синтеза. Заполнение наружу "
 "предназначено для краёв, вовнутрь — для дыр."
 
-#: ../PluginScripts/plugin-heal-transparency.py:77
+#: ../PluginScripts/plugin-heal-transparency.py:81
 msgid "Heal transparency..."
 msgstr "Восстановить прозрачную область…"
 
