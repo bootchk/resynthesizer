@@ -500,7 +500,7 @@ static void run(
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
   // Begin real work
-  progressStart("synthesizing...");
+  progressStart(_("synthesizing..."));
   
   int result = engine(
     engineParameters, 

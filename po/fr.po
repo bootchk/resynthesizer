@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Resynthesizer 1.0.x\n"
-"POT-Creation-Date: 2019-04-24 21:02-0400\n"
-"PO-Revision-Date: 2019-04-24 21:07-0400\n"
+"POT-Creation-Date: 2019-04-25 21:46-0400\n"
+"PO-Revision-Date: 2019-04-25 21:49-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -392,6 +392,10 @@ msgstr ""
 #: src/resynthesizer/resynthesizer.c:417
 msgid "The output map should be the same size as the output image"
 msgstr "La carte en sortie doit avoir la même taille que l'image en sortie."
+
+#: src/resynthesizer/resynthesizer.c:503
+msgid "synthesizing..."
+msgstr "synthèse..."
 
 #: src/resynthesizer/resynthesizer.c:517
 msgid ""

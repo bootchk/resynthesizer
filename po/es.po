@@ -364,6 +364,10 @@ msgstr ""
 msgid "The output map should be the same size as the output image"
 msgstr ""
 
+#: src/resynthesizer/resynthesizer.c:503
+msgid "synthesizing..."
+msgstr ""
+
 #: src/resynthesizer/resynthesizer.c:517
 msgid ""
 "The texture source is empty. Does any selection include non-transparent "
