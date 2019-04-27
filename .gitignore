@@ -50,5 +50,18 @@
 Makefile.in
 Makefile
 
-# ignore separate build directory 
+# ignore separate build directory (when an IDE creates it)
 /build
+
+# ignore built (compiled) artifacts (when nieve make in the repository)
+stamp-h1
+/lib/libresynthesizer.a
+/src/resynthesizer-gui/resynthesizer_gui
+/src/resynthesizer/resynthesizer
+
+# ignore built (i18n) artifacts
+/po/POTFILES
+/po/stamp-it
+
+
+

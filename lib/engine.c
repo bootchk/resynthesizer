@@ -119,6 +119,7 @@ Also, some functions are inlined.
 #include "orderTarget.h"
 
 
+
 #ifdef STATS
 /* For development */
 guint countSourceTries = 0;
@@ -530,6 +531,8 @@ clippedOrMaskedCorpus(
   #include "refiner.h"
 #endif
 
+#include "falseColorMatch.h"
+
 /*
 The engine.
 Independent of platform, calling app, and graphics libraries.
@@ -671,7 +674,11 @@ engine(
     contextInfo,
     cancelFlag
     );
-    
+  
+  // Optional postprocessing to return an elemental result
+  if (parameters.matchContextType == 5)
+    falseColorMatch(targetMap, corpusMap, &sourceOfMap);
+
   // Free internal mallocs.
   // Caller must free the IN pixmaps since the targetMap holds synthesis results
   free_map(&recentProberMap);
