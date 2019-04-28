@@ -276,9 +276,12 @@ orderTargetPoints(
   {
     case 0: /* Random order, not using context in matches. */
     case 1: /* Random order, using context in matches. */
+    case 10:
+    case 11:
         orderTargetPointsRandom(targetPoints, prng);  
         break;
     case 2: /* Randomized bands, concentric, inward */
+    case 12:
         orderTargetPointsRandomBrushfire(
           (gint (*)(const void*, const void*)) moreInward,
           targetPoints,
@@ -287,6 +290,7 @@ orderTargetPoints(
         /* Formerly moreCartesian */
         break;
     case 3:
+    case 13:
         orderTargetPointsRandomDirectional( 
           (gint (*)(const void*, const void*)) moreHorizontal,
           targetPoints,
@@ -295,6 +299,7 @@ orderTargetPoints(
         // randomized bands, horizontally, inwards.  IE squeezing from top and bottom
         break;
     case 4:
+    case 14:
         orderTargetPointsRandomDirectional( 
           (gint (*)(const void*, const void*)) moreVertical,
           targetPoints,
@@ -303,6 +308,7 @@ orderTargetPoints(
         // randomized bands, vertically, inwards.  IE squeezing from sides.
         break;
     case 5:
+    case 15:
         orderTargetPointsRandomBrushfire(
           (gint (*)(const void*, const void*)) lessInward,
           targetPoints,
@@ -311,6 +317,7 @@ orderTargetPoints(
         // randomized bands, concentric, outward (eg for uncrop)
         break;
     case 6:
+    case 16:
         orderTargetPointsRandomDirectional( 
           (gint (*)(const void*, const void*)) lessHorizontal,
           targetPoints,
@@ -319,6 +326,7 @@ orderTargetPoints(
         // randomized bands, horizontally, outwards.   IE expanding to top and bottom
         break;
     case 7:
+    case 17:
         orderTargetPointsRandomDirectional( 
           (gint (*)(const void*, const void*)) lessVertical,
           targetPoints,
@@ -327,6 +335,7 @@ orderTargetPoints(
         // randomized bands, vertically, outwards.  IE expanding to sides
         break;
     case 8:
+    case 18:
         orderTargetPointsRandomSqueeze(
           targetPoints,
           prng

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 '''
-Gimp plugin "Resynthesize"
+Gimp plugin "Map>Resynthesize"
 
 Copyright 2019 lloyd konneker (bootch at nc.rr.com)
 
@@ -30,22 +30,30 @@ License:
 Implementation notes.
 
 Derived from resynthesizer-gui.c, a C language, GIMP plugin using GTK (hereinafter referred to as "the original.")
-Since this replaces the original, the original is now deleted from the repository.
+It registers the same way as the original: Map>Resynthesize
+Since this replaces the original, the source code for the original is now deleted from the repository.
 
-The purpose of replacing the original is to use a higher level language (Python)
-and to decrease dependency on the GTK library.
-The original was likely to become unmaintainable because GTK had progressed, to version 3.
+Purpose of replacing the original:
+- use a higher level language (Python and PyGimp)
+- and decrease dependency on the GTK library.
+The original was likely to become obsolete because GTK had progressed, to version 3.
 Now, the onus to use a newer GTK is put onto PyGimp.
 I presume that PyGimp will be maintained to use a newer GTK library.
+
+The plugin is essentially a control panel.
+It mostly just passes widget (control) values straight to the resynthesizer engine plugin.
+With some exceptions:
+- many GUI controls are mapped into the useBorder parameter of the engine
+- some error checking is done here, to avoid crashing the engine
 
 C and GTK allows you to do more (GUI wise) such as:
 - enable and disable widgets based on user selections,
 - group widgets,
-- more immediate semantic checking (in callbacks)
+- more immediate semantic checking (in callbacks, not just when OK is clicked)
 - use a tabbed widget
 Some of that user-friendliness is lost in the new plugin.
 Namely:
-- no tabs for "tweaks"
+- no tabs for "tweaks" group of controls
 - no grouping of some widgets under "output" (really, all the controls affect the output)
 - no auto enabling within the group of widgets for weight maps
 - TODO other losses???
@@ -64,8 +72,11 @@ gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
 debug = False
 
 def resynthesize(timg, tdrawable, sourceDrawable, fillingOrderChoice=0, 
-     horizontalTileableChoice=0, verticallyTileableChoice=0, 
+     horizontalTileableChoice=0, verticalTileableChoice=0, 
      useWeightMapsChoice=0, matchWeightDrawableChoice=None, transferWeightDrawableChoice=None, mapImportanceChoice=.50,
+     neighborhoodSizeChoice=30,
+     searchThoroughnessChoice=200,
+     sensitivityToOutliersChoice=0.12,
      generateVectorFieldChoice=0):
   '''
   This plugin is the GUI to the engine.
@@ -78,10 +89,10 @@ def resynthesize(timg, tdrawable, sourceDrawable, fillingOrderChoice=0,
 
   # Some user-friendliness
 
-  # target non-empty?
-  if pdb.gimp_selection_is_empty(timg):
-    pdb.gimp_message(_("You must first select a region to resynthesize, in the target image."))
-    return
+  # target non-empty is alw
+  #if pdb.gimp_selection_is_empty(timg):
+  #  pdb.gimp_message(_("You must first select a region to resynthesize, in the target image."))
+  #  return
 
   sourceImage = pdb.gimp_drawable_get_image(sourceDrawable)
 
@@ -101,20 +112,34 @@ def resynthesize(timg, tdrawable, sourceDrawable, fillingOrderChoice=0,
   
   pdb.gimp_image_undo_group_start(timg)
   
-  # Mangle empty weight map choice
+  # If user chose weight maps
+  if useWeightMapsChoice == 0:
+     # None => -1
+     matchingMap = -1
+     transferringMap = -1
+  else:
+     matchingMap = matchWeightDrawableChoice.ID
+     transferringMap = transferWeightDrawableChoice.ID
+  # Resynthesizer ignores mapWeight param if maps are none
+     
   
   # Encode into useBorder parameter
+  # Add 10 to mean: use same filling order, but post process to deliver false color
   fillingOrder = fillingOrderChoice
-  if generateVectorFieldChoice == 1: 
-      # TODO fillingOrder += 10
-      # TEMP hack
-      fillingOrder = 5;
+  if generateVectorFieldChoice == 1:
+      fillingOrder += 10
   
 
-  # Note that the API hasn't changed but use_border param now has more values.
+  # API hasn't changed but use_border param now has more values.
+  # Order of params different from order in GUI
   pdb.plug_in_resynthesizer(timg, tdrawable, 
        horizontalTileableChoice, verticalTileableChoice, 
-       fillingOrder, sourceDrawable.ID, -1, -1, 0.0, 0.117, 16, 500)
+       fillingOrder, sourceDrawable.ID,
+       matchingMap, transferringMap, mapImportanceChoice,
+       sensitivityToOutliersChoice,
+       neighborhoodSizeChoice,
+       searchThoroughnessChoice
+       )
   
   pdb.gimp_image_undo_group_end(timg)
 
@@ -134,22 +159,38 @@ register(
 
     (PF_DRAWABLE, "sourceDrawable", _("Source (corpus):"), None),
 
-    (PF_OPTION, "fillingOrderChoice",   _("Filling order:"), 0, [_("Random"),
-      _("Inwards towards center"), _("Outwards from center") ]),
+    (PF_OPTION, "fillingOrderChoice",   _("Randomized filling order:"), 1, [
+      _("Without context"),
+      _("Without bands"),
+      _("Bands concentric, inward (squeeze)"),
+      _("Bands horizontal, inward (squeeze from top and bottom)"),
+      _("Bands vertical, inward (squeeze from left and right)"),
+      _("Bands concentric, outward (e.g. for uncrop)"),
+      _("Bands horizontal, outward (expand to top and bottom)"),
+      _("Bands vertical, outward (expand to left and right)"),
+      _("Bands concentric, inward and outward (squeeze donut)"),
+       ]),
 
     (PF_TOGGLE, "horizontalTileableChoice", _("Make output seamlessly tileable horizontally:"), 0 ),
     (PF_TOGGLE, "verticalTileableChoice", _("Make output seamlessly tileable vertically:"), 0 ),
 
     # formerly, latter widgets disabled until first widget chosen
+    # Now, indentation of label indicates grouping
     (PF_TOGGLE, "useWeightMapsChoice", _("Use weight maps:"), 0 ),
-    (PF_DRAWABLE, "matchWeightDrawableChoice", _("   Weight map for matching:"), None),
-    (PF_DRAWABLE, "transferWeightDrawableChoice", _("   Weight map for transferring:"), None),
-    (PF_SLIDER, "mapImportanceChoice", _("Map importance:"), 0, (0.01, 1, 0.5)),
+    (PF_DRAWABLE, "matchWeightDrawableChoice", _("     Weight map for matching:"), None),
+    (PF_DRAWABLE, "transferWeightDrawableChoice", _("     Weight map for transferring:"), None),
+    (PF_SLIDER, "mapImportanceChoice", _("     Map importance:"), 0.5, (0.01, 1, 0.01)),
+
+    # Spinner is digital and linear, slider is analog but exponential
+    # extra tuple is (min, max, step)
+    #(PF_SPINNER, "resize_ratio", _("foo"), 2, (0.5, 10, 0.5)),
 
     # formerly in the "tweaks" tab
+    (PF_SLIDER, "neighborhoodSizeChoice", _("Neighborhood size:"), 30, (1, 100, 1)),
+    (PF_SLIDER, "searchThoroughnessChoice", _("Search thoroughness:"), 200, (1, 500, 1)),
+    (PF_SLIDER, "sensitivityToOutliersChoice", _("Sensitivity to outliers:"), 0.12, (0.1, 1, 0.01)),
 
-
-    (PF_TOGGLE, "generateVectorFieldChoice", _("Generate false color vector field of matches:"), 0 )
+    (PF_TOGGLE, "generateVectorFieldChoice", _("Generate false color field of match coords:"), 0 )
   ],
   [],
   resynthesize,

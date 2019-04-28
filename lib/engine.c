@@ -676,7 +676,9 @@ engine(
     );
   
   // Optional postprocessing to return an elemental result
-  if (parameters.matchContextType == 5)
+  // Encoding of parameter: was [0,8].  
+  // GUI adds 10 to use same fill order but post process: [10,18].
+  if (parameters.matchContextType > 9)
     falseColorMatch(targetMap, corpusMap, &sourceOfMap);
 
   // Free internal mallocs.
