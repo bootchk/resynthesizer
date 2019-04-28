@@ -1,186 +1,182 @@
-# Russian translation of Resynthesizer plug-in for GIMP
-# Copyright (C) 2011 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# Александр Прокудин <alexandre.prokoudine@gmail.com>, 2011.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: Resynthesize 1.0.x\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-24 21:05-0400\n"
-"PO-Revision-Date: 2019-04-24 21:07-0400\n"
-"Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
-"Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
-"Language: ru\n"
+"Project-Id-Version: Resynthesizer 1.0.x\n"
+"POT-Creation-Date: 2019-04-25 21:46-0400\n"
+"PO-Revision-Date: 2019-04-25 21:49-0400\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2); 10<=4 && (n%100<10 || n"
-"%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 2.0.6\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Poedit-KeywordsList: _;N_\n"
+"X-Poedit-SearchPath-0: src\n"
+"X-Poedit-SearchPath-1: PluginScripts\n"
 
 #: PluginScripts/plugin-heal-selection.py:42
 msgid "You must first select a region to heal."
-msgstr "Необходимо предварительно выбрать восстанавливаемую область."
+msgstr "Vous devez d'abord sélectionner une région à corriger."
 
 #: PluginScripts/plugin-heal-selection.py:157
 msgid "Heal the selection from surroundings as if using the heal tool."
-msgstr "Восстановление области замещением пикселами из окружения"
+msgstr ""
+"Corriger la sélection à partir des environs comme si vous utilisiez l'outil "
+"Correcteur."
 
 #: PluginScripts/plugin-heal-selection.py:162
 msgid "_Heal selection..."
-msgstr "_Восстановить выделение…"
+msgstr "_Corriger la sélection..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
 msgid "Context sampling width (pixels):"
-msgstr "Ширина области заимствования (px):"
+msgstr "Largeur d'échantillonnage du contexte (pixels) :"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "Sample from:"
-msgstr "Источник данных:"
+msgstr "Échantillon :"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "All around"
-msgstr "Всё вокруг"
+msgstr "Tout autour"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "Sides"
-msgstr "Левая и правая стороны"
+msgstr "Côtés"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "Above and below"
-msgstr "Верх и низ"
+msgstr "Au-dessus et au-dessous"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
 msgid "Filling order:"
-msgstr "Порядок заполнения:"
+msgstr "Ordre de remplissage :"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
 msgid "Random"
-msgstr "Случайный"
+msgstr "Aléatoire"
 
 #: PluginScripts/plugin-heal-selection.py:170
 #: PluginScripts/plugin-heal-transparency.py:84
 msgid "Inwards towards center"
-msgstr "Вовнутрь к центру"
+msgstr "Vers le centre"
 
 #: PluginScripts/plugin-heal-selection.py:170
 #: PluginScripts/plugin-heal-transparency.py:84
 msgid "Outwards from center"
-msgstr "Наружу от центра"
+msgstr "Vers l'extérieur"
 
 #: PluginScripts/plugin-heal-transparency.py:72
 msgid ""
 "Removes alpha channel by synthesis.  Fill outward for edges, inward for "
 "holes."
 msgstr ""
-"Заполнить прозрачную область при помощи синтеза. Заполнение наружу "
-"предназначено для краёв, вовнутрь — для дыр."
+"Supprime le canal alpha par synthèse. Remplit vers l'extérieur pour les "
+"bords, vers l'intérieur pour les trous."
 
 #: PluginScripts/plugin-heal-transparency.py:77
 msgid "Heal transparency..."
-msgstr "Восстановить прозрачную область…"
+msgstr "Corriger la transparence..."
 
 #: PluginScripts/plugin-map-style.py:281
 msgid "The style source cannot be of mode INDEXED"
-msgstr "Источник стиля не может быть индексированным изображением."
+msgstr "La source de style ne peut pas être en mode Couleurs INDEXÉES."
 
 #: PluginScripts/plugin-map-style.py:376
 msgid ""
 "Transfer style (color and surface) from a chosen source to the active layer. "
 msgstr ""
-"Перенести стиль (цвет и поверхность) из выбранного источника на активный "
-"слой."
+"Transférer le style (couleur et surface) d'une source choisie vers le calque "
+"actif."
 
 #: PluginScripts/plugin-map-style.py:381
 msgid "Style..."
-msgstr "Стиль…"
+msgstr "Style..."
 
 #: PluginScripts/plugin-map-style.py:386
 msgid "Source of style:"
-msgstr "Источник стиля:"
+msgstr "Source de style :"
 
 #: PluginScripts/plugin-map-style.py:387
 msgid "Percent transfer:"
-msgstr "Процент переноса:"
+msgstr "Pourcentage de transfert :"
 
 #: PluginScripts/plugin-map-style.py:388
 msgid "Map by:"
-msgstr "Компоненты переноса:"
+msgstr "Correspondance :"
 
 #: PluginScripts/plugin-map-style.py:388
 msgid "Color and brightness"
-msgstr "Цвет и яркость"
+msgstr "Couleur et luminosité"
 
 #: PluginScripts/plugin-map-style.py:388
 msgid "Brightness only"
-msgstr "Только яркость"
+msgstr "Luminosité seulement"
 
 #: PluginScripts/plugin-render-texture.py:183
 msgid ""
 "Create a new image with texture from the current image or selection. "
 "Optionally, create image edges suited for further, seamless tiling. "
 msgstr ""
-"Создать новое изображение с текстурой из текущего изображения или выделения. "
-"По выбору пользователя содержимое может быть сделано пригодным для создания "
-"бесшовной мозаики."
+"Créer une nouvelle image avec une texture à partir de l'image ou de la "
+"sélection actuelle. Vous pouvez aussi créer des bords d’image raccordables."
 
 #: PluginScripts/plugin-render-texture.py:188
 msgid "_Texture..."
-msgstr "_Текстура…"
+msgstr "_Texture..."
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
-msgstr "Множитель размера нового изображения к исходному выделению"
+msgstr "Rapport de taille de la nouvelle image à la sélection source :"
 
 #: PluginScripts/plugin-render-texture.py:195
 msgid "Make new image edges suitable for seamless tiling"
-msgstr "Сделать новое изображение пригодным для бесшовной мозаики"
+msgstr "Faire de nouvelles bordures d'image raccordables :"
 
 #: PluginScripts/plugin-resynth-enlarge.py:92
 msgid "Enlarge image and synthesize to sharpen."
-msgstr "Увеличить изображения и повысить резкость синтезом."
+msgstr "Agrandir l'image et synthétiser pour augmenter la netteté."
 
 #: PluginScripts/plugin-resynth-enlarge.py:97
 msgid "Enlarge & sharpen..."
-msgstr "Увеличить размер и резкость…"
+msgstr "Agrandir et augmenter la netteté..."
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
 msgid "Scale by:"
-msgstr "Множитель:"
+msgstr "Mise à l'échelle :"
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:100
 msgid "Seamlessly fill with a pattern using synthesis."
-msgstr "Залить текстурой без видимых швов с помощью синтеза."
+msgstr "Remplir avec un motif raccordable en utilisant la synthèse."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
 msgid "_Fill with pattern seamless..."
-msgstr "Залить _бесшовной текстурой…"
+msgstr "_Remplir avec un motif raccordable..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
 msgid "Pattern:"
-msgstr "Текстура:"
+msgstr "Motif :"
 
 #: PluginScripts/plugin-resynth-sharpen.py:94
 msgid "Sharpen image by synthesis."
-msgstr "Увеличить резкость изображения."
+msgstr "Augmenter la netteté de l'image par synthèse."
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
 msgid "Sharpen by synthesis..."
-msgstr "Увеличить резкость синтезом…"
+msgstr "Augmenter la netteté par synthèse..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
 msgid "Sharpening:"
-msgstr "Увеличение резкости:"
+msgstr "Augmentation de la netteté :"
 
 #: PluginScripts/plugin-uncrop.py:86
 msgid "A layer must be active, not a channel."
-msgstr "Должен быть активным слой, а не канал."
+msgstr "Un calque doit être actif, pas un canal."
 
 #: PluginScripts/plugin-uncrop.py:142
 msgid ""
@@ -188,131 +184,144 @@ msgid ""
 "perspective.  Works best for small enlargement of natural edges. Undo a Crop "
 "instead, if possible! "
 msgstr ""
-"Увеличить изображение за счёт синтеза границы из данных края с сохранением "
-"перспективы. Лучше всего работает для несущественного улучшения естественных "
-"краёв."
+"Agrandir l'image en synthétisant une bordure qui correspond au bord, en "
+"maintenant la perspective. Fonctionne mieux pour un petit agrandissement des "
+"bords naturels.  Annuler le rognage à la place, si possible!"
 
 #: PluginScripts/plugin-uncrop.py:147
 msgid "Uncrop..."
-msgstr "Обратное кадрирование…"
+msgstr "Dérogner..."
 
 #: PluginScripts/plugin-uncrop.py:152
 msgid "Percent enlargement"
-msgstr "На сколько процентов увеличить"
+msgstr "Pourcentage d'agrandissement : "
 
 #: src/resynthesizer-gui/resynth-gui.c:156
 msgid "Make tiles, apply themes, render texture, remove features, etc."
-msgstr "Создание мозаики, рендеринг текстур, удаление объектов и пр."
+msgstr ""
+"Faire des mosaïques, appliquer des thèmes, générer une texture, supprimer "
+"des éléments, etc."
 
 #: src/resynthesizer-gui/resynth-gui.c:161
 msgid "_Resynthesize..."
-msgstr "_Ресинтез…"
+msgstr "_Resynthétiser..."
 
 #: src/resynthesizer-gui/resynth-gui.h:115
 msgid "Context: "
-msgstr ""
+msgstr "Contexte :"
 
 #: src/resynthesizer-gui/resynth-gui.h:123
 msgid "Random order, without context"
-msgstr ""
+msgstr "Ordre aléatoire, sans contexte"
 
 #: src/resynthesizer-gui/resynth-gui.h:124
 msgid "Random order, with context"
-msgstr ""
+msgstr "Ordre aléatoire, avec contexte"
 
 #: src/resynthesizer-gui/resynth-gui.h:125
 msgid "Randomized bands, concentric, inwards"
-msgstr ""
+msgstr "Bandes randomisées, concentriques, vers l'intérieur"
 
 #: src/resynthesizer-gui/resynth-gui.h:126
 msgid ""
 "Randomized bands, horizontally, inwards (i.e. squeezing from top and bottom)"
 msgstr ""
+"Bandes randomisées, horizontalement, vers l’intérieur (c.-à-d. en pressant "
+"du haut vers le bas)"
 
 #: src/resynthesizer-gui/resynth-gui.h:127
 msgid ""
 "Randomized bands, vertically, inwards (i.e. squeezing from left and right)"
 msgstr ""
+"Bandes randomisées, verticalement, vers l’intérieur (c.-à-d. en pressant de "
+"gauche à droite)"
 
 #: src/resynthesizer-gui/resynth-gui.h:128
 msgid "Randomized bands, concentric, outwards (e.g. for uncrop)"
 msgstr ""
+"Bandes randomisées, concentriques, vers l’extérieur (p. ex., pour dérogner)"
 
 #: src/resynthesizer-gui/resynth-gui.h:129
 msgid ""
 "Randomized bands, horizontally, outwards, (i.e. expanding to top and bottom)"
 msgstr ""
+"Bandes randomisées, horizontalement, vers l'extérieur (c.-à-d. en s'étendant "
+"vers le haut et le bas)"
 
 #: src/resynthesizer-gui/resynth-gui.h:130
 msgid ""
 "Randomized bands, vertically, outwards (i.e. expanding to left and right)"
 msgstr ""
+"Bandes randomisées, verticalement, vers l'extérieur (c.-à-d. en s'étendant à "
+"gauche et à droite)"
 
 #: src/resynthesizer-gui/resynth-gui.h:131
 msgid ""
 "Randomized bands, concentric, inwards and outwards (i.e. squeezing in and "
 "out a donut)"
 msgstr ""
+"Bandes randomisées, concentriques, vers l’intérieur et l’extérieur (c.-à-d. "
+"en pressant un beignet)"
 
 #: src/resynthesizer-gui/resynth-gui.h:228
 msgid "Resynthesize"
-msgstr "Ресинтез"
+msgstr "Resynthétiser"
 
 #: src/resynthesizer-gui/resynth-gui.h:240
 msgid "_OK"
-msgstr "_ОК"
+msgstr "_OK"
 
 #: src/resynthesizer-gui/resynth-gui.h:247
 msgid "_Cancel"
-msgstr "О_тмена"
+msgstr "_Annuler"
 
 #: src/resynthesizer-gui/resynth-gui.h:260
 msgid "Options"
-msgstr "Параметры"
+msgstr "Options"
 
 #: src/resynthesizer-gui/resynth-gui.h:264
 msgid "Tweaks"
-msgstr "Подстройка алгоритма"
+msgstr "Réglages"
 
 #: src/resynthesizer-gui/resynth-gui.h:268
 msgid "Input"
-msgstr "Ввод"
+msgstr "Entrée"
 
 #: src/resynthesizer-gui/resynth-gui.h:274
 msgid "Texture source: "
-msgstr "Источник текстуры: "
+msgstr "Source de texture : "
 
 #: src/resynthesizer-gui/resynth-gui.h:278
 msgid "Output"
-msgstr "Вывод"
+msgstr "Sortie"
 
 #: src/resynthesizer-gui/resynth-gui.h:286
 msgid "Make horizontally tileable"
-msgstr "Сделать мозаичным по горизонтали"
+msgstr "Mosaïque horizontale"
 
 #: src/resynthesizer-gui/resynth-gui.h:290
 msgid "Make vertically tileable"
-msgstr "Сделать мозаичным по вертикали"
+msgstr "Mosaïque verticale"
 
 #: src/resynthesizer-gui/resynth-gui.h:297
 msgid "Texture transfer"
-msgstr "Перенос текстуры"
+msgstr "Transfert de texture"
 
 #: src/resynthesizer-gui/resynth-gui.h:306
 msgid "Use texture transfer"
-msgstr "Выполнить перенос текстуры"
+msgstr "Utiliser le transfert de texture"
 
 #: src/resynthesizer-gui/resynth-gui.h:312
 msgid "Input map: "
-msgstr "Карта ввода: "
+msgstr "Carte d'entrée : "
 
 #: src/resynthesizer-gui/resynth-gui.h:317
 msgid "Output map: "
-msgstr "Карта вывода: "
+msgstr "Carte de sortie : "
 
 #: src/resynthesizer-gui/resynth-gui.h:322
 msgid "Map importance:"
-msgstr "Важность карты:"
+msgstr "Importance de la carte :"
 
 #: src/resynthesizer-gui/resynth-gui.h:329
 msgid ""
@@ -321,81 +330,85 @@ msgid ""
 "neighbourhoods of pixels in the input. The pixel at the center of the best "
 "matching neighbourhood is copied to the output.\n"
 msgstr ""
-"Ресинтезатор выполняет копирование пикселов по одному из ввода в вывод. "
-"Окружение заданного размера в выводе сравнивается с таковым во вводе. Пиксел "
-"в центре максимально совпадающей области копируется в вывод.\n"
+"Resynthesizer fonctionne en copiant, un à un, les pixels de l'entrée à la "
+"sortie. Un voisinage de pixels proches dans la sortie est comparé à un "
+"voisinage de pixels dans l'entrée. Le pixel au centre du meilleur voisinage "
+"correspondant est copié dans la sortie.\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:331
 msgid "Neighbourhood size:"
-msgstr "Размер окружения:"
+msgstr "Taille du voisinage :"
 
 #: src/resynthesizer-gui/resynth-gui.h:334
 msgid "- How many nearby pixels in the output are to be used?\n"
-msgstr "(Как много соседних пикселов в выводе использовать)\n"
+msgstr "- Combien de pixels proches dans la sortie doivent être utilisés?\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:336
 msgid "Search thoroughness:"
-msgstr "Тщательность поиска:"
+msgstr "Ampleur de la recherche :"
 
 #: src/resynthesizer-gui/resynth-gui.h:339
 msgid "- How many locations in the input are examined?\n"
-msgstr "(Как много мест ввода сравнивать)\n"
+msgstr "- Combien d'emplacements dans l'entrée sont examinés?\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:341
 msgid "Sensitivity to outliers:"
-msgstr "Чувствительность к отклонениям:"
+msgstr "Sensibilité aux aberrations :"
 
 #: src/resynthesizer-gui/resynth-gui.h:344
 msgid ""
 "- To what extent does a very bad match on a single pixel disqualify a "
 "location?\n"
 msgstr ""
-"(Насколько очень плохое совпадение в одном пикселе дисквалифицирует место)\n"
+"- Dans quelle mesure une très mauvaise correspondance sur un seul pixel "
+"disqualifie-t-elle un emplacement?\n"
 
 #: src/resynthesizer/resynthesizer.c:350
 msgid "Incompatible image mode."
-msgstr "Неподходящий режим изображения."
+msgstr "Mode d'image incompatible."
 
 #: src/resynthesizer/resynthesizer.c:373
 msgid "Resynthesizer failed to get parameters."
-msgstr "Ресинтезатору не удалось получить параметры."
+msgstr "Resynthesizer n'a pas réussi à obtenir les paramètres."
 
 #: src/resynthesizer/resynthesizer.c:388
 msgid ""
 "The input texture and output image must have the same number of color "
 "channels."
 msgstr ""
+"La texture en entrée et l'image en sortie doivent avoir le même nombre de "
+"canaux de couleur."
 
 #: src/resynthesizer/resynthesizer.c:407
 msgid "The input and output maps must have the same mode"
-msgstr ""
+msgstr "Les cartes d'entrée et de sortie doivent avoir le même mode."
 
 #: src/resynthesizer/resynthesizer.c:412
 msgid "The input map should be the same size as the input texture image"
 msgstr ""
+"La carte en entrée doit avoir la même taille que l'image de texture en "
+"entrée."
 
 #: src/resynthesizer/resynthesizer.c:417
 msgid "The output map should be the same size as the output image"
-msgstr ""
+msgstr "La carte en sortie doit avoir la même taille que l'image en sortie."
 
 #: src/resynthesizer/resynthesizer.c:503
 msgid "synthesizing..."
-msgstr ""
+msgstr "synthèse..."
 
 #: src/resynthesizer/resynthesizer.c:517
 msgid ""
 "The texture source is empty. Does any selection include non-transparent "
 "pixels?"
 msgstr ""
+"La source de texture est vide. Existe-t-il une sélection avec pixels non "
+"transparents?"
 
 #: src/resynthesizer/resynthesizer.c:521
 msgid ""
 "The output layer is empty. Does any selection have visible pixels in the "
 "active layer?"
 msgstr ""
-
-#~ msgid "Fit output to bordering pixels"
-#~ msgstr "Уместить вывод в краевых пикселах"
-
-#~ msgid "Resynthesizer: synthesizing"
-#~ msgstr "Ресинтезатор: выполняется синтез"
+"Le calque de sortie est vide. Existe-t-il une sélection avec des pixels "
+"visibles dans le calque actif?"
