@@ -16,6 +16,11 @@ Scale coordinates to fit in a pixelel (8-bits)
 Given coordinates must be in the frame of the given image.
 Typically, image is the corpus image.
 
+May scale up (when image is less than 255x255)
+as well as down (when image is greater than 255x255).
+
+Reversible (by the caller) with some loss of accuracy.
+
 Signed integer arithmetic, with truncation.
 Coordinates are signed (but they shouldn't be.)
 They are gint, same as C int, which are 4 bytes on most platforms.
@@ -61,33 +66,31 @@ scaleCoordinatesToEightBitOffsets(Map* map, Coordinates targetCoords, Coordinate
 /*
 Set color of target pixel to a false color given by scaled coordinates of best match in corpus.
 
-Note coordinates should be in frame of corresponding map.
+Note require coordinates in frame of corresponding map.
 targetCoords in frame of targetMap
 matchCoords in frame of corpusMap
-
 */
 static inline void
 setFalseColor(Map* targetMap, Map* corpusMap, Coordinates targetCoords, Coordinates matchCoords)
 {
    Coordinates resultCoordinates;
 
-   // resultCoordinates= scaleCoordinatesToEightBits(corpusMap, matchCoords);
-   resultCoordinates = matchCoords;  // Not scaled
-
-   // BUG should be corpusMap  Coordinates scaledCoordinates = scaleCoordinatesToEightBits(targetMap, matchCoords);
-   //Coordinates scaledCoordinates = scaleCoordinatesToEightBitOffsets(targetMap, targetCoords, matchCoords);
+   
+   resultCoordinates= scaleCoordinatesToEightBits(corpusMap, matchCoords);
+   // TEMP resultCoordinates = matchCoords;  // Not scaled
   
    // TODO image must be color
-   // TODO don't assume RGB order
+ 
 
    // For two color pixelels (channels), R and G set value to coordinate value
-   // !!! TODO hardcoded indices, note 0 is the selection mask
+   // !!! FUTURE use symbolic instead of hardcoded indices, i.e. don't assume RGB order.
+   // Note 0 is the selection mask in the engines pixel format.
+   // Note C loss of data if coordinates not scaled, since assigning a gint to a byte
    pixmap_index(targetMap, targetCoords)[1] = resultCoordinates.x;
    pixmap_index(targetMap, targetCoords)[2] = resultCoordinates.y;
-   // Erase B pixelel
-   // TODO max value more pleasing?
+   // Erase B pixelel (no blue)
+   // FUTURE max value i.e. full blue more pleasing?
    pixmap_index(targetMap, targetCoords)[3] = 0;
-   
 }
 
 

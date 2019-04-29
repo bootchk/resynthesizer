@@ -129,13 +129,13 @@ AC_PROG_RANLIB
 dnl AC_PROG_LIBTOOL
 
 dnl lkk 2011 Added PluginScripts/Makefile
-dnl lkk 2015 Break src into lib, src/resynthesizer, src/resynthesizer-gui
+dnl lkk 2015 Break src into lib, src/resynthesizer, 
+dnl lkk 2019 Obsolete src/resynthesizer-gui
 AC_CONFIG_FILES([
 Makefile
 lib/Makefile
 src/Makefile
 src/resynthesizer/Makefile
-src/resynthesizer-gui/Makefile
 po/Makefile.in
 help/Makefile
 help/en/Makefile

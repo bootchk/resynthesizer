@@ -56,7 +56,6 @@ Namely:
 - no tabs for "tweaks" group of controls
 - no grouping of some widgets under "output" (really, all the controls affect the output)
 - no auto enabling within the group of widgets for weight maps
-- TODO other losses???
 
 The original called the C-language engine directly, calling gimp_run_procedure2(), passing a parameter struct.
 This calls the engine indirectly, calling pdb.plug_in_resynthesizer().
@@ -87,32 +86,41 @@ def resynthesize(timg, tdrawable, sourceDrawable, fillingOrderChoice=0,
   Except for the "generate vector field" checkbox
   '''
 
-  # Some user-friendliness
+  # User-friendliness considerations
 
-  # target non-empty is alw
-  #if pdb.gimp_selection_is_empty(timg):
-  #  pdb.gimp_message(_("You must first select a region to resynthesize, in the target image."))
-  #  return
+  # empty selection in target is not an error, the engine will select all
+  # if pdb.gimp_selection_is_empty(timg):
 
+  # empty selection in source is not an error, the engine will select all
+  # if pdb.gimp_selection_is_empty(sourceImage):
+
+  # source same as target is not an error.
+  # Random fill order will generally produce no visible change,
+  # but some fill orders may produce a subtly altered result.
+  # Same images implies same selections.
+  # if timg == sourceImage and tdrawable == sourceDrawable:
+
+  # The source image chooser widget (provided by PyGimp) does NOT filter by image mode.
   sourceImage = pdb.gimp_drawable_get_image(sourceDrawable)
-
-  # source non-empty
-  if pdb.gimp_selection_is_empty(sourceImage):
-    pdb.gimp_message(_("You must first select a region to sample from, in the source image."))
+  source_image_mode = pdb.gimp_image_base_type(sourceImage)
+  target_image_mode = pdb.gimp_image_base_type(timg)
+  
+  # Engine requires source mode NOT be INDEXED, else it crashes.
+  if source_image_mode == INDEXED :
+    pdb.gimp_message(_("The source image cannot be of mode INDEXED"));
     return
 
-  # source not same as target
-  # It is really the selections that should not be the same, but same images implies same selections.
-  if timg == sourceImage and tdrawable == sourceDrawable:
-     pdb.gimp_message(_("Target and corpus images the same makes little sense."));
+  # Engine requires base modes same (but allows differences in alpha)
+  if target_image_mode != source_image_mode :
+    pdb.gimp_message(_("The source and target images must have same mode except for alpha e.g. RGB and RGBA"));
+    return
 
-  # source mode is correct, not INDEXED
-  # synchronize mode of target and source
-  # FUTURE extract from plugin-map-style.py 
-  
+
+
   pdb.gimp_image_undo_group_start(timg)
   
-  # If user chose weight maps
+  # Implement alternative to GTK widget enabling.
+  # The map image choosers are always enabled but only pass them to engine if "use weight maps" checkbox is Yes
   if useWeightMapsChoice == 0:
      # None => -1
      matchingMap = -1
@@ -129,8 +137,8 @@ def resynthesize(timg, tdrawable, sourceDrawable, fillingOrderChoice=0,
   if generateVectorFieldChoice == 1:
       fillingOrder += 10
   
+  # engine API hasn't changed in a long time, but use_border param now has more values.
 
-  # API hasn't changed but use_border param now has more values.
   # Order of params different from order in GUI
   pdb.plug_in_resynthesizer(timg, tdrawable, 
        horizontalTileableChoice, verticalTileableChoice, 

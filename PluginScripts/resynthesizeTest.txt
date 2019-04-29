@@ -1,0 +1,16 @@
+Crude test plans.
+
+plugin-resynthesizer-gui
+
+Unchanged features
+
+1. No selection in either source or target.  Expect no warning dialogs or errors from engine.
+2. Source image same as target image.  Expect no warning dialogs or errors from engine.
+3. Source image is mode RGBA and target is mode RGB.  Expect no warning dialogs or errors from engine.
+
+New code, python plugin catches user errors crudely (whereas GTK could filter choices in advance.)
+
+4. Source image is indexed mode.  Expect error dialog and engine not called.
+5. Source image is mode grayscale and target is mode RGB.  Expect error dialog and engine not called.
+
+
