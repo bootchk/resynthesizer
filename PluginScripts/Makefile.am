@@ -15,7 +15,8 @@ scripts = \
 	plugin-map-style.py	\
 	plugin-heal-transparency.py \
 	plugin-resynth-fill-pattern.py \
-  plugin-resynthesizer-gui.py
+  plugin-resynthesizer-gui.py \
+  plugin-false-color-match.py
 	
 
 pluginexec_SCRIPTS = $(scripts)
