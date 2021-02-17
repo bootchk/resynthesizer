@@ -22,9 +22,14 @@ test -z "$srcdir" && srcdir=.
 ORIGDIR=`pwd`
 cd $srcdir
 
+ver ()
+{
+    echo "$1" | awk -F. '{printf("%d%03d%03d%03d\n",$1,$2,$3,$4);}'
+}
+
 check_version ()
 {
-    if expr $1 \>= $2 > /dev/null; then
+    if [ "`ver "$1"`" -ge "`ver "$2"`" ]; then
 	echo "yes (version $1)"
     else
 	echo "Too old (found version $1)!"
@@ -91,11 +96,11 @@ else
     DIE=1
 fi
 
-#if test x$AUTOMAKE != x; then
-#    VER=`$AUTOMAKE --version \
-#         | grep automake | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
-#    check_version $VER $AUTOMAKE_REQUIRED_VERSION
-#fi
+if test x$AUTOMAKE != x; then
+    VER=`$AUTOMAKE --version \
+         | grep automake | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
+    check_version $VER $AUTOMAKE_REQUIRED_VERSION
+fi
 
 printf "checking for glib-gettextize >= %s ... " "$GLIB_REQUIRED_VERSION"
 if (glib-gettextize --version) < /dev/null > /dev/null 2>&1; then
