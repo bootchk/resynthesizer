@@ -140,6 +140,7 @@ s_array_free(
   int   cascade
   );		   
 
+#ifdef SYNTH_THREADED
 // Proxies for thread mutex
 // Redefine glib mutex to use POSIX pthread mutex
 // Depends on <pthread.h>
@@ -147,3 +148,8 @@ s_array_free(
 #define g_static_mutex_init(A)      pthread_mutex_init(A, NULL);        // POSIX additional parameter
 #define g_static_mutex_lock(A)      pthread_mutex_lock(A)
 #define g_static_mutex_unlock(A)    pthread_mutex_unlock(A)
+
+#define g_mutex_init(A)      pthread_mutex_init(A, NULL);        // POSIX additional parameter
+#define g_mutex_lock(A)      pthread_mutex_lock(A)
+#define g_mutex_unlock(A)    pthread_mutex_unlock(A)
+#endif

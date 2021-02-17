@@ -293,7 +293,12 @@ refiner(
   // If not using glib proxied to pthread by glibProxy.h
   g_mutex_init(&mutex);  // defined in synthesize.h
 
+  
+#ifdef SYNTH_USE_GLIB_THREADS
   static GMutex mutexProgress;
+#else
+  pthread_mutex_t mutexProgress;
+#endif
   g_mutex_init(&mutexProgress);
 
 

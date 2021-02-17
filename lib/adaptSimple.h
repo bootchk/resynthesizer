@@ -306,5 +306,53 @@ adaptSimpleAPI(
   // assert two mallocs
 }
 
+void
+adaptSimpleAPI2(
+  ImageBuffer * imageBuffer,
+  ImageBuffer * maskBuffer,
+  ImageBuffer * maskBuffer2,
+  Map * targetMap,
+  Map * corpusMap,
+  guint pixelelPerPixel // In imageBuffer
+  )
+{
+  // Assert image and mask are same size, not need to initialize empty mask with a value
+  // (as is the case when mask is smaller).
+  Map targetMaskMap;
+  
+  // Copy image and mask to global pixmaps
+  adaptImageAndMask(
+    imageBuffer, 
+    maskBuffer,
+    targetMap, 
+    &targetMaskMap, 
+    pixelelPerPixel
+    );
+  
+  // For performance (cache memory locality), interleave mask into pixmap.
+  interleave_mask(targetMap, &targetMaskMap);  /* Interleave mask byte into our Pixels */
+  free_map(&targetMaskMap);
+  
+  
+  // Duplicate image to corpus with inverted mask
+  Map corpusMaskMap;
+  
+  adaptImageAndMask(
+    imageBuffer, 
+    maskBuffer2,
+    corpusMap,
+    &corpusMaskMap,
+    pixelelPerPixel
+    );
+  
+  
+  // For performance (cache memory locality), interleave mask into pixmap.
+  interleave_mask(corpusMap, &corpusMaskMap);  /* Interleave mask byte into our Pixels */
+  free_map(&corpusMaskMap);
+  
+  // assert two mallocs
+}
+
+
 
 
