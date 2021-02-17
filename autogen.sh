@@ -39,7 +39,7 @@ echo
 
 DIE=0
 
-echo -n "checking for autoconf >= $AUTOCONF_REQUIRED_VERSION ... "
+printf "checking for autoconf >= %s ... " "$AUTOCONF_REQUIRED_VERSION"
 if (autoconf --version) < /dev/null > /dev/null 2>&1; then
     VER=`autoconf --version \
          | grep -m 1 -iw autoconf | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
@@ -52,7 +52,7 @@ else
     DIE=1;
 fi
 
-echo -n "checking for automake >= $AUTOMAKE_REQUIRED_VERSION ... "
+printf "checking for automake >= %s ... " "$AUTOMAKE_REQUIRED_VERSION"
 if (automake-1.7 --version) < /dev/null > /dev/null 2>&1; then
    AUTOMAKE=automake-1.7
    ACLOCAL=aclocal-1.7
@@ -97,7 +97,7 @@ fi
 #    check_version $VER $AUTOMAKE_REQUIRED_VERSION
 #fi
 
-echo -n "checking for glib-gettextize >= $GLIB_REQUIRED_VERSION ... "
+printf "checking for glib-gettextize >= %s ... " "$GLIB_REQUIRED_VERSION"
 if (glib-gettextize --version) < /dev/null > /dev/null 2>&1; then
     VER=`glib-gettextize --version \
          | grep glib-gettextize | sed "s/.* \([0-9.]*\)/\1/"`
@@ -110,7 +110,7 @@ else
     DIE=1
 fi
 
-echo -n "checking for intltool >= $INTLTOOL_REQUIRED_VERSION ... "
+printf "checking for intltool >= %s ... " "$INTLTOOL_REQUIRED_VERSION"
 if (intltoolize --version) < /dev/null > /dev/null 2>&1; then
     VER=`intltoolize --version \
          | grep intltoolize | sed "s/.* \([0-9.]*\)/\1/"`
