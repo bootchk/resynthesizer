@@ -8,14 +8,23 @@ containers:
   # basic OS with dev (compiling)
   baseOS:
     setup:
+    # 18.04 LTS End of support 2023
+    #- !Ubuntu bionic
+
     # 18.10
     # - !Ubuntu cosmic
-    # 19.04
+
+    # 19.04 End of support Jan 2020
     # - !Ubuntu disco
+
     # 19.10 End of support July 2020
     # - !Ubuntu eoan
-    # 20.04
+
+    # 20.04 LTS
     - !Ubuntu focal
+
+    # 20.10
+    # - !Ubuntu groovy
 
 
     # enable universe repository (where gimp lives)
@@ -72,15 +81,19 @@ containers:
     #  url: git://github.com/bootchk/resynthesizer
     #  script: ./autogen.sh && ./configure && make && make install
 
-    # Clone repository
-    - !Git
-      url: git://github.com/bootchk/resynthesizer
-      path: /home/resynthesizer
+    # Clone repository into the container
+    # This works, but better to build the edited repository in the project directory
+    #- !Git
+    # url: git://github.com/bootchk/resynthesizer
+    # path: /home/resynthesizer
+
+    # Remake container when source changes
+    - !Depends /work/resynthesizer
 
     # cd to repository and build it
     # Build script is a sequence of sh commands, "&&" means each depends on success of previous.
     # As documented in build instructions in resynthesizer/readme.md
-    - !Sh cd /home/resynthesizer && ./autogen.sh && ./configure && make && make install
+    - !Sh cd /work/resynthesizer && ./autogen.sh && ./configure && make && make install
 
     environ:
       HOME: /work/.home
@@ -189,6 +202,7 @@ commands:
       ls ~/.config/GIMP/2.10/plug-ins
       echo ls /usr/local/lib/gimp/2.0/plug-ins
       ls /usr/local/lib/gimp/2.0/plug-ins
+      export G_MESSAGES_DEBUG=all
       # --verbose
       gimp 
 
