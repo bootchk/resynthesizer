@@ -8,9 +8,16 @@ containers:
   # basic OS with dev (compiling)
   baseOS:
     setup:
-    # base OS is ubuntu 18.10
+    # 18.10
     # - !Ubuntu cosmic
-    - !Ubuntu disco
+    # 19.04
+    # - !Ubuntu disco
+    # 19.10 End of support July 2020
+    # - !Ubuntu eoan
+    # 20.04
+    - !Ubuntu focal
+
+
     # enable universe repository (where gimp lives)
     - !UbuntuUniverse
     # tools for dev (C compiler)
@@ -54,7 +61,7 @@ containers:
       HOME: /work/.home
 
 
-  # with resynthesizer plugin
+  # with built and installed resynthesizer plugin
   resynth:
     setup:
     - !Container gimpdev
@@ -75,6 +82,9 @@ containers:
     # As documented in build instructions in resynthesizer/readme.md
     - !Sh cd /home/resynthesizer && ./autogen.sh && ./configure && make && make install
 
+    environ:
+      HOME: /work/.home
+
     
 
 
@@ -87,7 +97,20 @@ containers:
     # install python in container
     # Python is not needed to build resynthesizer, but is needed at runtime to run some plugins
     # !!! Ubuntu requires package gimp-python.  Package "python" will install but is not sufficient.
-    - !Install [gimp-python]
+    
+    # This works through 19.04 but fails from 19.10 onward
+    #- !Install [gimp-python]
+
+    #
+    #- !Sh |
+    #    wget http://archive.ubuntu.com/ubuntu/pool/universe/p/pygtk/python-gtk2_2.24.0-6_amd64.deb
+    #    wget http://archive.ubuntu.com/ubuntu/pool/universe/g/gimp/gimp-python_2.10.8-2_amd64.deb
+
+    #   sudo apt install gimp gimp-plugin-registry gimp-gmic
+    #    sudo apt install python python-cairo python-gobject-2
+
+    #    sudo dpkg -i python-gtk2_2.24.0-6_amd64.deb
+    #    sudo dpkg -i gimp-python_2.10.8-2_amd64.deb
 
     # Create file containing test program.
     # Language is python, calling pygimp (pdb object) functions
@@ -152,6 +175,23 @@ commands:
     # invoke headless (no gui) gimp, using python interpreter, on a python script
     run: |
       gimp-console -idf --verbose --batch-interpreter python-fu-eval  -b - </home/resynthesizer/test.py
+
+  # Note that resynthesizer installs to /usr/local/... so you must configure gimp preferences/folders/plugin
+  # and restart (run this command again.)
+  testGimp: !Command
+    description: Test GIMP where built resynthesizer installed >vagga --use-env DISPLAY testGimp
+    container: resynth
+    run: |
+      echo Listing installed plugins
+      echo ls /usr/lib/gimp/2.0/plug-ins
+      ls /usr/lib/gimp/2.0/plug-ins
+      echo ls ~/.config/GIMP/2.10/plug-ins
+      ls ~/.config/GIMP/2.10/plug-ins
+      echo ls /usr/local/lib/gimp/2.0/plug-ins
+      ls /usr/local/lib/gimp/2.0/plug-ins
+      # --verbose
+      gimp 
+
 
 
 
