@@ -115,15 +115,25 @@ Return value is already PDB_ERROR.
 Return an error string to Gimp, which will display an alert dialog.
 Also log message in case engine is called non-interactively.
 Note this must be used in the scope of nreturn_vals and value, in main().
+
+Since 2.10, not need to detach
 */
 #define ERROR_RETURN(message)   { \
-  detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable); \
   *nreturn_vals           = 2; \
   values[1].type          = GIMP_PDB_STRING; \
   values[1].data.d_string = message ; \
   g_debug(message); \
   return; \
   }
+
+
+static void
+debug(const char * message)
+{
+  g_printerr(message);
+  g_printerr("\n");
+}
+
 
 #ifdef ANIMATE
 /*
@@ -245,14 +255,21 @@ post_results_to_gimp(
   GimpDrawable *drawable,
   Map targetMap) 
 {
-  pixmap_to_drawable(targetMap, drawable, FIRST_PIXELEL_INDEX);   // our pixels to region
-  gimp_drawable_flush(drawable);    // regions back to core
-  gimp_drawable_merge_shadow(drawable->drawable_id,TRUE);   // temp buffers merged
+  // our pixels back to Gimp.  Since 2.10, using GeglBuffers, and this flushes them
+  debug("pixmap to drawable");
+  pixmap_to_drawable(targetMap, drawable, FIRST_PIXELEL_INDEX);   
+  
+  debug("flush");
+  // temp buffers merged
+  if ( ! gimp_drawable_merge_shadow(drawable->drawable_id, TRUE))
+      debug("fail merge shadow");
   gimp_drawable_update(drawable->drawable_id,0,0,targetMap.width,targetMap.height);
   gimp_displays_flush();
 }
 
 
+/*
+Since 2.10, no need to detach drawables.
 
 static void
 detach_drawables(
@@ -271,12 +288,17 @@ detach_drawables(
   if (in_map)
     gimp_drawable_detach(in_map);
 }
+*/
 
 #ifdef ADAPT_SIMPLE
   #include "imageBuffer.h"
   #include "adaptSimple.h"
   #include "adaptGimpSimple.h"
 #endif
+
+
+
+
 
 /* 
 Plugin main.
@@ -294,7 +316,10 @@ static void run(
   TGimpAdapterParameters pluginParameters;
   TImageSynthParameters engineParameters;
   
+  // WIP ID or Drawable* since 2.10???
   GimpDrawable *drawable = NULL;
+  // gint32        drawableID;
+
   GimpDrawable *corpus_drawable = NULL; 
   GimpDrawable *map_in_drawable= NULL; 
   GimpDrawable *map_out_drawable= NULL; 
@@ -341,7 +366,10 @@ static void run(
   values[0].type = GIMP_PDB_STATUS;
   values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR; /* Unless everything succeeds. */
   
+
   drawable = gimp_drawable_get(param[2].data.d_drawable);
+  // drawable = gimp_drawable_get_by_id(param[2].data.d_drawable);
+
 
   /* Check image type (could be called non-interactive) */
   if (!gimp_drawable_is_rgb(drawable->drawable_id) &&
@@ -457,6 +485,9 @@ static void run(
     with_map
     );
   
+  // Since 2.10, use gegl
+  gegl_init (NULL, NULL);
+
   #ifdef ADAPT_SIMPLE
     /* Adapt Gimp to an engine with a simpler interface. */
     setDefaultParams(&parameters);
@@ -469,7 +500,8 @@ static void run(
     adaptSimpleAPI(&imageBuffer, &maskBuffer);        // From simple to existing engine API
     
   #else
-    g_printf("Gimp adaption\n");
+    g_printerr("Gimp version %d\n", GIMP_MAJOR_VERSION);
+    debug("Gimp adaption");
     /* target/context adaption */
     fetch_image_mask_map(drawable, &targetMap, formatIndices.total_bpp, 
       &targetMaskMap, 
@@ -495,8 +527,8 @@ static void run(
   #endif
   
   // After possible adaption, check size again
-  g_assert(targetMap.width * targetMap.height); // Image is not empty
-  g_assert(corpusMap.width * corpusMap.height); // Corpus is not empty
+  g_assert((targetMap.width * targetMap.height) > 0); // Image is not empty
+  g_assert((corpusMap.width * corpusMap.height) > 0); // Corpus is not empty
   
   // Done with adaption: now main image data in canonical pixmaps, etc.
   // Begin real work
@@ -535,6 +567,7 @@ static void run(
   But antiAdaptImage() has already been tested once on the incoming side.
   So no compelling need to test it again here.
   */
+  debug("post results");
   post_results_to_gimp(drawable, targetMap); 
   
   /* Clean up */
@@ -542,9 +575,11 @@ static void run(
   free_map(&targetMap);
   free_map(&corpusMap);
   // GIMP
-  detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable);
+  // Since 2.10, not need to detach.
+  // detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable);
   gimp_progress_end();
   values[0].data.d_status = GIMP_PDB_SUCCESS;
+  debug("return success");
 } 
 
 /* PDB registration and MAIN() */

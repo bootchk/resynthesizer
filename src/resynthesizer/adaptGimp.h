@@ -66,6 +66,11 @@ Unlike the original code:
 The count of Pixelels moved is what drawable specifies, might be less than in pixmap.
 That is, copy a slice of pixmap to drawable.
 */
+/*
+FUTURE We are copying the entire target image.
+We only need to copy the selection (what was synthesized.)
+The rest (the context) is unchanged.
+*/
 void 
 pixmap_to_drawable(
   Map map,
@@ -73,7 +78,6 @@ pixmap_to_drawable(
   guint pixelel_offset  // Index of starting Pixelel (channel) within Pixel sequence to move
   )
 {
-  GimpPixelRgn region;
   guchar *img;
 
   /* Create a new, non-sparse sequence of Pixelels for Gimp. */
@@ -85,7 +89,7 @@ pixmap_to_drawable(
   
   g_assert( pixelel_offset + pixelel_count <= map.depth ); // Pixmap has more pixelels than offset + count
   
-  gimp_pixel_rgn_init(&region, drawable, 0,0, width, height, TRUE, TRUE);
+  
   img = g_malloc(size);
   
   {
@@ -98,8 +102,32 @@ pixmap_to_drawable(
         g_array_index(map.data, Pixelel, i*map.depth+pixelel_offset+j);
   }
         
-  /* Send seq of Pixelels to Gimp. */
-  gimp_pixel_rgn_set_rect(&region, img, 0,0, width, height);
+  /* Send seq of Pixelels to Gimp, including flush */
+  {
+    GeglBuffer *dest_buffer;
+    const Babl *format;
+
+    // 2.10 wants ID, 2.99 wants *
+    
+    // Can't explain yet why it must be a shadow buffer??
+    dest_buffer = gimp_drawable_get_shadow_buffer(drawable->drawable_id);
+    //dest_buffer = gimp_drawable_get_buffer(drawable->drawable_id);
+
+    // Need format.  We are not changing it, but gegl_buffer_set wants it
+    format = gegl_buffer_get_format(dest_buffer);
+
+    // gimp_pixel_rgn_set_rect(&region, img, 0,0, width, height);
+    gegl_buffer_set(dest_buffer,
+            GEGL_RECTANGLE(0,0, width, height),
+            0,  // scale, 0 or 1?
+            format,
+            img,
+            GEGL_AUTO_ROWSTRIDE);
+    // unref is documented to flush automatically, but it doesn't, so do it explicitly
+    gegl_buffer_flush(dest_buffer);
+    g_object_unref (dest_buffer);
+  }
+
   g_free(img);
 }
 
@@ -120,7 +148,8 @@ pixmap_from_drawable(
   guint pixelel_count_to_copy   /* Count of pixels to copy, might omit the alpha. */
   )
 {
-  GimpPixelRgn region;
+  GeglBuffer *buffer;
+  const Babl *format;
   guchar *img;
   
   /* !!! Note our pixmap is same width, height as drawable, but depths may differ. */
@@ -134,7 +163,9 @@ pixmap_from_drawable(
   /* Drawable has enough to copy */
   g_assert( pixelel_count_to_copy <= drawable->bpp );
   
-  gimp_pixel_rgn_init(&region, drawable, x,y, map.width, map.height, FALSE,FALSE);
+  buffer = gimp_drawable_get_buffer(drawable->drawable_id);
+  // , x,y, map.width, map.height, FALSE,FALSE);
+  format = gegl_buffer_get_format(buffer);
 
   img = g_malloc(drawable_size);
   
@@ -143,7 +174,16 @@ pixmap_from_drawable(
   Note x1,y1 are in drawable coords i.e. relative to drawable
   The drawable may be offset from the canvas and other drawables.
   */
-  gimp_pixel_rgn_get_rect(&region, img, x,y, width,height);
+  // gimp_pixel_rgn_get_rect(&region, img, x,y, width,height);
+  gegl_buffer_get(buffer,
+            GEGL_RECTANGLE(x,y, width, height),
+            1,  // scale
+            format,
+            img,
+            GEGL_AUTO_ROWSTRIDE,
+            GEGL_ABYSS_NONE);
+  g_object_unref (buffer);
+  // assert img holds pixels from a region of drawable
 
   {
   guint i;
@@ -155,7 +195,10 @@ pixmap_from_drawable(
         g_array_index(map.data, Pixelel, i*map.depth+pixelel_offset+j)  /* Stride is depth of pixmap. */
           = img[i*drawable->bpp+j];   /* Stride is bpp */
   }
-  
+  // assert map holds expanded pixels from a region of drawable
+  // i.e. we converted format.  
+  // FUTURE can gegl/babl do an equivalent conversion?
+  // Probably not, our format conversion is interleaving image and mask
   g_free(img);
 }
 
@@ -218,6 +261,7 @@ fetch_mask(
   {
     Map temp_mask;
     GimpDrawable *mask_drawable;
+    // GeglBuffer *mask_buffer;
     gint xoff,yoff;
     
     /* Build a mask that is unselected where the selection channel doesn't intersect,
@@ -231,7 +275,17 @@ fetch_mask(
     new_bytemap(&temp_mask, width, height);
     
     /* Get Gimp drawable for selection channel.  It is in image coords, i.e. anchored at 0,0 image */
-    mask_drawable = gimp_drawable_get(gimp_image_get_selection(gimp_drawable_get_image(drawable->drawable_id)));
+    {
+    gint32 mask_drawable_id;
+    
+    // mask_drawable = gimp_drawable_get(gimp_image_get_selection(gimp_drawable_get_image(drawable->drawable_id)));
+    // mask_buffer = gimp_drawable_get_buffer(gimp_image_get_selection(gimp_item_get_image(drawable->drawable_id)));
+    // TODO in 2.99 these will not be ID's
+    mask_drawable_id = gimp_image_get_selection(gimp_item_get_image(drawable->drawable_id));
+    mask_drawable = gimp_drawable_get(mask_drawable_id);
+    g_assert(mask_drawable->bpp == 1);   /* Masks have one channel. */
+    }
+
     gimp_drawable_offsets(drawable->drawable_id, &xoff, &yoff); // Offset of layer in image
 
     /* 
@@ -242,11 +296,10 @@ fetch_mask(
     Since mask_drawable is image size, in image coords, calculate coords of intersection in image coords =
     (offset of drawable plus drawable relative coords of selection)
     */
-    g_assert(mask_drawable->bpp == 1);   /* Masks have one channel. */
     pixmap_from_drawable(temp_mask, mask_drawable, 
       drawable_relative_x+xoff, drawable_relative_y+yoff, MASK_PIXELEL_INDEX, mask_drawable->bpp);
     
-    gimp_drawable_detach(mask_drawable);
+    // Obsolete gimp_drawable_detach(mask_drawable);
 
     /* Blit the selection intersection onto our mask, which is only layer size, not image size. */
     blit_map(mask, &temp_mask, drawable_relative_x, drawable_relative_y);
