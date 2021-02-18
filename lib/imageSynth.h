@@ -38,3 +38,15 @@ imageSynth(
   void *contextInfo,	// opaque to engine, passed in progressCallback
   int *cancelFlag		// polled by engine: engine quits if ever becomes True
   );
+  
+int
+imageSynth2(
+  ImageBuffer * imageBuffer,  // IN/OUT RGBA Pixels described by imageFormat
+  ImageBuffer * mask,         // IN one mask Pixelel
+  ImageBuffer * mask2,         // IN one mask Pixelel
+  TImageFormat imageFormat,
+  TImageSynthParameters* parameters,
+  void (*progressCallback)(int, void*),   // int percentDone, void *contextInfo
+  void *contextInfo,	// opaque to engine, passed in progressCallback
+  int *cancelFlag		// polled by engine: engine quits if ever becomes True
+  );

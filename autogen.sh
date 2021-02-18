@@ -22,9 +22,14 @@ test -z "$srcdir" && srcdir=.
 ORIGDIR=`pwd`
 cd $srcdir
 
+ver ()
+{
+    echo "$1" | awk -F. '{printf("%d%03d%03d%03d\n",$1,$2,$3,$4);}'
+}
+
 check_version ()
 {
-    if expr $1 \>= $2 > /dev/null; then
+    if [ "`ver "$1"`" -ge "`ver "$2"`" ]; then
 	echo "yes (version $1)"
     else
 	echo "Too old (found version $1)!"
@@ -39,7 +44,7 @@ echo
 
 DIE=0
 
-echo -n "checking for autoconf >= $AUTOCONF_REQUIRED_VERSION ... "
+printf "checking for autoconf >= %s ... " "$AUTOCONF_REQUIRED_VERSION"
 if (autoconf --version) < /dev/null > /dev/null 2>&1; then
     VER=`autoconf --version \
          | grep -m 1 -iw autoconf | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
@@ -52,7 +57,7 @@ else
     DIE=1;
 fi
 
-echo -n "checking for automake >= $AUTOMAKE_REQUIRED_VERSION ... "
+printf "checking for automake >= %s ... " "$AUTOMAKE_REQUIRED_VERSION"
 if (automake-1.7 --version) < /dev/null > /dev/null 2>&1; then
    AUTOMAKE=automake-1.7
    ACLOCAL=aclocal-1.7
@@ -91,13 +96,13 @@ else
     DIE=1
 fi
 
-#if test x$AUTOMAKE != x; then
-#    VER=`$AUTOMAKE --version \
-#         | grep automake | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
-#    check_version $VER $AUTOMAKE_REQUIRED_VERSION
-#fi
+if test x$AUTOMAKE != x; then
+    VER=`$AUTOMAKE --version \
+         | grep automake | sed "s/.* \([0-9.]*\)[-a-z0-9]*$/\1/"`
+    check_version $VER $AUTOMAKE_REQUIRED_VERSION
+fi
 
-echo -n "checking for glib-gettextize >= $GLIB_REQUIRED_VERSION ... "
+printf "checking for glib-gettextize >= %s ... " "$GLIB_REQUIRED_VERSION"
 if (glib-gettextize --version) < /dev/null > /dev/null 2>&1; then
     VER=`glib-gettextize --version \
          | grep glib-gettextize | sed "s/.* \([0-9.]*\)/\1/"`
@@ -110,7 +115,7 @@ else
     DIE=1
 fi
 
-echo -n "checking for intltool >= $INTLTOOL_REQUIRED_VERSION ... "
+printf "checking for intltool >= %s ... " "$INTLTOOL_REQUIRED_VERSION"
 if (intltoolize --version) < /dev/null > /dev/null 2>&1; then
     VER=`intltoolize --version \
          | grep intltoolize | sed "s/.* \([0-9.]*\)/\1/"`

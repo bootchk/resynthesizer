@@ -36,7 +36,9 @@ Please comment out all but one of these configurations.
 Also, for config 1, edit Makefile.am to remove glibproxy.c as resynthesizer_SOURCE
 then run >automake from the top directory.
 */
-
+#ifdef SYNTH_LIB_ALONE
+#define USE_GLIB_PROXY TRUE
+#else
 /* config 1 */
 #define SYNTH_USE_GLIB TRUE
 
@@ -49,7 +51,7 @@ then run >automake from the top directory.
 
 /* config 3 */
 // #define USE_GLIB_PROXY TRUE
-
+#endif
 
 
 // #define ADAPT_SIMPLE TRUE // Adapt engine to simpleAPI. 
@@ -76,8 +78,9 @@ The latter has not been tested.
 */
 #define SYNTH_THREADED TRUE
 // If not defined, uses POSIX threads.  Moot unless SYNTH_THREADED
+#if !defined(_WIN32) && !defined(_WIN64)
 #define SYNTH_USE_GLIB_THREADS
-
+#endif
 // Count threads to start.
 #ifdef SYNTH_THREADED
   // A reasonable guess that most current processors have no more than 8 cores.

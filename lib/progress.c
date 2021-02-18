@@ -9,6 +9,8 @@
   // Use glib via gimp.h
   // #include <libgimp/gimp.h>
   #include <glib.h>
+ #else
+	 #include "glibProxy.h"
 #endif
 
 
@@ -71,7 +73,12 @@ initializeThreadedProgressRecord(
      TRepetionParameters repetitionParams,
      void (*progressCallback)(int, void*),
      void * contextInfo,
-     GMutex *mutexProgress)
+#ifdef SYNTH_USE_GLIB_THREADS
+  GMutex *mutexProgress
+#else
+  pthread_mutex_t *mutexProgress
+#endif
+  )
 {
     // init fields common to unthreaded and threaded
     initializeProgressRecord(progressRecord, repetitionParams, progressCallback, contextInfo);

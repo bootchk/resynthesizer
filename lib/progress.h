@@ -3,6 +3,9 @@
 Types for GUI progress callbacks.
 */
 
+#ifndef SYNTH_USE_GLIB_THREADS
+	  #include <pthread.h>
+#endif
 #include "passes.h"
 
 
@@ -16,7 +19,11 @@ struct ProgressRecord {
 
 #ifdef SYNTH_THREADED
   // mutually exclude threads over certain other fields of struct
+#ifdef SYNTH_USE_GLIB_THREADS
   GMutex *mutexProgress;
+#else
+  pthread_mutex_t *mutexProgress;
+#endif
 #endif
 };
 
@@ -36,7 +43,11 @@ void initializeThreadedProgressRecord(
      TRepetionParameters repetitionParams,
      void (*progressCallback)(int, void*),
      void * contextInfo,
-     GMutex *mutexProgress
+#ifdef SYNTH_USE_GLIB_THREADS
+     GMutex *mutexProgress;
+#else
+     pthread_mutex_t *mutexProgress;
+#endif
 );
      
 
