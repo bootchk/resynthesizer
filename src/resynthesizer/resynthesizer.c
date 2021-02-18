@@ -297,28 +297,88 @@ detach_drawables(
 #endif
 
 
+static const char *
+inner_run(
+  const gchar *       name,
+  gint                nparams,
+	const GimpParam *   param,
+  gint32              run_mode,
+  const GimpDrawable *in_drawable
+	);
 
 
-
-/* 
-Plugin main.
-This adapts the texture synthesis engine to a Gimp plugin.
+/*
+Plugin run func.
+This is what GIMP calls.
+Adapts to a generic resynthesizer plugin.
+Liable to change as GIMP plugin API changes.
 */
+
+// API for Gimp-2.0
 
 static void run(
   const gchar *     name,
   gint              nparams,
 	const GimpParam * param,
-	gint *            nreturn_vals,
-	GimpParam **      return_vals)
+	gint *            nreturn_vals,  // OUT
+	GimpParam **      return_vals)   // OUT
 {
-  static GimpParam values[2];   /* Gimp return values. !!! Allow 2: status and error message. */
+  const char       *result;           // inner result
+  static GimpParam values[2];   // Gimp return values. !!! Allow 2: status and error message.
+  gint32           run_mode;
+  // WIP ID or Drawable* since 2.10???
+  GimpDrawable *in_drawable = NULL;
+  // gint32        drawableID;
+
+  // run mode
+  run_mode = param[0].data.d_int32;
+
+  // deprecated
+  // Drawable* from ID
+  in_drawable = gimp_drawable_get(param[2].data.d_drawable);
+  // drawable = gimp_drawable_get_by_id(param[2].data.d_drawable);
+
+  result = inner_run(name, nparams, param, run_mode, in_drawable);
+  
+  // Cram result into the error object
+  // return_vals is a handle, i.e. pointer to pointer i.e. pointer to array.
+  // Always pass pointer to array of size two, and tell how many elements are valid.
+  values[0].type = GIMP_PDB_STATUS;
+  *return_vals = values;
+  if (strcmp(result, "success") == 0)
+  {
+    *nreturn_vals = 1;
+    values[0].data.d_status = GIMP_PDB_SUCCESS;
+  }
+  else
+  {
+    *nreturn_vals           = 2;
+    values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR;
+    values[1].type          = GIMP_PDB_STRING;
+    values[1].data.d_string = result ;
+    g_debug(result);
+  }
+
+  return;
+}
+
+
+/* 
+Plugin generic main.
+This adapts the texture synthesis engine to a Gimp plugin.
+*/
+
+static const char *
+inner_run(
+  const gchar *       name,
+  gint                nparams,
+	const GimpParam *   param,
+  gint32              run_mode,
+  const GimpDrawable *in_drawable
+	)
+{
   TGimpAdapterParameters pluginParameters;
   TImageSynthParameters engineParameters;
-  
-  // WIP ID or Drawable* since 2.10???
-  GimpDrawable *drawable = NULL;
-  // gint32        drawableID;
 
   GimpDrawable *corpus_drawable = NULL; 
   GimpDrawable *map_in_drawable= NULL; 
@@ -360,31 +420,23 @@ static void run(
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
   textdomain (GETTEXT_PACKAGE);
-
-  *nreturn_vals = 1;
-  *return_vals = values;
-  values[0].type = GIMP_PDB_STATUS;
-  values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR; /* Unless everything succeeds. */
   
-
-  drawable = gimp_drawable_get(param[2].data.d_drawable);
-  // drawable = gimp_drawable_get_by_id(param[2].data.d_drawable);
 
 
   /* Check image type (could be called non-interactive) */
-  if (!gimp_drawable_is_rgb(drawable->drawable_id) &&
-      !gimp_drawable_is_gray(drawable->drawable_id)) 
+  if (!gimp_drawable_is_rgb(in_drawable->drawable_id) &&
+      !gimp_drawable_is_gray(in_drawable->drawable_id)) 
   {
-    ERROR_RETURN(_("Incompatible image mode."));
+    return _("Incompatible image mode.");
   }
 
 
-  /* Deal with run mode */
+  // Get engine specific parameters, dispatch on run mode
   ok = FALSE;
-  switch(param[0].data.d_int32) 
+  switch(run_mode) 
   {
     case GIMP_RUN_INTERACTIVE :
-      ok = get_last_parameters(&pluginParameters,drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
+      ok = get_last_parameters(&pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
       gimp_message("Resynthesizer engine should not be called interactively");
       /* But keep going with last (or default) parameters, really no harm. */
       break;
@@ -392,13 +444,13 @@ static void run(
       ok = get_parameters_from_list(&pluginParameters, nparams, param); 
       break;
     case GIMP_RUN_WITH_LAST_VALS :
-      ok = get_last_parameters(&pluginParameters,drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
+      ok = get_last_parameters(&pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
       break;
   }
 
   if (!ok) 
   {
-    ERROR_RETURN(_("Resynthesizer failed to get parameters."));
+    return _("Resynthesizer failed to get parameters.");
   }
   
   /* Limit neighbours parameter to size allocated. */
@@ -411,9 +463,9 @@ static void run(
   In earlier version, they must have the same bpp.
   But now we don't compare the alphas, so they can differ in presence of alpha.
   */
-  if (! equal_basetypes(drawable, corpus_drawable) )
+  if (! equal_basetypes(in_drawable, corpus_drawable) )
   {
-    ERROR_RETURN(_("The input texture and output image must have the same number of color channels."));
+    return _("The input texture and output image must have the same number of color channels.");
   }
   
   
@@ -432,17 +484,17 @@ static void run(
     if ( ! equal_basetypes(map_in_drawable, map_out_drawable) )
     {
       /* Maps need the same base type. Formerly needed the same bpp. */
-      ERROR_RETURN(_("The input and output maps must have the same mode"));
+      return _("The input and output maps must have the same mode");
     } 
     if (map_in_drawable->width != corpus_drawable->width || 
                map_in_drawable->height != corpus_drawable->height) 
     {
-      ERROR_RETURN(_("The input map should be the same size as the input texture image"));
+      return _("The input map should be the same size as the input texture image");
     } 
-    if (map_out_drawable->width != drawable->width || 
-               map_out_drawable->height != drawable->height) 
+    if (map_out_drawable->width != in_drawable->width || 
+               map_out_drawable->height != in_drawable->height) 
     {
-      ERROR_RETURN(_("The output map should be the same size as the output image"));
+      return _("The output map should be the same size as the output image");
     }
   }
 
@@ -453,7 +505,7 @@ static void run(
   
   #ifdef ANIMATE
   // Copy local pointer vars to globals
-  targetDrawableCopy = drawable;
+  targetDrawableCopy = in_drawable;
   targetMapCopy = &targetMap;
   #endif
   
@@ -467,7 +519,7 @@ static void run(
   - OR standardize the internal pixmap to ALWAYS have an alpha pixelel
   initialized to VISIBLE and set from any alpha pixelel.
   */
-  gboolean is_alpha_image = gimp_drawable_has_alpha(drawable->drawable_id);
+  gboolean is_alpha_image = gimp_drawable_has_alpha(in_drawable->drawable_id);
   gboolean is_alpha_corpus = gimp_drawable_has_alpha(corpus_drawable->drawable_id);
   
   // Image adaption requires format indices
@@ -478,7 +530,7 @@ static void run(
     
   prepareImageFormatIndices(
     &formatIndices,
-    count_color_channels(drawable),
+    count_color_channels(in_drawable),
     map_count,
     is_alpha_image,
     is_alpha_corpus,
@@ -495,7 +547,7 @@ static void run(
     ImageBuffer maskBuffer;
     
     // TODO change to new signature
-    adaptGimpToSimple(drawable, &imageBuffer, &maskBuffer);  // From Gimp to simple
+    adaptGimpToSimple(in_drawable, &imageBuffer, &maskBuffer);  // From Gimp to simple
     g_printf("Here3\n");
     adaptSimpleAPI(&imageBuffer, &maskBuffer);        // From simple to existing engine API
     
@@ -503,7 +555,7 @@ static void run(
     g_printerr("Gimp version %d\n", GIMP_MAJOR_VERSION);
     debug("Gimp adaption");
     /* target/context adaption */
-    fetch_image_mask_map(drawable, &targetMap, formatIndices.total_bpp, 
+    fetch_image_mask_map(in_drawable, &targetMap, formatIndices.total_bpp, 
       &targetMaskMap, 
       MASK_TOTALLY_SELECTED, 
       map_out_drawable, formatIndices.map_start_bip);
@@ -546,11 +598,11 @@ static void run(
   
   if (result == IMAGE_SYNTH_ERROR_EMPTY_CORPUS)
   {
-    ERROR_RETURN(_("The texture source is empty. Does any selection include non-transparent pixels?"));
+    return _("The texture source is empty. Does any selection include non-transparent pixels?");
   }
   else if  (result == IMAGE_SYNTH_ERROR_EMPTY_TARGET )
   {
-    ERROR_RETURN(_("The output layer is empty. Does any selection have visible pixels in the active layer?"));
+    return _("The output layer is empty. Does any selection have visible pixels in the active layer?");
   }
   
   // Normal post-process adaption follows
@@ -568,7 +620,7 @@ static void run(
   So no compelling need to test it again here.
   */
   debug("post results");
-  post_results_to_gimp(drawable, targetMap); 
+  post_results_to_gimp(in_drawable, targetMap); 
   
   /* Clean up */
   // Adapted
@@ -576,10 +628,11 @@ static void run(
   free_map(&corpusMap);
   // GIMP
   // Since 2.10, not need to detach.
-  // detach_drawables(drawable, corpus_drawable, map_in_drawable, map_out_drawable);
+  // detach_drawables(in_drawable, corpus_drawable, map_in_drawable, map_out_drawable);
   gimp_progress_end();
-  values[0].data.d_status = GIMP_PDB_SUCCESS;
+  
   debug("return success");
+  return "success";
 } 
 
 /* PDB registration and MAIN() */
