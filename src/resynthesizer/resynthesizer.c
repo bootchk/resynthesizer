@@ -69,7 +69,7 @@ to the opposite side.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
 
-//#include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
+#include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
 
 #include "../../config.h" // GNU buildtools local configuration
 #include "../plugin-intl.h" // i18n macros
@@ -107,24 +107,10 @@ Is separate to reduce file sizes and later, coupling.
 #include "../resynth-parameters.h" // requires engine.h
 #include "adaptParameters.c"
 
+#include "resynthesizer.h"
+
 /* See below for more includes. */
 
-/* 
-Macro to cleanup for abort. 
-Return value is already PDB_ERROR.
-Return an error string to Gimp, which will display an alert dialog.
-Also log message in case engine is called non-interactively.
-Note this must be used in the scope of nreturn_vals and value, in main().
-
-Since 2.10, not need to detach
-*/
-#define ERROR_RETURN(message)   { \
-  *nreturn_vals           = 2; \
-  values[1].type          = GIMP_PDB_STRING; \
-  values[1].data.d_string = message ; \
-  g_debug(message); \
-  return; \
-  }
 
 
 static void
@@ -144,10 +130,7 @@ Blacken target, then animate pixels as they are synthesized.
 GimpDrawable * targetDrawableCopy;
 Map*            targetMapCopy;
 
-static void 
-post_results_to_gimp(
-  GimpDrawable *drawable,
-  Map targetMap);
+
   
 /* 
 Clear target pixels. So see them get synthesized when animated debugging. 
@@ -250,7 +233,7 @@ equal_basetypes(
 Update Gimp image from local pixmap. Canonical postlude for plugins.
 !!! Called in the postlude but also for debugging: animate results during processing.
 */
-static void 
+void 
 post_results_to_gimp(
   GimpDrawable *drawable,
   Map targetMap) 
@@ -268,27 +251,6 @@ post_results_to_gimp(
 }
 
 
-/*
-Since 2.10, no need to detach drawables.
-
-static void
-detach_drawables(
-  GimpDrawable * out,
-  GimpDrawable * in,
-  GimpDrawable * out_map,
-  GimpDrawable * in_map
-  )
-{
-  if (out)
-    gimp_drawable_detach(out);
-  if (in)
-    gimp_drawable_detach(in);
-  if (out_map)
-    gimp_drawable_detach(out_map);
-  if (in_map)
-    gimp_drawable_detach(in_map);
-}
-*/
 
 #ifdef ADAPT_SIMPLE
   #include "imageBuffer.h"
@@ -297,113 +259,7 @@ detach_drawables(
 #endif
 
 
-// Declare
-static const char *
-inner_run(
-  const gchar *              name,
-  gint32                     run_mode,
-  const GimpDrawable        *in_drawable,
-  TGimpAdapterParameters    *pluginParameters
-	);
 
-
-// Get the parameters other than run mode and in_drawable: the slice param[3:]
-/* 
-  The engine should not be run interactively so no need to store last values. 
-  I.E. the meaning of "last" is "last values set by user interaction".
-*/
-static gboolean
-get_engine_specific_parameters(
-  gint32                  run_mode,
-  gint                    nparams,
-	const GimpParam        *param,
-  const GimpDrawable     *in_drawable,
-  TGimpAdapterParameters *pluginParameters
-  )
-{
-  gboolean result;
-
-  switch(run_mode) 
-  {
-    case GIMP_RUN_INTERACTIVE :
-      result = get_last_parameters(pluginParameters, in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
-      gimp_message("Resynthesizer engine should not be called interactively");
-      /* But keep going with last (or default) parameters, really no harm. */
-      break;
-    case GIMP_RUN_NONINTERACTIVE :
-      result = get_parameters_from_list(pluginParameters, nparams, param); 
-      break;
-    case GIMP_RUN_WITH_LAST_VALS :
-      result = get_last_parameters(pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
-      break;
-    default:
-      result = FALSE;
-  }
-  return result;
-}
-
-
-/*
-Plugin run func.
-This is what GIMP calls.
-Adapts to a generic resynthesizer plugin.
-Liable to change as GIMP plugin API changes.
-*/
-
-// API for Gimp-2.0
-
-static void run(
-  const gchar *     name,
-  gint              nparams,
-	const GimpParam * param,
-	gint *            nreturn_vals,  // OUT
-	GimpParam **      return_vals)   // OUT
-{
-  const char       *result;           // inner result
-  static GimpParam values[2];   // Gimp return values. !!! Allow 2: status and error message.
-  gint32           run_mode;
-  // WIP ID or Drawable* since 2.10???
-  GimpDrawable *in_drawable = NULL;
-  // gint32        drawableID;
-  TGimpAdapterParameters pluginParameters;
-
-  run_mode = param[0].data.d_int32;
-
-  // deprecated
-  // Drawable* from ID
-  in_drawable = gimp_drawable_get(param[2].data.d_drawable);
-  // drawable = gimp_drawable_get_by_id(param[2].data.d_drawable);
-
-  if ( ! get_engine_specific_parameters(run_mode, nparams, param, in_drawable, &pluginParameters) )
-    result = _("Resynthesizer failed to get parameters.");
-  else
-    result = inner_run(
-      name, // nparams, param, 
-      run_mode, 
-      in_drawable, 
-      &pluginParameters);
-  
-  // Cram result into the error object
-  // return_vals is a pointer to array.
-  // Always pass pointer to array of size two, and tell how many elements are valid.
-  values[0].type = GIMP_PDB_STATUS;
-  *return_vals = values;
-  if (strcmp(result, "success") == 0)
-  {
-    *nreturn_vals = 1;
-    values[0].data.d_status = GIMP_PDB_SUCCESS;
-  }
-  else
-  {
-    *nreturn_vals           = 2;
-    values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR;
-    values[1].type          = GIMP_PDB_STRING;
-    values[1].data.d_string = result ;
-    g_debug(result);
-  }
-
-  return;
-}
 
 
 /* 
@@ -411,7 +267,7 @@ Plugin generic main.
 This adapts the texture synthesis engine to a Gimp plugin.
 */
 
-static const char *
+const char *
 inner_run(
   const gchar *                 name,
   gint32                        run_mode,
@@ -632,7 +488,4 @@ inner_run(
   debug("return success");
   return "success";
 } 
-
-/* PDB registration and MAIN() */
-#include "../resynth-pdb.h"
 
