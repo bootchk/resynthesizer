@@ -52,3 +52,11 @@ Makefile
 
 # ignore separate build directory 
 /build
+
+# ignore build artifacts in source tree: libraries and executables
+lib/libresynthesizer.a
+po/POTFILES
+po/stamp-it
+src/resynthesizer/resynthesizer
+src/resynthesizer-gui/resynthesizer_gui
+stamp-h1
