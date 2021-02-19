@@ -297,14 +297,50 @@ detach_drawables(
 #endif
 
 
+// Declare
 static const char *
 inner_run(
-  const gchar *       name,
-  gint                nparams,
-	const GimpParam *   param,
-  gint32              run_mode,
-  const GimpDrawable *in_drawable
+  const gchar *              name,
+  gint32                     run_mode,
+  const GimpDrawable        *in_drawable,
+  TGimpAdapterParameters    *pluginParameters
 	);
+
+
+// Get the parameters other than run mode and in_drawable: the slice param[3:]
+/* 
+  The engine should not be run interactively so no need to store last values. 
+  I.E. the meaning of "last" is "last values set by user interaction".
+*/
+static gboolean
+get_engine_specific_parameters(
+  gint32                  run_mode,
+  gint                    nparams,
+	const GimpParam        *param,
+  const GimpDrawable     *in_drawable,
+  TGimpAdapterParameters *pluginParameters
+  )
+{
+  gboolean result;
+
+  switch(run_mode) 
+  {
+    case GIMP_RUN_INTERACTIVE :
+      result = get_last_parameters(pluginParameters, in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
+      gimp_message("Resynthesizer engine should not be called interactively");
+      /* But keep going with last (or default) parameters, really no harm. */
+      break;
+    case GIMP_RUN_NONINTERACTIVE :
+      result = get_parameters_from_list(pluginParameters, nparams, param); 
+      break;
+    case GIMP_RUN_WITH_LAST_VALS :
+      result = get_last_parameters(pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
+      break;
+    default:
+      result = FALSE;
+  }
+  return result;
+}
 
 
 /*
@@ -329,8 +365,8 @@ static void run(
   // WIP ID or Drawable* since 2.10???
   GimpDrawable *in_drawable = NULL;
   // gint32        drawableID;
+  TGimpAdapterParameters pluginParameters;
 
-  // run mode
   run_mode = param[0].data.d_int32;
 
   // deprecated
@@ -338,10 +374,17 @@ static void run(
   in_drawable = gimp_drawable_get(param[2].data.d_drawable);
   // drawable = gimp_drawable_get_by_id(param[2].data.d_drawable);
 
-  result = inner_run(name, nparams, param, run_mode, in_drawable);
+  if ( ! get_engine_specific_parameters(run_mode, nparams, param, in_drawable, &pluginParameters) )
+    result = _("Resynthesizer failed to get parameters.");
+  else
+    result = inner_run(
+      name, // nparams, param, 
+      run_mode, 
+      in_drawable, 
+      &pluginParameters);
   
   // Cram result into the error object
-  // return_vals is a handle, i.e. pointer to pointer i.e. pointer to array.
+  // return_vals is a pointer to array.
   // Always pass pointer to array of size two, and tell how many elements are valid.
   values[0].type = GIMP_PDB_STATUS;
   *return_vals = values;
@@ -370,20 +413,18 @@ This adapts the texture synthesis engine to a Gimp plugin.
 
 static const char *
 inner_run(
-  const gchar *       name,
-  gint                nparams,
-	const GimpParam *   param,
-  gint32              run_mode,
-  const GimpDrawable *in_drawable
+  const gchar *                 name,
+  gint32                        run_mode,
+  const GimpDrawable           *in_drawable,
+  TGimpAdapterParameters       *pluginParameters  // Not const, we further constrain it
 	)
 {
-  TGimpAdapterParameters pluginParameters;
   TImageSynthParameters engineParameters;
 
   GimpDrawable *corpus_drawable = NULL; 
   GimpDrawable *map_in_drawable= NULL; 
   GimpDrawable *map_out_drawable= NULL; 
-  gboolean ok, with_map;
+  gboolean      with_map;
   
   /* 
   Local copies of pixmaps (not using gimp regions.) 
@@ -422,86 +463,46 @@ inner_run(
   textdomain (GETTEXT_PACKAGE);
   
 
-
   /* Check image type (could be called non-interactive) */
   if (!gimp_drawable_is_rgb(in_drawable->drawable_id) &&
       !gimp_drawable_is_gray(in_drawable->drawable_id)) 
-  {
     return _("Incompatible image mode.");
-  }
-
-
-  // Get engine specific parameters, dispatch on run mode
-  ok = FALSE;
-  switch(run_mode) 
-  {
-    case GIMP_RUN_INTERACTIVE :
-      ok = get_last_parameters(&pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
-      gimp_message("Resynthesizer engine should not be called interactively");
-      /* But keep going with last (or default) parameters, really no harm. */
-      break;
-    case GIMP_RUN_NONINTERACTIVE :
-      ok = get_parameters_from_list(&pluginParameters, nparams, param); 
-      break;
-    case GIMP_RUN_WITH_LAST_VALS :
-      ok = get_last_parameters(&pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
-      break;
-  }
-
-  if (!ok) 
-  {
-    return _("Resynthesizer failed to get parameters.");
-  }
   
   /* Limit neighbours parameter to size allocated. */
-  if (pluginParameters.neighbours > IMAGE_SYNTH_MAX_NEIGHBORS )
-    pluginParameters.neighbours = IMAGE_SYNTH_MAX_NEIGHBORS;
+  if (pluginParameters->neighbours > IMAGE_SYNTH_MAX_NEIGHBORS )
+    pluginParameters->neighbours = IMAGE_SYNTH_MAX_NEIGHBORS;
   
-  corpus_drawable = gimp_drawable_get(pluginParameters.corpus_id);
+  corpus_drawable = gimp_drawable_get(pluginParameters->corpus_id);
   
   /* The target and corpus must have the same base type.
   In earlier version, they must have the same bpp.
   But now we don't compare the alphas, so they can differ in presence of alpha.
   */
   if (! equal_basetypes(in_drawable, corpus_drawable) )
-  {
     return _("The input texture and output image must have the same number of color channels.");
-  }
   
-  
-  with_map = (pluginParameters.input_map_id != -1 && pluginParameters.output_map_id != -1);
+  with_map = (pluginParameters->input_map_id != -1 && pluginParameters->output_map_id != -1);
   /* If only one map is passed, it is ignored quietly. */
   map_in_drawable=0;
   map_out_drawable=0;
 
   if (with_map) 
   {
-    map_in_drawable = gimp_drawable_get(pluginParameters.input_map_id);
-    map_out_drawable = gimp_drawable_get(pluginParameters.output_map_id);
+    map_in_drawable = gimp_drawable_get(pluginParameters->input_map_id);
+    map_out_drawable = gimp_drawable_get(pluginParameters->output_map_id);
     /* All these can be wrong at the same time.  
     Forego userfriendliness for ease of programming: abort on first error
     */
     if ( ! equal_basetypes(map_in_drawable, map_out_drawable) )
-    {
       /* Maps need the same base type. Formerly needed the same bpp. */
       return _("The input and output maps must have the same mode");
-    } 
     if (map_in_drawable->width != corpus_drawable->width || 
                map_in_drawable->height != corpus_drawable->height) 
-    {
       return _("The input map should be the same size as the input texture image");
-    } 
     if (map_out_drawable->width != in_drawable->width || 
                map_out_drawable->height != in_drawable->height) 
-    {
       return _("The output map should be the same size as the output image");
-    }
   }
-
-  /* 
-  The engine should not be run interactively so no need to store last values. 
-  I.E. the meaning of "last" is "last values set by user interaction".
-  */
   
   #ifdef ANIMATE
   // Copy local pointer vars to globals
@@ -574,7 +575,7 @@ inner_run(
     free_map(&corpusMaskMap);
     free_map(&targetMaskMap);
     
-    adaptPluginToLibraryParameters(&pluginParameters, &engineParameters);
+    adaptPluginToLibraryParameters(pluginParameters, &engineParameters);
     
   #endif
   
@@ -597,13 +598,10 @@ inner_run(
     );
   
   if (result == IMAGE_SYNTH_ERROR_EMPTY_CORPUS)
-  {
     return _("The texture source is empty. Does any selection include non-transparent pixels?");
-  }
   else if  (result == IMAGE_SYNTH_ERROR_EMPTY_TARGET )
-  {
     return _("The output layer is empty. Does any selection have visible pixels in the active layer?");
-  }
+  // else continue
   
   // Normal post-process adaption follows
 
