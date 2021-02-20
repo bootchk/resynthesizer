@@ -84,7 +84,7 @@ pixmap_to_drawable(
   guint width = map.width;
   guint height = map.height;
   /* Count Pixelels to copy, whatever drawable wants, we have optional alpha Pixelel in our Pixel. */
-  guint pixelel_count = drawable->bpp;  
+  guint pixelel_count = bpp(drawable); 
   gint size = width * height * pixelel_count;  // !!! Size of drawable, not the pixmap
   
   g_assert( pixelel_offset + pixelel_count <= map.depth ); // Pixmap has more pixelels than offset + count
@@ -110,8 +110,7 @@ pixmap_to_drawable(
     // 2.10 wants ID, 2.99 wants *
     
     // Can't explain yet why it must be a shadow buffer??
-    dest_buffer = gimp_drawable_get_shadow_buffer(drawable->drawable_id);
-    //dest_buffer = gimp_drawable_get_buffer(drawable->drawable_id);
+    dest_buffer = get_shadow_buffer(drawable);
 
     // Need format.  We are not changing it, but gegl_buffer_set wants it
     format = gegl_buffer_get_format(dest_buffer);
@@ -155,15 +154,15 @@ pixmap_from_drawable(
   /* !!! Note our pixmap is same width, height as drawable, but depths may differ. */
   guint width = map.width;
   guint height = map.height;
-  guint drawable_size = width * height * drawable->bpp;
+  guint drawable_size = width * height * bpp(drawable);
 
   g_assert(drawable_size > 0);
   /* Will fit in our Pixel */
   g_assert( pixelel_count_to_copy + pixelel_offset <= map.depth );
   /* Drawable has enough to copy */
-  g_assert( pixelel_count_to_copy <= drawable->bpp );
+  g_assert( pixelel_count_to_copy <= bpp(drawable) );
   
-  buffer = gimp_drawable_get_buffer(drawable->drawable_id);
+  buffer = get_buffer(drawable);
   // , x,y, map.width, map.height, FALSE,FALSE);
   format = gegl_buffer_get_format(buffer);
 
@@ -193,7 +192,7 @@ pixmap_from_drawable(
   for(i=0; i<width*height; i++)
     for(j=0; j<pixelel_count_to_copy; j++)  /* Count can be different from strides. */
         g_array_index(map.data, Pixelel, i*map.depth+pixelel_offset+j)  /* Stride is depth of pixmap. */
-          = img[i*drawable->bpp+j];   /* Stride is bpp */
+          = img[i*bpp(drawable)+j];   /* Stride is bpp */
   }
   // assert map holds expanded pixels from a region of drawable
   // i.e. we converted format.  
@@ -209,7 +208,7 @@ Get drawable and a selection mask for it from GIMP.
 
 May 2010 lkk Heavily revised:
  - to fix handling of selection
- - C++ -> C
+ - C++ => C
  - break into separate routines
  - interleave the mask pixelel into the Pixel 
 
@@ -225,12 +224,12 @@ fetch_mask(
   ) 
 {
   gint drawable_relative_x, drawable_relative_y;
-  gint width, height;
   
   gboolean is_selection;
   gboolean is_selection_intersect;
+  gint intersect_width, intersect_height;
 
-  new_bytemap(mask, drawable->width, drawable->height);
+  new_bytemap(mask, width(drawable), height(drawable));
   
   /* Bug: original code did this:
   has_selection = gimp_drawable_mask_bounds(drawable->drawable_id,&x1,&y1,&x2,&y2);
@@ -245,10 +244,14 @@ fetch_mask(
   
   {
   gint x1, y1, x2, y2;
-  is_selection = gimp_drawable_mask_bounds(drawable->drawable_id, &x1, &y1, &x2, &y2);
+  //is_selection = gimp_drawable_mask_bounds(drawable->drawable_id, &x1, &y1, &x2, &y2);
+  is_selection = selection_bounds(drawable, &x1, &y1, &x2, &y2);
   }
-  is_selection_intersect = gimp_drawable_mask_intersect(drawable->drawable_id, 
-      &drawable_relative_x, &drawable_relative_y, &width, &height);
+ 
+  //is_selection_intersect = gimp_drawable_mask_intersect(drawable->drawable_id, 
+  //    &drawable_relative_x, &drawable_relative_y, &intersect_width, &intersect_height);
+  is_selection_intersect = selection_intersect(drawable, 
+     &drawable_relative_x, &drawable_relative_y, &intersect_width, &intersect_height);
       
   if ( ! is_selection || ! is_selection_intersect) {
     set_bytemap(mask, default_mask_value);
@@ -272,21 +275,16 @@ fetch_mask(
     set_bytemap(mask, MASK_UNSELECTED);
     
     /* Get the selection intersection's bytemap into temp_mask */
-    new_bytemap(&temp_mask, width, height);
+    new_bytemap(&temp_mask, intersect_width, intersect_height);
     
     /* Get Gimp drawable for selection channel.  It is in image coords, i.e. anchored at 0,0 image */
-    {
-    gint32 mask_drawable_id;
-    
-    // mask_drawable = gimp_drawable_get(gimp_image_get_selection(gimp_drawable_get_image(drawable->drawable_id)));
-    // mask_buffer = gimp_drawable_get_buffer(gimp_image_get_selection(gimp_item_get_image(drawable->drawable_id)));
-    // TODO in 2.99 these will not be ID's
-    mask_drawable_id = gimp_image_get_selection(gimp_item_get_image(drawable->drawable_id));
-    mask_drawable = gimp_drawable_get(mask_drawable_id);
-    g_assert(mask_drawable->bpp == 1);   /* Masks have one channel. */
-    }
+    // OLD mask_drawable_id = gimp_image_get_selection(gimp_item_get_image(drawable->drawable_id));
+    // mask_drawable = gimp_drawable_get(mask_drawable_id);
+    mask_drawable = get_selection(drawable);
+    g_assert(bpp(mask_drawable) == 1);   /* Masks have one channel. */
 
-    gimp_drawable_offsets(drawable->drawable_id, &xoff, &yoff); // Offset of layer in image
+    //gimp_drawable_offsets(drawable->drawable_id, &xoff, &yoff); // Offset of layer in image
+    offsets(drawable, &xoff, &yoff); // Offset of layer in image
 
     /* 
     Copy selection intersection bytemap from Gimp to our temp_mask bytemap.
@@ -297,7 +295,7 @@ fetch_mask(
     (offset of drawable plus drawable relative coords of selection)
     */
     pixmap_from_drawable(temp_mask, mask_drawable, 
-      drawable_relative_x+xoff, drawable_relative_y+yoff, MASK_PIXELEL_INDEX, mask_drawable->bpp);
+      drawable_relative_x+xoff, drawable_relative_y+yoff, MASK_PIXELEL_INDEX, bpp(mask_drawable));
     
     // Obsolete gimp_drawable_detach(mask_drawable);
 
@@ -321,10 +319,10 @@ fetch_image_and_mask(
 {
    
   /* Both OUT pixmaps same 2D dimensions.  Depth pixelel_count includes a mask byte. */
-  new_pixmap(pixmap, drawable->width, drawable->height, pixelel_count);
+  new_pixmap(pixmap, width(drawable), height(drawable), pixelel_count);
   
   /* Get color, alpha channels */
-  pixmap_from_drawable(*pixmap, drawable, 0,0, FIRST_PIXELEL_INDEX, drawable->bpp);  
+  pixmap_from_drawable(*pixmap, drawable, 0,0, FIRST_PIXELEL_INDEX, bpp(drawable));  
   fetch_mask(drawable, mask, default_mask_value); /* Get mask channel */
   interleave_mask(pixmap, mask);  /* Insert mask byte into our Pixels */
 }
@@ -367,8 +365,8 @@ fetch_image_mask_map(
   if (map_drawable)
   {
     /* Count map channels excluding alpha. */
-    guint pixelels_to_copy = map_drawable->bpp;
-    if ( gimp_drawable_has_alpha(map_drawable->drawable_id) )
+    guint pixelels_to_copy = bpp(map_drawable);
+    if ( has_alpha(map_drawable) )
       pixelels_to_copy--;
     pixmap_from_drawable(*pixmap, map_drawable, 0,0, map_offset, pixelels_to_copy);
   }

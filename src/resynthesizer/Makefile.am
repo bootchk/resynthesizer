@@ -5,7 +5,7 @@ bin_PROGRAMS = resynthesizer
 bindir = $(GIMP_LIBDIR)/plug-ins
 
 # resynthesizer is a GIMP plugin calling libresynthesizer
-resynthesizer_SOURCES = resynthesizer.c plugin.c debug.c pluginParams.c
+resynthesizer_SOURCES = resynthesizer.c plugin.c debug.c pluginParams.c drawable.c
 
 
 # lkk Note glibProxy.c not needed for resynthesizer for GIMP
