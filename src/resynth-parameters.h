@@ -24,14 +24,15 @@ This is shared by the gui control plugin and the engine plugin.
 /*
 Parameters passed from a Gimp plugin
 to the adapter from Gimp to the innermost engine.
+
+!!!  v2
 */
-typedef struct GIMPAdapterParametersStruct {
+typedef struct GIMPAdapterParametersStructOld {
   
   int h_tile;
   int v_tile; 
   int use_border;   
   
-  /* GIMP.  gint32 */
   int corpus_id, input_map_id, output_map_id;
 
   double map_weight;
@@ -39,10 +40,37 @@ typedef struct GIMPAdapterParametersStruct {
   
   int neighbours;
   int trys;
-} TGimpAdapterParameters;
+} TGimpAdapterParametersOld;
+
+
+/*
+Parameters passed from a Gimp plugin
+to the adapter from Gimp to the innermost engine.
+
+!!!  v2
+*/
+typedef struct GIMPAdapterParametersStructNew {
+  
+  int h_tile;
+  int v_tile; 
+  int use_border;   
+  
+  // Was int corpus_id, input_map_id, output_map_id;
+  GimpDrawable  *corpus;
+  GimpDrawable  *input_map;
+  GimpDrawable  *output_map;
+
+  double map_weight;
+  double autism;
+  
+  int neighbours;
+  int trys;
+} TGimpAdapterParametersNew;
 
 
 
+
+// Registered parameters of the v2 plugin
 static GimpParamDef resynth_paramdefs[] = 
 {
   { GIMP_PDB_INT32,     (gchar*)"run_mode",   (gchar*)"Interactive, non-interactive" },
@@ -73,13 +101,14 @@ static GimpParamDef resynth_paramdefs[] =
 };
   
 
+
 /*
 Set the default parameters for the GIMP plugin that adapts the engine.
 The parameters to the plugin are distinct from parameters to the engine.
 */
 static void
 setDefaultPluginParams(
-  TGimpAdapterParameters* param
+  TGimpAdapterParametersOld* param
   )
 {
   /* 
@@ -104,7 +133,7 @@ setDefaultPluginParams(
 /* Restore the last parameters used, get from GIMP. */
 static gboolean 
 get_last_parameters(
-  TGimpAdapterParameters* param, 
+  TGimpAdapterParametersOld* param, 
   gint default_drawable,
   gchar * plugin_name
   ) 
@@ -123,6 +152,7 @@ get_last_parameters(
   return TRUE;  /* TODO should be void. */
 }
 
+
 /* 
 Remember the last parameters the user entered. 
 Only called for runmode INTERACTIVE, by the control plugin,
@@ -130,7 +160,7 @@ not by the engine plugin.
 */
 static void
 set_last_parameters(
-  TGimpAdapterParameters* params, 
+  TGimpAdapterParametersOld* params, 
   gint drawable_id
   )
 {
@@ -146,7 +176,7 @@ set_last_parameters(
   */
   if (params->corpus_id == drawable_id)
     params->corpus_id = -1;
-  gimp_set_data(RESYNTH_CONTROLS_PDB_NAME, params, sizeof(TGimpAdapterParameters));
+  gimp_set_data(RESYNTH_CONTROLS_PDB_NAME, params, sizeof(TGimpAdapterParametersOld));
   if (params->corpus_id == -1)
     params->corpus_id = drawable_id;
 }
@@ -154,8 +184,8 @@ set_last_parameters(
 
 /* Convert argument list into internal parameters */
 static gboolean 
-get_parameters_from_list(
-  TGimpAdapterParameters *param, 
+get_old_parameters_from_list(
+  TGimpAdapterParametersOld *param, 
   gint n_args, 
   const GimpParam *args
   ) 
@@ -180,6 +210,50 @@ get_parameters_from_list(
   return TRUE;
 }
 
+/* Convert argument list into internal parameters */
+static gboolean 
+get_new_parameters_from_list(
+  TGimpAdapterParametersNew *param, 
+  gint n_args, 
+  const GimpParam *args
+  ) 
+{
+  if (n_args != RESYNTH_PARAMETER_COUNT)
+  {
+    gimp_message("Wrong parameter count.");
+    return FALSE;
+  }
+
+  param->v_tile = args[3].data.d_int32;
+  param->h_tile = args[4].data.d_int32;
+  param->use_border = args[5].data.d_int32;
+
+  // Convert ID's to pointers using deprecated function
+  // v2 plugin API to our internal params compatible with v3 plugin API
+  param->corpus = gimp_drawable_get(args[6].data.d_int32);      /* a d_drawable? */
+  {
+    gint id;
+    id = args[7].data.d_int32;
+    if (id != -1)
+      param->input_map = gimp_drawable_get(id);
+    else
+      param->input_map = NULL;
+    id = args[8].data.d_int32;
+    if (id != -1)
+      param->output_map = gimp_drawable_get(id);
+    else
+      param->output_map = NULL;
+    // assert input_map and outputmap are valid pointers or NULL
+  }
+  param->map_weight = args[9].data.d_float;
+  param->autism = args[10].data.d_float;
+  param->neighbours = args[11].data.d_int32;
+  param->trys = args[12].data.d_int32;
+
+  return TRUE;
+}
+
+
 /* 
 Copy passed parameters and user entered parameters to new Gimp params struct,
 to pass to the engine. 
@@ -188,7 +262,7 @@ and its too small (nargs ==3 for INTERACTIVE.)
 */
 static void
 set_parameters_to_list(
-  const TGimpAdapterParameters *param, // IN  parameter values user chose
+  const TGimpAdapterParametersOld *param, // IN  parameter values user chose
   const GimpParam *args,  // IN   args: parameters passed to control plugin
   const gint nargs,       // IN
   gint runmode,           // IN
@@ -216,6 +290,7 @@ set_parameters_to_list(
   temp[3].data.d_int32 = param->v_tile;
   temp[4].data.d_int32 = param->h_tile;
   temp[5].data.d_int32 = param->use_border;
+  // ID, not pointer
   temp[6].data.d_int32 = param->corpus_id;
   temp[7].data.d_int32 = param->input_map_id;
   temp[8].data.d_int32 = param->output_map_id;

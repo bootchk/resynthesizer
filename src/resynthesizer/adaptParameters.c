@@ -2,7 +2,7 @@
 
 static void
 adaptPluginToLibraryParameters(
-  TGimpAdapterParameters* p1,
+  TGimpAdapterParametersNew* p1,
   TImageSynthParameters* p2
   )
 {
