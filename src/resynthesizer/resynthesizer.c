@@ -97,6 +97,7 @@ Types, etc. from resynthesizer (image_synth) library
 #include "engine.h" // requires map.h
 #include "imageSynthConstants.h"
 
+#include "drawable.h" // compatibility
 #include "debug.h"
 
 /* 
@@ -105,6 +106,7 @@ Is separate to reduce file sizes and later, coupling.
 */
 
 #include "mapIndex.h"	// from resynthesizer library
+#include "drawable.h" // compatibility
 #include "adaptGimp.h"  // requires mapIndex.h
 //#include "../resynth-parameters.h" // requires engine.h
 #include "pluginParams.h"
@@ -131,9 +133,9 @@ post_results_to_gimp(
   
   debug("flush");
   // temp buffers merged
-  if ( ! gimp_drawable_merge_shadow(drawable->drawable_id, TRUE))
+  if ( ! merge_shadow(drawable) )
       debug("fail merge shadow");
-  gimp_drawable_update(drawable->drawable_id,0,0,targetMap.width,targetMap.height);
+  update(drawable, 0, 0, targetMap.width, targetMap.height);
   gimp_displays_flush();
 }
 
@@ -215,7 +217,7 @@ count_color_channels(const GimpDrawable *drawable)
 {
   g_assert(drawable); // Not null
   
-  GimpImageType type = gimp_drawable_type(drawable->drawable_id);
+  GimpImageType type = imageType(drawable);
   switch(type)
   {
     case GIMP_RGB_IMAGE:
@@ -277,7 +279,6 @@ inner_run(
 {
   TImageSynthParameters engineParameters;
 
-  // OLD corpus_drawable = gimp_drawable_get(pluginParameters->corpus_id);
   const GimpDrawable *corpus_drawable = pluginParameters->corpus;
   // Require target and corpus not NULL
   g_assert(in_drawable != NULL);
@@ -327,8 +328,8 @@ inner_run(
   
 
   /* Check image type (could be called non-interactive) */
-  if (!gimp_drawable_is_rgb(in_drawable->drawable_id) &&
-      !gimp_drawable_is_gray(in_drawable->drawable_id)) 
+  if (!is_rgb(in_drawable) &&
+      !is_gray(in_drawable)) 
     return _("Incompatible image mode.");
   
   /* Limit neighbours parameter to size allocated. */
@@ -343,8 +344,6 @@ inner_run(
   if (! equal_basetypes(in_drawable, corpus_drawable) )
     return _("The input texture and output image must have the same number of color channels.");
   
-
-
   with_map = (pluginParameters->input_map != NULL && pluginParameters->output_map != NULL);
   /* If only one map is passed, it is ignored quietly. */
 
@@ -360,11 +359,13 @@ inner_run(
     if ( ! equal_basetypes(map_in_drawable, map_out_drawable) )
       /* Maps need the same base type. Formerly needed the same bpp. */
       return _("The input and output maps must have the same mode");
-    if (map_in_drawable->width != corpus_drawable->width || 
-               map_in_drawable->height != corpus_drawable->height) 
+    if (   width(map_in_drawable)  != width(corpus_drawable) 
+        || height(map_in_drawable) != height(corpus_drawable)
+       )
       return _("The input map should be the same size as the input texture image");
-    if (map_out_drawable->width != in_drawable->width || 
-               map_out_drawable->height != in_drawable->height) 
+    if (   width(map_out_drawable) != width(in_drawable)
+        || height(map_out_drawable) != height(in_drawable) 
+       )
       return _("The output map should be the same size as the output image");
   }
   
@@ -384,8 +385,8 @@ inner_run(
   - OR standardize the internal pixmap to ALWAYS have an alpha pixelel
   initialized to VISIBLE and set from any alpha pixelel.
   */
-  gboolean is_alpha_image = gimp_drawable_has_alpha(in_drawable->drawable_id);
-  gboolean is_alpha_corpus = gimp_drawable_has_alpha(corpus_drawable->drawable_id);
+  gboolean is_alpha_image =  has_alpha(in_drawable);
+  gboolean is_alpha_corpus = has_alpha(corpus_drawable);
   
   // Image adaption requires format indices
   // WAS  prepareImageFormatIndices(drawable, corpus_drawable, with_map, map_in_drawable);
