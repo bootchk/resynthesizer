@@ -56,7 +56,7 @@ static void run(
 	GimpParam **      return_vals)
 {
   static GimpParam values[1]; // return values persist after run() returns
-  TGimpAdapterParameters parameters;
+  TGimpAdapterParametersOld parameters;
   gboolean ok;
   
   /* Unless anything goes wrong, result is success */
@@ -96,7 +96,7 @@ static void run(
       break;
     case GIMP_RUN_NONINTERACTIVE :
       /* GUI CAN be called noninteractively, in batch mode or otherwise. */
-      ok = get_parameters_from_list(&parameters, nparams, param); 
+      ok = get_old_parameters_from_list(&parameters, nparams, param); 
       break;
     case GIMP_RUN_WITH_LAST_VALS :
       ok = get_last_parameters(&parameters,drawable_id, RESYNTH_CONTROLS_PDB_NAME);

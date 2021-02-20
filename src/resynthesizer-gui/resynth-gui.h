@@ -207,7 +207,7 @@ static GtkWidget *make_multiline_label(char *text) {
 }
 
 /* Open a dialog, get user to select options */
-static gboolean get_parameters_by_asking(TGimpAdapterParameters *param, int default_drawable) {
+static gboolean get_parameters_by_asking(TGimpAdapterParametersOld *param, int default_drawable) {
   GtkWidget *window, 
             *button_box, *ok, *cancel,
             *notebook, *main_box, *tweaks_box,

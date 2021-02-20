@@ -14,9 +14,8 @@
 #include "map.h"
 #include "engineParams.h"
 #include "engine.h" // requires map.h
-#include "../resynth-parameters.h" // requires engine.h
 
-#include "resynthesizer.h"  // inner_run
+
 
 
 
@@ -24,7 +23,10 @@
 // hacky test that version is less than 2.99.xx
 #if GIMP_MAJOR_VERSION < 99
 
+// v2 only
+#include "../resynth-parameters.h" // requires engine.h
 
+#include "resynthesizer.h"  // inner_run
 
 // Get the parameters other than run mode and in_drawable: the slice param[3:]
 /* 
@@ -37,7 +39,7 @@ get_engine_specific_parameters(
   gint                    nparams,
 	const GimpParam        *param,
   const GimpDrawable     *in_drawable,
-  TGimpAdapterParameters *pluginParameters
+  TGimpAdapterParametersNew *pluginParameters
   )
 {
   gboolean result;
@@ -45,21 +47,38 @@ get_engine_specific_parameters(
   switch(run_mode) 
   {
     case GIMP_RUN_INTERACTIVE :
-      result = get_last_parameters(pluginParameters, in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
-      gimp_message("Resynthesizer engine should not be called interactively");
-      /* But keep going with last (or default) parameters, really no harm. */
+    case GIMP_RUN_WITH_LAST_VALS :
+      gimp_message("Resynthesizer engine can not be called interactively");
+      result = FALSE;
       break;
     case GIMP_RUN_NONINTERACTIVE :
-      result = get_parameters_from_list(pluginParameters, nparams, param); 
-      break;
-    case GIMP_RUN_WITH_LAST_VALS :
-      result = get_last_parameters(pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME); 
+      debug("get_new_parameters_from_list");
+      result = get_new_parameters_from_list(pluginParameters, nparams, param); 
       break;
     default:
       result = FALSE;
   }
   return result;
 }
+
+/*
+CRUFT
+ case GIMP_RUN_INTERACTIVE :
+      result = get_last_parameters(pluginParameters, in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
+      // TODO restore ID's to GimpDrawable*
+      gimp_message("Resynthesizer engine should not be called interactively");
+      // But keep going with last (or default) parameters, really no harm. 
+      break;
+    case GIMP_RUN_NONINTERACTIVE :
+      result = get_parameters_from_list(pluginParameters, nparams, param); 
+      break;
+    case GIMP_RUN_WITH_LAST_VALS :
+      result = get_last_parameters(pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
+      // TODO restore ID's to GimpDrawable*
+      break;
+    default:
+      result = FALSE;
+*/
 
 
 
@@ -86,7 +105,7 @@ static void run(
   // WIP ID or Drawable* since 2.10???
   GimpDrawable *in_drawable = NULL;
   // gint32        drawableID;
-  TGimpAdapterParameters pluginParameters;
+  TGimpAdapterParametersNew pluginParameters;
 
   run_mode = param[0].data.d_int32;
 
@@ -95,14 +114,17 @@ static void run(
   in_drawable = gimp_drawable_get(param[2].data.d_drawable);
   // drawable = gimp_drawable_get_by_id(param[2].data.d_drawable);
 
+  debug("get_engine_specific_parameters");
   if ( ! get_engine_specific_parameters(run_mode, nparams, param, in_drawable, &pluginParameters) )
     result = _("Resynthesizer failed to get parameters.");
   else
+  {
     result = inner_run(
       name, // nparams, param, 
       run_mode, 
       in_drawable, 
       &pluginParameters);
+  }
   
   // Cram result into the error object
   // return_vals is a pointer to array.
@@ -126,13 +148,12 @@ static void run(
   return;
 }
 
+#include "resynthPDBv2.h"
 
 
-
-  #include "resynthPDBv2.h"
 #else
 
-
   #include "resynthPDBv3.h"
+
 #endif
 

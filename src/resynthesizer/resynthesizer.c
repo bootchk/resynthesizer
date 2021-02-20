@@ -97,6 +97,8 @@ Types, etc. from resynthesizer (image_synth) library
 #include "engine.h" // requires map.h
 #include "imageSynthConstants.h"
 
+#include "debug.h"
+
 /* 
 Source included, not compiled separately. 
 Is separate to reduce file sizes and later, coupling. 
@@ -113,12 +115,7 @@ Is separate to reduce file sizes and later, coupling.
 
 
 
-static void
-debug(const char * message)
-{
-  g_printerr(message);
-  g_printerr("\n");
-}
+
 
 
 #ifdef ANIMATE
@@ -264,6 +261,10 @@ post_results_to_gimp(
 
 /* 
 Plugin generic main.
+
+Generic: used by both v2 and v3 GIMP plugin API.
+Note some params are GimpDrawable* that formerly were ID's.
+
 This adapts the texture synthesis engine to a Gimp plugin.
 */
 
@@ -272,12 +273,17 @@ inner_run(
   const gchar *                 name,
   gint32                        run_mode,
   const GimpDrawable           *in_drawable,
-  TGimpAdapterParameters       *pluginParameters  // Not const, we further constrain it
+  TGimpAdapterParametersNew    *pluginParameters  // Not const, we further constrain it
 	)
 {
   TImageSynthParameters engineParameters;
 
-  GimpDrawable *corpus_drawable = NULL; 
+  // OLD corpus_drawable = gimp_drawable_get(pluginParameters->corpus_id);
+  GimpDrawable *corpus_drawable = pluginParameters->corpus;
+  // Require target and corpus not NULL
+  g_assert(in_drawable != NULL);
+  g_assert(corpus_drawable != NULL);
+
   GimpDrawable *map_in_drawable= NULL; 
   GimpDrawable *map_out_drawable= NULL; 
   gboolean      with_map;
@@ -293,6 +299,8 @@ inner_run(
   Map corpusMaskMap;
   
   int cancelFlag = 0;
+
+  debug("inner_run");
   
   #ifdef SYNTH_THREADED
   // This is as early as it can be called.  Not sure it needs to be called.  See later call to it.
@@ -328,24 +336,25 @@ inner_run(
   if (pluginParameters->neighbours > IMAGE_SYNTH_MAX_NEIGHBORS )
     pluginParameters->neighbours = IMAGE_SYNTH_MAX_NEIGHBORS;
   
-  corpus_drawable = gimp_drawable_get(pluginParameters->corpus_id);
-  
-  /* The target and corpus must have the same base type.
+  /* 
+  Require target and corpus have the same base type.
   In earlier version, they must have the same bpp.
   But now we don't compare the alphas, so they can differ in presence of alpha.
   */
   if (! equal_basetypes(in_drawable, corpus_drawable) )
     return _("The input texture and output image must have the same number of color channels.");
   
-  with_map = (pluginParameters->input_map_id != -1 && pluginParameters->output_map_id != -1);
+
+
+  with_map = (pluginParameters->input_map != NULL && pluginParameters->output_map != NULL);
   /* If only one map is passed, it is ignored quietly. */
-  map_in_drawable=0;
-  map_out_drawable=0;
 
   if (with_map) 
   {
-    map_in_drawable = gimp_drawable_get(pluginParameters->input_map_id);
-    map_out_drawable = gimp_drawable_get(pluginParameters->output_map_id);
+    //map_in_drawable = gimp_drawable_get(pluginParameters->input_map_id);
+    //map_out_drawable = gimp_drawable_get(pluginParameters->output_map_id);
+    map_in_drawable = pluginParameters->input_map;
+    map_out_drawable = pluginParameters->output_map;
     /* All these can be wrong at the same time.  
     Forego userfriendliness for ease of programming: abort on first error
     */
