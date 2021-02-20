@@ -23,63 +23,13 @@
 // hacky test that version is less than 2.99.xx
 #if GIMP_MAJOR_VERSION < 99
 
+#include "pluginParams.h"
+
 // v2 only
+// defines get_new_parameters_from_list()
 #include "../resynth-parameters.h" // requires engine.h
 
 #include "resynthesizer.h"  // inner_run
-
-// Get the parameters other than run mode and in_drawable: the slice param[3:]
-/* 
-  The engine should not be run interactively so no need to store last values. 
-  I.E. the meaning of "last" is "last values set by user interaction".
-*/
-static gboolean
-get_engine_specific_parameters(
-  gint32                  run_mode,
-  gint                    nparams,
-	const GimpParam        *param,
-  const GimpDrawable     *in_drawable,
-  TGimpAdapterParametersNew *pluginParameters
-  )
-{
-  gboolean result;
-
-  switch(run_mode) 
-  {
-    case GIMP_RUN_INTERACTIVE :
-    case GIMP_RUN_WITH_LAST_VALS :
-      gimp_message("Resynthesizer engine can not be called interactively");
-      result = FALSE;
-      break;
-    case GIMP_RUN_NONINTERACTIVE :
-      debug("get_new_parameters_from_list");
-      result = get_new_parameters_from_list(pluginParameters, nparams, param); 
-      break;
-    default:
-      result = FALSE;
-  }
-  return result;
-}
-
-/*
-CRUFT
- case GIMP_RUN_INTERACTIVE :
-      result = get_last_parameters(pluginParameters, in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
-      // TODO restore ID's to GimpDrawable*
-      gimp_message("Resynthesizer engine should not be called interactively");
-      // But keep going with last (or default) parameters, really no harm. 
-      break;
-    case GIMP_RUN_NONINTERACTIVE :
-      result = get_parameters_from_list(pluginParameters, nparams, param); 
-      break;
-    case GIMP_RUN_WITH_LAST_VALS :
-      result = get_last_parameters(pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
-      // TODO restore ID's to GimpDrawable*
-      break;
-    default:
-      result = FALSE;
-*/
-
 
 
 
@@ -103,9 +53,9 @@ static void run(
   static GimpParam values[2];   // Gimp return values. !!! Allow 2: status and error message.
   gint32           run_mode;
   // WIP ID or Drawable* since 2.10???
-  GimpDrawable *in_drawable = NULL;
+  GimpDrawable     *in_drawable = NULL;
   // gint32        drawableID;
-  TGimpAdapterParametersNew pluginParameters;
+  TGimpAdapterParameters pluginParameters;
 
   run_mode = param[0].data.d_int32;
 
@@ -148,12 +98,18 @@ static void run(
   return;
 }
 
+// just the registration
 #include "resynthPDBv2.h"
 
 
 #else
 
+
+
+  // v3, includes both run() and PDB registration
   #include "resynthPDBv3.h"
+
+
 
 #endif
 

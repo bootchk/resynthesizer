@@ -106,7 +106,8 @@ Is separate to reduce file sizes and later, coupling.
 
 #include "mapIndex.h"	// from resynthesizer library
 #include "adaptGimp.h"  // requires mapIndex.h
-#include "../resynth-parameters.h" // requires engine.h
+//#include "../resynth-parameters.h" // requires engine.h
+#include "pluginParams.h"
 #include "adaptParameters.c"
 
 #include "resynthesizer.h"
@@ -211,9 +212,7 @@ count_color_channels(GimpDrawable *drawable)
 }
 
 
-/*
-Return whether drawables have the same base type.
-*/
+// Do drawables have the same base type?
 static gboolean
 equal_basetypes(
   GimpDrawable *first_drawable,
@@ -273,7 +272,7 @@ inner_run(
   const gchar *                 name,
   gint32                        run_mode,
   const GimpDrawable           *in_drawable,
-  TGimpAdapterParametersNew    *pluginParameters  // Not const, we further constrain it
+  TGimpAdapterParameters       *pluginParameters  // Not const, we further constrain it
 	)
 {
   TImageSynthParameters engineParameters;

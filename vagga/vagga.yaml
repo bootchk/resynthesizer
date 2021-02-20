@@ -93,7 +93,8 @@ containers:
     # cd to repository and build it
     # Build script is a sequence of sh commands, "&&" means each depends on success of previous.
     # As documented in build instructions in resynthesizer/readme.md
-    - !Sh cd /work/resynthesizer && ./autogen.sh && ./configure && make && make install
+    #- !Sh cd /work/resynthesizer && ./autogen.sh && ./configure && make && make install
+    - !Sh cd /work/resynthesizer && ./autogen.sh && make && make install
 
     environ:
       HOME: /work/.home
