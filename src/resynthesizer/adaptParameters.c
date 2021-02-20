@@ -1,9 +1,10 @@
 
 
+
 static void
 adaptPluginToLibraryParameters(
-  TGimpAdapterParametersNew* p1,
-  TImageSynthParameters* p2
+  TGimpAdapterParameters *p1,
+  TImageSynthParameters*  p2
   )
 {
   p2->isMakeSeamlesslyTileableHorizontally = p1->h_tile;

@@ -6,7 +6,7 @@ inner_run(
   const gchar *              name,
   gint32                     run_mode,
   const GimpDrawable        *in_drawable,
-  TGimpAdapterParametersNew *pluginParameters
+  TGimpAdapterParameters    *pluginParameters
 	);
 
 void 

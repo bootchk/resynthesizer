@@ -42,6 +42,8 @@
 
 /* Shared with engine plugin. */
 #include "../resynth-constants.h"
+// hack, dip into the engine source.  resynthesizer-gui to go away soon.
+#include "../resynthesizer/pluginParams.h"
 #include "../resynth-parameters.h"
 
 /* Resynthesizer GUI gtk code: ask user for parameters. */

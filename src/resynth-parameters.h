@@ -43,31 +43,6 @@ typedef struct GIMPAdapterParametersStructOld {
 } TGimpAdapterParametersOld;
 
 
-/*
-Parameters passed from a Gimp plugin
-to the adapter from Gimp to the innermost engine.
-
-!!!  v2
-*/
-typedef struct GIMPAdapterParametersStructNew {
-  
-  int h_tile;
-  int v_tile; 
-  int use_border;   
-  
-  // Was int corpus_id, input_map_id, output_map_id;
-  GimpDrawable  *corpus;
-  GimpDrawable  *input_map;
-  GimpDrawable  *output_map;
-
-  double map_weight;
-  double autism;
-  
-  int neighbours;
-  int trys;
-} TGimpAdapterParametersNew;
-
-
 
 
 // Registered parameters of the v2 plugin
@@ -213,7 +188,7 @@ get_old_parameters_from_list(
 /* Convert argument list into internal parameters */
 static gboolean 
 get_new_parameters_from_list(
-  TGimpAdapterParametersNew *param, 
+  TGimpAdapterParameters *param, 
   gint n_args, 
   const GimpParam *args
   ) 

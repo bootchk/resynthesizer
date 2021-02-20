@@ -173,7 +173,7 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                             0.0, 1.0, 0.5,  TODO
                             G_PARAM_READWRITE);
       GIMP_PROC_ARG_DOUBLE (procedure, "autism",
-                            "Parameter of distance measure",
+                            "Sensitivity to outliers of distance measure",
                             "Parameter of distance measure",
                             0.0, 1.0, 0.117,
                             G_PARAM_READWRITE);
@@ -183,7 +183,7 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                          1, 100, 9,
                          G_PARAM_READWRITE);
       GIMP_PROC_ARG_INT (procedure, "trys",
-                         "Count of searches per pass",
+                         "Max search probes per pass",
                          "More is high quality but slow",
                          1, 10000, 200,
                          G_PARAM_READWRITE);
