@@ -116,7 +116,26 @@ Is separate to reduce file sizes and later, coupling.
 
 
 
-
+/* 
+Update Gimp image from local pixmap. Canonical postlude for plugins.
+!!! Called in the postlude but also for debugging: animate results during processing.
+*/
+static void 
+post_results_to_gimp(
+  const GimpDrawable *drawable,
+  Map                 targetMap) 
+{
+  // our pixels back to Gimp.  Since 2.10, using GeglBuffers, and this flushes them
+  debug("pixmap to drawable");
+  pixmap_to_drawable(targetMap, drawable, FIRST_PIXELEL_INDEX);   
+  
+  debug("flush");
+  // temp buffers merged
+  if ( ! gimp_drawable_merge_shadow(drawable->drawable_id, TRUE))
+      debug("fail merge shadow");
+  gimp_drawable_update(drawable->drawable_id,0,0,targetMap.width,targetMap.height);
+  gimp_displays_flush();
+}
 
 
 #ifdef ANIMATE
@@ -192,7 +211,7 @@ progressUpdate( int percent, void * contextInfo)
 
 /* Return count of color channels, exclude alpha and any other channels. */
 static guint
-count_color_channels(GimpDrawable *drawable)
+count_color_channels(const GimpDrawable *drawable)
 {
   g_assert(drawable); // Not null
   
@@ -215,8 +234,8 @@ count_color_channels(GimpDrawable *drawable)
 // Do drawables have the same base type?
 static gboolean
 equal_basetypes(
-  GimpDrawable *first_drawable,
-  GimpDrawable *second_drawable
+  const GimpDrawable *first_drawable,
+  const GimpDrawable *second_drawable
   )
 {
   /* !!! Not drawable->bpp minus one if alpha, because there  might be other channels. */
@@ -225,26 +244,7 @@ equal_basetypes(
 
 
 
-/* 
-Update Gimp image from local pixmap. Canonical postlude for plugins.
-!!! Called in the postlude but also for debugging: animate results during processing.
-*/
-void 
-post_results_to_gimp(
-  GimpDrawable *drawable,
-  Map targetMap) 
-{
-  // our pixels back to Gimp.  Since 2.10, using GeglBuffers, and this flushes them
-  debug("pixmap to drawable");
-  pixmap_to_drawable(targetMap, drawable, FIRST_PIXELEL_INDEX);   
-  
-  debug("flush");
-  // temp buffers merged
-  if ( ! gimp_drawable_merge_shadow(drawable->drawable_id, TRUE))
-      debug("fail merge shadow");
-  gimp_drawable_update(drawable->drawable_id,0,0,targetMap.width,targetMap.height);
-  gimp_displays_flush();
-}
+
 
 
 
@@ -278,13 +278,13 @@ inner_run(
   TImageSynthParameters engineParameters;
 
   // OLD corpus_drawable = gimp_drawable_get(pluginParameters->corpus_id);
-  GimpDrawable *corpus_drawable = pluginParameters->corpus;
+  const GimpDrawable *corpus_drawable = pluginParameters->corpus;
   // Require target and corpus not NULL
   g_assert(in_drawable != NULL);
   g_assert(corpus_drawable != NULL);
 
-  GimpDrawable *map_in_drawable= NULL; 
-  GimpDrawable *map_out_drawable= NULL; 
+  const GimpDrawable *map_in_drawable= NULL; 
+  const GimpDrawable *map_out_drawable= NULL; 
   gboolean      with_map;
   
   /* 

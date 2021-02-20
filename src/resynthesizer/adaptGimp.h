@@ -73,9 +73,9 @@ The rest (the context) is unchanged.
 */
 void 
 pixmap_to_drawable(
-  Map map,
-  GimpDrawable *drawable, 
-  guint pixelel_offset  // Index of starting Pixelel (channel) within Pixel sequence to move
+  Map                 map,
+  const GimpDrawable *drawable, 
+  guint               pixelel_offset  // Index of starting Pixelel (channel) within Pixel sequence to move
   )
 {
   guchar *img;
@@ -140,12 +140,12 @@ Copy a sub-rect from the drawable.
 */
 static void 
 pixmap_from_drawable(
-  Map map,
-  GimpDrawable *drawable,
-  gint x,                       /* origin of rect to copy. */
-  gint y,
-  gint pixelel_offset,          /* Which pixelels to copy to. */
-  guint pixelel_count_to_copy   /* Count of pixels to copy, might omit the alpha. */
+  Map                 map,
+  const GimpDrawable *drawable,
+  gint                x,                       /* origin of rect to copy. */
+  gint                y,
+  gint                pixelel_offset,          /* Which pixelels to copy to. */
+  guint               pixelel_count_to_copy    /* Count of pixels to copy, might omit the alpha. */
   )
 {
   GeglBuffer *buffer;
@@ -219,9 +219,9 @@ or create one if no selection exists or selection exists but does not intersect 
   
 static void
 fetch_mask(
-  GimpDrawable *drawable,
-  Map *mask,
-  Pixelel default_mask_value
+  const GimpDrawable *drawable,
+  Map                *mask,
+  Pixelel             default_mask_value
   ) 
 {
   gint drawable_relative_x, drawable_relative_y;
@@ -312,11 +312,11 @@ fetch_mask(
 
 void 
 fetch_image_and_mask(
-  GimpDrawable *drawable, // IN
-  Map *pixmap,            // OUT our color pixmap of drawable
-  guint pixelel_count,    // IN total count mask+image+map Pixelels in our Pixel
-  Map *mask,              // OUT our selection bytemap (only one channel ie byte ie depth)
-  Pixelel default_mask_value  // IN default value for any created mask
+  const GimpDrawable *drawable,          // IN
+  Map                *pixmap,            // OUT our color pixmap of drawable
+  guint               pixelel_count,     // IN total count mask+image+map Pixelels in our Pixel
+  Map                *mask,              // OUT our selection bytemap (only one channel ie byte ie depth)
+  Pixelel             default_mask_value // IN default value for any created mask
   ) 
 {
    
@@ -346,13 +346,13 @@ Note we prepend the mask byte.
 */
 void
 fetch_image_mask_map(
-  GimpDrawable *image_drawable,     // IN image: target or corpus drawable
-  Map          *pixmap,             // OUT our pixmap of drawable
-  guint        pixelel_count,       // IN count channels in image + map
-  Map          *mask,               // OUT our selection bytemap (only one channel ie byte ie depth)
-  Pixelel      default_mask_value,  // IN default value for any created mask
-  GimpDrawable *map_drawable,       // IN map drawable, target or corpus
-  guint        map_offset          // IN index in our Pixel to first map Pixelel
+  const GimpDrawable *image_drawable,     // IN image: target or corpus drawable
+  Map                *pixmap,             // OUT our pixmap of drawable
+  guint               pixelel_count,      // IN count channels in image + map
+  Map                *mask,               // OUT our selection bytemap (only one channel ie byte ie depth)
+  Pixelel             default_mask_value, // IN default value for any created mask
+  const GimpDrawable *map_drawable,       // IN map drawable, target or corpus
+  guint               map_offset          // IN index in our Pixel to first map Pixelel
   ) 
 {
   /* Fetch image.  If no selection mask, create one defaulted to SELECTED.

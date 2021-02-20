@@ -1,27 +1,16 @@
 
-
-
 #include "../../config.h" // GNU buildtools local configuration
 #include "../plugin-intl.h" // i18n macros
 #include <libgimp/gimp.h>
 
-
-
 #include "../resynth-constants.h"
-
-#include "imageFormat.h"
-#include "imageFormatIndicies.h"
-#include "map.h"
-#include "engineParams.h"
-#include "engine.h" // requires map.h
-
-
+#include "debug.h"
 
 
 
 
 // hacky test that version is less than 2.99.xx
-#if GIMP_MAJOR_VERSION < 99
+#if GIMP_MINOR_VERSION < 99
 
 #include "pluginParams.h"
 
@@ -92,7 +81,7 @@ static void run(
     values[0].data.d_status = GIMP_PDB_EXECUTION_ERROR;
     values[1].type          = GIMP_PDB_STRING;
     values[1].data.d_string = result ;
-    g_debug(result);
+    debug(result);
   }
 
   return;
