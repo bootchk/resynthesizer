@@ -9,7 +9,11 @@ inner_run(
   TGimpAdapterParameters    *pluginParameters
 	);
 
+/*
+OLD is now static 
+
 void 
 post_results_to_gimp(
   GimpDrawable *drawable,
   Map targetMap);
+*/

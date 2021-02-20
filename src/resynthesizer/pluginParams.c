@@ -5,22 +5,18 @@
 
 #include <libgimp/gimp.h>
 
+#include "pluginParams.h"
+
 
 
 // hacky test that version is less than 2.99.xx
-#if GIMP_MAJOR_VERSION < 99
+#if GIMP_MINOR_VERSION < 99
 
 
 // in v2 gimp API, params are array of GimpParam
 
 #include "../resynth-constants.h"
-#include "imageFormat.h"
-#include "imageFormatIndicies.h"
-#include "map.h"
-#include "engineParams.h"
-#include "engine.h" // requires map.h
-#include "pluginParams.h"
-#include "../resynth-parameters.h" // requires engine.h
+#include "../resynth-parameters.h" // get_new_parameters_from_list.  requires resynth-constants.h
 
 
 
@@ -83,9 +79,6 @@ CRUFT
 
 
 // in v3 gimp API, params are a GimpValueArray
-
-
-#include "pluginParams.h"
 
 gboolean
 get_engine_specific_parameters(
