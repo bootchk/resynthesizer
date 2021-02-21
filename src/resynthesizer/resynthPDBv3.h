@@ -22,9 +22,9 @@ and gimp/plug-ins/common/compose.c
 
 
 
-#include "config.h"
+//#include "config.h"
 
-#define GIMP_DISABLE_COMPAR_CRUFT
+//#define GIMP_DISABLE_COMPAR_CRUFT
 
 #include <libgimp/gimp.h>
 
