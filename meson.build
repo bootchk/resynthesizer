@@ -12,6 +12,11 @@ project('resynthesizer',
 # TODO move to a separate include dir
 resynthesizer_inc = include_directories('lib')
 
+# TODO this is platform specific, for Ubuntu
+# TODO should install to user specific location (customizations) ???
+# define the location to install gimp plugins
+gimpplugindir = '/usr/local/lib/x86_64-linux-gnu/gimp/2.99'
+
 
 # Is the order important to meson?
 # Anyway, this is the order of dependency
@@ -25,8 +30,8 @@ subdir('lib')
 # engine plugin
 subdir('src')
 
-# TODO Python plugins
-#subdir('PluginScripts')
+# Python plugins
+subdir('PluginScripts')
 
 # TODO translations
 #subdir('po')
