@@ -27,10 +27,11 @@ and gimp/plug-ins/common/compose.c
 #define GIMP_DISABLE_COMPAR_CRUFT
 
 #include <libgimp/gimp.h>
-//#include <libgimp/gimpui.h>
 
 // TODO Need this but can't find
 // #include <libgimp/stdplugins-intl.h>
+
+// included later #include "pluginParams.h"
 
 
 #define PLUG_IN_BINARY "resynthesizer"
@@ -94,7 +95,7 @@ resynthesizer_class_init (ResynthesizerClass *klass)
 static void
 resynthesizer_init (Resynthesizer *resynthesizer)
 {
-  // resynthesizer does nothing at init time 
+  // resynthesizer does nothing at init time
 }
 
 
@@ -135,8 +136,8 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
       gimp_procedure_set_attribution (procedure,
                                       "Lloyd Konneker",
                                       "Lloyd Konneker",
-                                      "2021"); 
-  
+                                      "2021");
+
       GIMP_PROC_ARG_BOOLEAN (procedure, "h_tile",
                          "Create image tileable horizontally?",
                          "Boolean",
@@ -147,10 +148,10 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                          "Boolean",
                          FALSE,
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG__INT (procedure, "use_border",
+      GIMP_PROC_ARG_INT (procedure, "use_border",
                          "Enumerated order/directions of synthesis",
                          "See documents.",
-                         0, 1, 1, TODO
+                         0, 1, 1, // TODO
                          G_PARAM_READWRITE);
       GIMP_PROC_ARG_DRAWABLE (procedure, "corpus_drawable",
                               "Image to search",
@@ -170,7 +171,7 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
       GIMP_PROC_ARG_DOUBLE (procedure, "map_weight",
                             "Weighting for any in and out maps",
                             "How much to use maps while matching.",
-                            0.0, 1.0, 0.5,  TODO
+                            0.0, 1.0, 0.5,
                             G_PARAM_READWRITE);
       GIMP_PROC_ARG_DOUBLE (procedure, "autism",
                             "Sensitivity to outliers of distance measure",
@@ -220,7 +221,7 @@ resynthesizer_run (
   GimpPDBStatusType status = GIMP_PDB_SUCCESS;
   const char       *result;           // inner result
   const gchar      *name = gimp_procedure_get_name (procedure);
-  TGimpAdapterParameters pluginParameters
+  TGimpAdapterParameters pluginParameters;
 
   // INIT_I18N();
 
@@ -231,10 +232,10 @@ resynthesizer_run (
   else
     result = inner_run(
       name,
-      run_mode, 
-      drawable, 
+      run_mode,
+      drawable,
       &pluginParameters);
-  
+
   if (strcmp(result, "success") == 0)
   {
     return gimp_procedure_new_return_values (procedure, GIMP_PDB_SUCCESS, NULL);
@@ -246,5 +247,3 @@ resynthesizer_run (
     return gimp_procedure_new_return_values (procedure, GIMP_PDB_EXECUTION_ERROR, NULL);
   }
 }
-
-

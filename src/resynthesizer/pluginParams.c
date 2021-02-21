@@ -21,8 +21,8 @@
 
 
 // Get the parameters other than run mode and in_drawable: the slice param[3:]
-/* 
-  The engine should not be run interactively so no need to store last values. 
+/*
+  The engine should not be run interactively so no need to store last values.
   I.E. the meaning of "last" is "last values set by user interaction".
 */
 gboolean
@@ -36,7 +36,7 @@ get_engine_specific_parameters(
 {
   gboolean result;
 
-  switch(run_mode) 
+  switch(run_mode)
   {
     case GIMP_RUN_INTERACTIVE :
     case GIMP_RUN_WITH_LAST_VALS :
@@ -45,7 +45,7 @@ get_engine_specific_parameters(
       break;
     case GIMP_RUN_NONINTERACTIVE :
       debug("get_new_parameters_from_list");
-      result = get_new_parameters_from_list(pluginParameters, nparams, param); 
+      result = get_new_parameters_from_list(pluginParameters, nparams, param);
       break;
     default:
       result = FALSE;
@@ -59,10 +59,10 @@ CRUFT
       result = get_last_parameters(pluginParameters, in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
       // TODO restore ID's to GimpDrawable*
       gimp_message("Resynthesizer engine should not be called interactively");
-      // But keep going with last (or default) parameters, really no harm. 
+      // But keep going with last (or default) parameters, really no harm.
       break;
     case GIMP_RUN_NONINTERACTIVE :
-      result = get_parameters_from_list(pluginParameters, nparams, param); 
+      result = get_parameters_from_list(pluginParameters, nparams, param);
       break;
     case GIMP_RUN_WITH_LAST_VALS :
       result = get_last_parameters(pluginParameters,in_drawable->drawable_id, RESYNTH_ENGINE_PDB_NAME);
@@ -91,8 +91,8 @@ pluginParameters->use_border = GIMP_VALUES_GET_INT      (args, 2);
 pluginParameters->corpus     = GIMP_VALUES_GET_DRAWABLE (args, 3);
 pluginParameters->input_map  = GIMP_VALUES_GET_DRAWABLE (args, 4);
 pluginParameters->output_map = GIMP_VALUES_GET_DRAWABLE (args, 5);
-pluginParameters->map_weight = GIMP_VALUES_GET_FLOAT    (args, 6);
-pluginParameters->autism     = GIMP_VALUES_GET_FLOAT    (args, 7);
+pluginParameters->map_weight = GIMP_VALUES_GET_DOUBLE   (args, 6);
+pluginParameters->autism     = GIMP_VALUES_GET_DOUBLE   (args, 7);
 pluginParameters->neighbours = GIMP_VALUES_GET_INT      (args, 8);
 pluginParameters->trys       = GIMP_VALUES_GET_INT      (args, 9);
 return TRUE;

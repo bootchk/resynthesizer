@@ -60,3 +60,4 @@ po/stamp-it
 src/resynthesizer/resynthesizer
 src/resynthesizer-gui/resynthesizer_gui
 stamp-h1
+src/resynthesizer-gui/.deps

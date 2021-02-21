@@ -20,20 +20,20 @@ gboolean       is_gray  (GimpDrawable *d) { return gimp_drawable_is_gray  (d->dr
 gboolean       has_alpha(GimpDrawable *d) { return gimp_drawable_has_alpha(d->drawable_id); }
 
 
-GeglBuffer * 
+GeglBuffer *
 get_buffer(GimpDrawable *d)        { return gimp_drawable_get_buffer(d->drawable_id);        }
-GeglBuffer * 
+GeglBuffer *
 get_shadow_buffer(GimpDrawable *d) { return gimp_drawable_get_shadow_buffer(d->drawable_id); }
 
-gboolean       
+gboolean
 merge_shadow(GimpDrawable *d)
-{ 
+{
   return gimp_drawable_merge_shadow(
-    d->drawable_id, 
+    d->drawable_id,
     TRUE); // hardcoded
 }
 
-void        
+void
 update(
   GimpDrawable *d,
   guint lx,
@@ -51,7 +51,7 @@ offsets(
   gint         *x,
   gint         *y )
 {
-  gimp_drawable_offsets( d->drawable_id, x, y ); 
+  gimp_drawable_offsets( d->drawable_id, x, y );
 }
 
 GimpDrawable *
@@ -82,8 +82,8 @@ selection_intersect(
   guint        *intersect_width,
   guint        *intersect_height)
 {
-return gimp_drawable_mask_intersect(d->drawable_id, 
-  drawable_relative_x, drawable_relative_y, 
+return gimp_drawable_mask_intersect(d->drawable_id,
+  drawable_relative_x, drawable_relative_y,
   intersect_width, intersect_height);
 }
 
@@ -102,20 +102,20 @@ gboolean       is_rgb(GimpDrawable *d)    { return gimp_drawable_is_rgb   (d); }
 gboolean       is_gray(GimpDrawable *d)   { return gimp_drawable_is_rgb   (d); }
 gboolean       has_alpha(GimpDrawable *d) { return gimp_drawable_has_alpha(d); }
 
-GeglBuffer * 
+GeglBuffer *
 get_buffer(GimpDrawable *d)        { return gimp_drawable_get_buffer(d);        }
-GeglBuffer * 
+GeglBuffer *
 get_shadow_buffer(GimpDrawable *d) { return gimp_drawable_get_shadow_buffer(d); }
 
-gboolean       
+gboolean
 merge_shadow(GimpDrawable *d)
-{ 
+{
   return gimp_drawable_merge_shadow(
-    d, 
+    d,
     TRUE); // hardcoded
 }
 
-void        
+void
 update(
   GimpDrawable *d,
   guint lx,
@@ -133,7 +133,7 @@ offsets(
   gint         *x,
   gint         *y )
 {
-  gimp_drawable_offsets( d, x, y ); 
+  gimp_drawable_offsets( d, x, y );
 }
 
 GimpDrawable *
@@ -142,7 +142,7 @@ get_selection(GimpDrawable * d)
   // selection is a new drawable derived from image of a drawable
   // TODO this is not right for v3 ??
   // return gimp_image_get_selection(gimp_item_get_image(d->drawable_id));
-  return gimp_image_get_selection(gimp_drawable_get_image(d));
+  return gimp_image_get_selection(gimp_item_get_image(d));
 }
 
 gboolean
@@ -165,8 +165,8 @@ selection_intersect(
   guint        *intersect_width,
   guint        *intersect_height)
 {
-return gimp_drawable_mask_intersect(d, 
-  drawable_relative_x, drawable_relative_y, 
+return gimp_drawable_mask_intersect(d,
+  drawable_relative_x, drawable_relative_y,
   intersect_width, intersect_height);
 }
 

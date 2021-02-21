@@ -54,11 +54,17 @@ fi
 changequote([,])dnl
 
 
-GIMP_REQUIRED_VERSION=2.2.0
+dnl For API 3.0 unstable
+GIMP_REQUIRED_VERSION=2.99.5
+dnl For API 2.0 stable
+dnl GIMP_REQUIRED_VERSION=2.2.0
 
+dnl For API 3.0 unstable
 PKG_CHECK_MODULES(GIMP,
-  gimp-2.0 >= $GIMP_REQUIRED_VERSION gimpui-2.0 >= $GIMP_REQUIRED_VERSION,
+  gimp-3.0 >= $GIMP_REQUIRED_VERSION gimpui-3.0 >= $GIMP_REQUIRED_VERSION,
   ,AC_MSG_ERROR(GIMP development libraries not found; please install.))
+dnl For API 2.0 stable
+dnl In the above, subs 2.0
 
 AC_SUBST(GIMP_CFLAGS)
 AC_SUBST(GIMP_LIBS)
@@ -83,7 +89,7 @@ AM_GLIB_GNU_GETTEXT
 
 AC_CHECK_FUNCS(bind_textdomain_codeset)
 
-dnl Fix for changes in GLib 2.31 
+dnl Fix for changes in GLib 2.31
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
 
 dnl lkk 2011 I copied this from the main gimp configure.in
