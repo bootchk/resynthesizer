@@ -50,8 +50,9 @@
 Makefile.in
 Makefile
 
-# ignore separate build directory 
-/build
+# ignore separate build directory
+/gimpBuild
+/resynthBuild
 
 # ignore build artifacts in source tree: libraries and executables
 lib/libresynthesizer.a
