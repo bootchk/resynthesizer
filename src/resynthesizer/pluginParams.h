@@ -11,16 +11,16 @@ Difference from v2 is int ID => GimpDrawable*
 */
 typedef struct GIMPAdapterParametersStruct {
   int                 h_tile;
-  int                 v_tile; 
-  int                 use_border;   
-  
+  int                 v_tile;
+  int                 use_border;
+
   const GimpDrawable *corpus;       // <<<< v2 was int ID
   const GimpDrawable *input_map;
   const GimpDrawable *output_map;
 
   double              map_weight;
   double              autism;
-  
+
   int                 neighbours;
   int                 trys;
 } TGimpAdapterParameters;
@@ -29,7 +29,7 @@ typedef struct GIMPAdapterParametersStruct {
 
 
 
-#if GIMP_MAJOR_VERSION < 99
+#if GIMP_MINOR_VERSION < 99
 
 
 
