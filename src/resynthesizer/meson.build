@@ -3,8 +3,7 @@
 
 plugin_name = 'resynthesizer'
 
-# TODO this is platform specific, for Ubuntu
-gimpplugindir = '/usr/local/lib/x86_64-linux-gnu/gimp/2.99'
+# assert defined earlier: gimpplugindir = '/usr/local/lib/x86_64-linux-gnu/gimp/2.99'
 
 
 # !!! Other .h files have compilable code (they are not just headers)
