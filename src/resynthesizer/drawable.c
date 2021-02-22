@@ -10,9 +10,9 @@
 #if GIMP_MINOR_VERSION < 99
 
 
-guint          bpp      (GimpDrawable *d) { return d->bpp;     }
-guint          width    (GimpDrawable *d) { return d->width;   }
-guint          height   (GimpDrawable *d) { return d->height;  }
+gint          bpp      (GimpDrawable *d) { return d->bpp;     }
+gint          width    (GimpDrawable *d) { return d->width;   }
+gint          height   (GimpDrawable *d) { return d->height;  }
 
 GimpImageType  imageType(GimpDrawable *d) { return gimp_drawable_type     (d->drawable_id); }
 gboolean       is_rgb   (GimpDrawable *d) { return gimp_drawable_is_rgb   (d->drawable_id); }
@@ -36,10 +36,10 @@ merge_shadow(GimpDrawable *d)
 void
 update(
   GimpDrawable *d,
-  guint lx,
-  guint ly,
-  guint rx,
-  guint ry)
+  gint lx,
+  gint ly,
+  gint rx,
+  gint ry)
 {
   gimp_drawable_update(d->drawable_id, lx, ly, rx, ry);
 }
@@ -58,17 +58,17 @@ GimpDrawable *
 get_selection(GimpDrawable * d)
 {
   // selection is a new drawable derived from image of a drawable
-  guint id = gimp_image_get_selection(gimp_item_get_image(d->drawable_id));
+  gint id = gimp_image_get_selection(gimp_item_get_image(d->drawable_id));
   return gimp_drawable_get(id);
 }
 
 gboolean
 selection_bounds(
   GimpDrawable *d,
-  guint *lx,
-  guint *ly,
-  guint *rx,
-  guint *ry)
+  gint *lx,
+  gint *ly,
+  gint *rx,
+  gint *ry)
 {
   return gimp_drawable_mask_bounds(d->drawable_id, lx, ly, rx, ry);
 }
@@ -77,10 +77,10 @@ selection_bounds(
 gboolean
 selection_intersect(
   GimpDrawable *d,
-  guint        *drawable_relative_x,
-  guint        *drawable_relative_y,
-  guint        *intersect_width,
-  guint        *intersect_height)
+  gint        *drawable_relative_x,
+  gint        *drawable_relative_y,
+  gint        *intersect_width,
+  gint        *intersect_height)
 {
 return gimp_drawable_mask_intersect(d->drawable_id,
   drawable_relative_x, drawable_relative_y,
@@ -93,9 +93,9 @@ return gimp_drawable_mask_intersect(d->drawable_id,
 
 
 
-guint          bpp(GimpDrawable *d)       { return gimp_drawable_bpp   (d); }
-guint          width    (GimpDrawable *d) { return gimp_drawable_width (d); }
-guint          height   (GimpDrawable *d) { return gimp_drawable_height(d); }
+gint          bpp(GimpDrawable *d)       { return gimp_drawable_bpp   (d); }
+gint          width    (GimpDrawable *d) { return gimp_drawable_width (d); }
+gint          height   (GimpDrawable *d) { return gimp_drawable_height(d); }
 
 GimpImageType  imageType(GimpDrawable *d) { return gimp_drawable_type     (d); }
 gboolean       is_rgb(GimpDrawable *d)    { return gimp_drawable_is_rgb   (d); }
@@ -118,10 +118,10 @@ merge_shadow(GimpDrawable *d)
 void
 update(
   GimpDrawable *d,
-  guint lx,
-  guint ly,
-  guint rx,
-  guint ry)
+  gint lx,
+  gint ly,
+  gint rx,
+  gint ry)
 {
   gimp_drawable_update(d, lx, ly, rx, ry);
 }
@@ -148,10 +148,10 @@ get_selection(GimpDrawable * d)
 gboolean
 selection_bounds(
   GimpDrawable *d,
-  guint *lx,
-  guint *ly,
-  guint *rx,
-  guint *ry)
+  gint *lx,
+  gint *ly,
+  gint *rx,
+  gint *ry)
 {
   return gimp_drawable_mask_bounds(d, lx, ly, rx, ry);
 }
@@ -160,10 +160,10 @@ selection_bounds(
 gboolean
 selection_intersect(
   GimpDrawable *d,
-  guint        *drawable_relative_x,
-  guint        *drawable_relative_y,
-  guint        *intersect_width,
-  guint        *intersect_height)
+  gint        *drawable_relative_x,
+  gint        *drawable_relative_y,
+  gint        *intersect_width,
+  gint        *intersect_height)
 {
 return gimp_drawable_mask_intersect(d,
   drawable_relative_x, drawable_relative_y,

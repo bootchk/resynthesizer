@@ -2,9 +2,11 @@
 
 // Functions on GimpDrawable
 
-guint             bpp   (GimpDrawable *d);
-guint             width (GimpDrawable *d);
-guint             height(GimpDrawable *d);
+// Many of these gint should be guint, but Gimp declares gint, so to avoid compiler warnings use gint
+
+gint             bpp   (GimpDrawable *d);
+gint             width (GimpDrawable *d);
+gint             height(GimpDrawable *d);
 
 GimpImageType     imageType(GimpDrawable *d);
 gboolean          is_rgb   (GimpDrawable *d);
@@ -17,10 +19,10 @@ gboolean     merge_shadow     (GimpDrawable *d);
 
 void        update(
   GimpDrawable *d,
-  guint lx,
-  guint ly,
-  guint rx,
-  guint ry);
+  gint lx,
+  gint ly,
+  gint rx,
+  gint ry);
 
 void offsets(
   GimpDrawable *d,
@@ -33,18 +35,18 @@ get_selection(GimpDrawable * d);
 gboolean
 selection_bounds(
   GimpDrawable *d,
-  guint *lx,
-  guint *ly,
-  guint *rx,
-  guint *ry);
+  gint *lx,
+  gint *ly,
+  gint *rx,
+  gint *ry);
 
 gboolean
 selection_intersect(
   GimpDrawable *d,
-  guint        *drawable_relative_x,
-  guint        *drawable_relative_y,
-  guint        *intersect_width,
-  guint        *intersect_height);
+  gint        *drawable_relative_x,
+  gint        *drawable_relative_y,
+  gint        *intersect_width,
+  gint        *intersect_height);
 
 
 

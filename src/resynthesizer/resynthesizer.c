@@ -128,7 +128,7 @@ Update Gimp image from local pixmap. Canonical postlude for plugins.
 */
 static void
 post_results_to_gimp(
-  const GimpDrawable *drawable,
+  GimpDrawable *drawable,
   Map                 targetMap)
 {
   // our pixels back to Gimp.  Since 2.10, using GeglBuffers, and this flushes them
@@ -217,7 +217,7 @@ progressUpdate( int percent, void * contextInfo)
 
 /* Return count of color channels, exclude alpha and any other channels. */
 static guint
-count_color_channels(const GimpDrawable *drawable)
+count_color_channels(GimpDrawable *drawable)
 {
   g_assert(drawable); // Not null
 
@@ -240,8 +240,8 @@ count_color_channels(const GimpDrawable *drawable)
 // Do drawables have the same base type?
 static gboolean
 equal_basetypes(
-  const GimpDrawable *first_drawable,
-  const GimpDrawable *second_drawable
+  GimpDrawable *first_drawable,
+  GimpDrawable *second_drawable
   )
 {
   /* !!! Not drawable->bpp minus one if alpha, because there  might be other channels. */
@@ -273,23 +273,23 @@ Note some params are GimpDrawable* that formerly were ID's.
 This adapts the texture synthesis engine to a Gimp plugin.
 */
 
-const char *
+char *
 inner_run(
-  const gchar *                 name,
+  gchar *                 name,
   gint32                        run_mode,
-  const GimpDrawable           *in_drawable,
+  GimpDrawable           *in_drawable,
   TGimpAdapterParameters       *pluginParameters  // Not const, we further constrain it
 	)
 {
   TImageSynthParameters engineParameters;
 
-  const GimpDrawable *corpus_drawable = pluginParameters->corpus;
+  GimpDrawable *corpus_drawable = pluginParameters->corpus;
   // Require target and corpus not NULL
   g_assert(in_drawable != NULL);
   g_assert(corpus_drawable != NULL);
 
-  const GimpDrawable *map_in_drawable= NULL;
-  const GimpDrawable *map_out_drawable= NULL;
+  GimpDrawable *map_in_drawable= NULL;
+  GimpDrawable *map_out_drawable= NULL;
   gboolean      with_map;
 
   /*
@@ -429,8 +429,8 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
 
   #else
     g_printerr("Gimp version %d\n", GIMP_MAJOR_VERSION);
-    debug("Gimp adaption");
-    /* target/context adaption */
+    debug("adapt target/context");
+    
     fetch_image_mask_map(in_drawable, &targetMap, formatIndices.total_bpp,
       &targetMaskMap,
       MASK_TOTALLY_SELECTED,
@@ -440,7 +440,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
       clear_target_pixels(formatIndices.colorEndBip);  // For debugging, blacken so new colors sparkle
       #endif
 
-    /*  corpus adaption */
+    debug("adapt corpus");
     fetch_image_mask_map(corpus_drawable, &corpusMap, formatIndices.total_bpp,
       &corpusMaskMap,
       MASK_TOTALLY_SELECTED,
@@ -450,6 +450,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
     free_map(&corpusMaskMap);
     free_map(&targetMaskMap);
 
+    debug("adapt parameters");
     adaptPluginToLibraryParameters(pluginParameters, &engineParameters);
 
   #endif
@@ -462,6 +463,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
   // Begin real work
   progressStart(_("synthesizing..."));
 
+  debug("call engine");
   int result = engine(
     engineParameters,
     &formatIndices,

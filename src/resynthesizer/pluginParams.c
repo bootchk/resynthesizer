@@ -18,6 +18,7 @@
 #include "../resynth-constants.h"
 #include "../resynth-parameters.h" // get_new_parameters_from_list.  requires resynth-constants.h
 
+#include "debug.h"
 
 
 // Get the parameters other than run mode and in_drawable: the slice param[3:]
@@ -29,8 +30,8 @@ gboolean
 get_engine_specific_parameters(
   gint32                  run_mode,
   gint                    nparams,
-	const GimpParam        *param,
-  const GimpDrawable     *in_drawable,
+	GimpParam        *param,
+  GimpDrawable     *in_drawable,
   TGimpAdapterParameters *pluginParameters
   )
 {
@@ -82,7 +83,7 @@ CRUFT
 
 gboolean
 get_engine_specific_parameters(
-  const GimpValueArray   *args,              // IN
+  GimpValueArray   *args,              // IN
   TGimpAdapterParameters *pluginParameters)  // OUT
 {
   // Fails to compile:

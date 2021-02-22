@@ -32,13 +32,13 @@ Liable to change as GIMP plugin API changes.
 // API for Gimp-2.0
 
 static void run(
-  const gchar *     name,
+  gchar *     name,
   gint              nparams,
-	const GimpParam * param,
+	GimpParam * param,
 	gint *            nreturn_vals,  // OUT
 	GimpParam **      return_vals)   // OUT
 {
-  const char       *result;           // inner result
+  char       *result;           // inner result
   static GimpParam values[2];   // Gimp return values. !!! Allow 2: status and error message.
   gint32           run_mode;
   // WIP ID or Drawable* since 2.10???
