@@ -74,7 +74,7 @@ The rest (the context) is unchanged.
 void 
 pixmap_to_drawable(
   Map                 map,
-  const GimpDrawable *drawable, 
+  GimpDrawable *drawable, 
   guint               pixelel_offset  // Index of starting Pixelel (channel) within Pixel sequence to move
   )
 {
@@ -140,7 +140,7 @@ Copy a sub-rect from the drawable.
 static void 
 pixmap_from_drawable(
   Map                 map,
-  const GimpDrawable *drawable,
+  GimpDrawable *drawable,
   gint                x,                       /* origin of rect to copy. */
   gint                y,
   gint                pixelel_offset,          /* Which pixelels to copy to. */
@@ -218,7 +218,7 @@ or create one if no selection exists or selection exists but does not intersect 
   
 static void
 fetch_mask(
-  const GimpDrawable *drawable,
+  GimpDrawable *drawable,
   Map                *mask,
   Pixelel             default_mask_value
   ) 
@@ -310,7 +310,7 @@ fetch_mask(
 
 void 
 fetch_image_and_mask(
-  const GimpDrawable *drawable,          // IN
+  GimpDrawable *drawable,          // IN
   Map                *pixmap,            // OUT our color pixmap of drawable
   guint               pixelel_count,     // IN total count mask+image+map Pixelels in our Pixel
   Map                *mask,              // OUT our selection bytemap (only one channel ie byte ie depth)
@@ -344,12 +344,12 @@ Note we prepend the mask byte.
 */
 void
 fetch_image_mask_map(
-  const GimpDrawable *image_drawable,     // IN image: target or corpus drawable
+  GimpDrawable *image_drawable,     // IN image: target or corpus drawable
   Map                *pixmap,             // OUT our pixmap of drawable
   guint               pixelel_count,      // IN count channels in image + map
   Map                *mask,               // OUT our selection bytemap (only one channel ie byte ie depth)
   Pixelel             default_mask_value, // IN default value for any created mask
-  const GimpDrawable *map_drawable,       // IN map drawable, target or corpus
+  GimpDrawable *map_drawable,       // IN map drawable, target or corpus
   guint               map_offset          // IN index in our Pixel to first map Pixelel
   ) 
 {

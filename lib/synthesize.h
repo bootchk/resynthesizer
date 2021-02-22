@@ -271,7 +271,7 @@ computeBestFit(
   guint * const bestPatchDiff,  // OUT
   Coordinates * const bestMatchCorpusPoint, // OUT
   const guint countNeighbors,
-  const TNeighbor const neighbors[],
+  const TNeighbor neighbors[],
   tBettermentKind* latestBettermentKind,
   const tBettermentKind bettermentKind,
   const TPixelelMetricFunc corpusTargetMetric,  // array pointers

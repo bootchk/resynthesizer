@@ -1,11 +1,11 @@
 
 
 
-const char *
+char *
 inner_run(
-  const gchar *              name,
+  gchar *              name,
   gint32                     run_mode,
-  const GimpDrawable        *in_drawable,
+  GimpDrawable        *in_drawable,
   TGimpAdapterParameters    *pluginParameters
 	);
 
