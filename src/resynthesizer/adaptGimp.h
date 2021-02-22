@@ -319,11 +319,15 @@ fetch_image_and_mask(
 {
    
   /* Both OUT pixmaps same 2D dimensions.  Depth pixelel_count includes a mask byte. */
+  debug("new_pixmap");
   new_pixmap(pixmap, width(drawable), height(drawable), pixelel_count);
   
   /* Get color, alpha channels */
-  pixmap_from_drawable(*pixmap, drawable, 0,0, FIRST_PIXELEL_INDEX, bpp(drawable));  
+  debug("pixmap_from_drawable");
+  pixmap_from_drawable(*pixmap, drawable, 0,0, FIRST_PIXELEL_INDEX, bpp(drawable)); 
+  debug("fetch_mask");
   fetch_mask(drawable, mask, default_mask_value); /* Get mask channel */
+  debug("interleave_mask");
   interleave_mask(pixmap, mask);  /* Insert mask byte into our Pixels */
 }
 
