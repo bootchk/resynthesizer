@@ -151,7 +151,7 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
       GIMP_PROC_ARG_INT (procedure, "use_border",
                          "Enumerated order/directions of synthesis",
                          "See documents.",
-                         0, 1, 1, // TODO
+                         0, 100, 1, // TODO what is the real range
                          G_PARAM_READWRITE);
       GIMP_PROC_ARG_DRAWABLE (procedure, "corpus_drawable",
                               "Image to search",
