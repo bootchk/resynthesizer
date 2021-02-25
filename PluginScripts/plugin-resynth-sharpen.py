@@ -31,44 +31,44 @@ http://www.gnu.org/copyleft/gpl.html
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+gettext.install("resynthesizer", gimp.locale_directory, )
 
 def plugin_main(image, drawable, scale_factor):
   '''
   Algorithm:
-  
+
   Resynthesize with:
     corpus = smaller image
     in map = smaller image but scaled up and down to blur
     out map = original image
-  
+
   TODO undo
-  
+
   original did not accept an alpha channel
   '''
 
-  
+
   temp_image1 = pdb.gimp_image_duplicate(image)  # duplicate for in map
   if not temp_image1:
-    raise RuntimeError, "Failed duplicate image"
+    raise RuntimeError("Failed duplicate image")
   temp_image2 = pdb.gimp_image_duplicate(image)  # duplicate for corpus
   if not temp_image2:
-    raise RuntimeError, "Failed duplicate image"
+    raise RuntimeError("Failed duplicate image")
   temp_layer1 = pdb.gimp_image_get_active_layer(temp_image1)
   if not temp_layer1:
-    raise RuntimeError, "Failed get active layer"
+    raise RuntimeError("Failed get active layer")
   temp_layer2 = pdb.gimp_image_get_active_layer(temp_image2)
   if not temp_layer2:
-    raise RuntimeError, "Failed get active layer"
+    raise RuntimeError("Failed get active layer")
 
-  
+
   width = pdb.gimp_drawable_width(drawable)
   height = pdb.gimp_drawable_height(drawable)
-  
-  
+
+
   # scale input image down, for corpus map
   pdb.gimp_image_scale(temp_image2, width/scale_factor, height/scale_factor)
-    
+
   # scale input image way down, then back up to, to blur, for corpus
   # Final size is same size as corpus map.
   pdb.gimp_image_scale(temp_image1, width / (2 * scale_factor), height / (2 * scale_factor) )
@@ -83,7 +83,7 @@ def plugin_main(image, drawable, scale_factor):
       temp_layer2.ID,  # corpus is smaller original
       temp_layer1.ID,  # input map is blurred smaller original
       drawable.ID,     # output map is original itself
-      1.0, 0.117, 8, 500) 
+      1.0, 0.117, 8, 500)
 
   pdb.gimp_image_delete(temp_image1)
   pdb.gimp_image_delete(temp_image2)
@@ -109,5 +109,3 @@ register(
   )
 
 main()
-
-

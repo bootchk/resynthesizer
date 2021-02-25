@@ -32,7 +32,7 @@ http://www.gnu.org/copyleft/gpl.html
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, unicode=True);
+gettext.install("resynthesizer", gimp.locale_directory, );
 
 debug = False
 
@@ -49,49 +49,49 @@ def layer_from_pattern(image, pattern):
     new_layertype, "Texture", 100, NORMAL_MODE)
   pdb.gimp_image_add_layer(new_image, new_drawable, 0)
   return new_image, new_drawable
-  
-  
+
+
 def guts(image, drawable, pattern):
   ''' Crux of algorithm '''
-  
+
   # Make drawble from pattern
   pattern_image, pattern_layer = layer_from_pattern(image, pattern)
-  
+
   # Fill it with pattern
   # NOT pass pattern_layer.ID !!!
   pdb.gimp_drawable_fill(pattern_layer, PATTERN_FILL)
-  
+
   if debug:
-    gimp.Display(pattern_image) 
-    gimp.displays_flush() 
-  
+    gimp.Display(pattern_image)
+    gimp.displays_flush()
+
   # Resynthesize the selection from the pattern without using context
   # 0,0,0: Not use_border (context), not tile horiz, not tile vert
   # -1, -1, 0: No maps and no map weight
   # DO pass pattern_layer.ID !!!
   # Resynthesizer is an engine, never interactive
   pdb.plug_in_resynthesizer(image, drawable, 0, 0, 0, pattern_layer.ID, -1, -1, 0, 0.05, 8, 300)
-      
+
   # Clean up
   if not debug:
     # Delete image that is displayed throws RuntimeError
     pdb.gimp_image_delete(pattern_image)
-  
-  
+
+
 def plugin_main(image, drawable, pattern):
   '''
   Main: the usual user-friendly precondition checking, postcondition cleanup.
   pattern is a string
-  '''  
+  '''
   # User_friendly: if no selection, use entire image.
   # But the resynthesizer does that for us.
-  
+
   # Save/restore the context since we change the pattern
   pdb.gimp_context_push()
   pdb.gimp_context_set_pattern(pattern)
   guts(image, drawable, pattern)
   pdb.gimp_context_pop()
-  
+
   gimp.displays_flush()
 
 

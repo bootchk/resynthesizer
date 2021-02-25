@@ -22,12 +22,12 @@ License:
 
   The GNU Public License is available at
   http://www.gnu.org/copyleft/gpl.html
-  
+
 '''
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+gettext.install("resynthesizer", gimp.locale_directory)
 
 def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
 
@@ -35,17 +35,17 @@ def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
   if not pdb.gimp_drawable_has_alpha(tdrawable):
     pdb.gimp_message("The active layer has no alpha channel to heal.")
     return
-  
+
   pdb.gimp_image_undo_group_start(timg)
-  
+
   # save selection for later restoration.
   # Saving selection channel makes it active, so we must save and restore the active layer
   org_selection = pdb.gimp_selection_save(timg)
   pdb.gimp_image_set_active_layer(timg, tdrawable)
-  
+
   # alpha to selection
   pdb.gimp_image_select_item(timg, CHANNEL_OP_REPLACE, tdrawable)
-  # Want the transparent, not the opaque.  
+  # Want the transparent, not the opaque.
   pdb.gimp_selection_invert(timg)
   # Since transparency was probably anti-aliased (dithered with partial transpancy),
   # grow the selection to get past the dithering.
@@ -53,16 +53,17 @@ def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
   # Remove the alpha from this layer. IE compose with current background color (often white.)
   # Resynthesizer won't heal transparent.
   pdb.gimp_layer_flatten(tdrawable)
-  
+
   # Call heal selection (not the resynthesizer), which will create a proper corpus.
   # 0 = sample from all around
-  pdb.python_fu_heal_selection(timg, tdrawable, samplingRadiusParam, 0, orderParam, run_mode=RUN_NONINTERACTIVE)
- 
+  # gimpfu provides run_mode NONINTERACTIVE
+  pdb.python_fu_heal_selection(timg, tdrawable, samplingRadiusParam, 0, orderParam)
+
   # Restore image to initial conditions of user, except for later cleanup.
-  
+
   # restore selection
   pdb.gimp_image_select_item(timg, CHANNEL_OP_REPLACE, org_selection)
- 
+
   # Clean up (comment out to debug)
   pdb.gimp_image_undo_group_end(timg)
 

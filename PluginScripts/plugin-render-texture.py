@@ -48,9 +48,9 @@ The continuum of randomness versus speed:
   - Filte.Render.Texture an entire image is slower but seamless and moderately irregular.
   - Edit.Fill with resynthesized pattern is slowest but seamless and highly irregular, unpatterned.
 
-This filter is not tiling (instead resynthesizing) but makes 
+This filter is not tiling (instead resynthesizing) but makes
 an image that you can then use to tile with especially if
-you choose the option to make the edges suitable for tiling.  
+you choose the option to make the edges suitable for tiling.
 
 IN: The selection (or the entire active drawable) is the source of texture and is not changed.
 OUT New image, possibly resized canvas, same scale and resolution.
@@ -60,14 +60,14 @@ TODO a quality setting
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+gettext.install("resynthesizer", gimp.locale_directory, )
 
 debug = False
 
-    
+
 def new_resized_image(image, resize_ratio):
   # Create new image resized by a ratio from *selection* in the old image
-  
+
   (is_selection, ulx, uly, lrx, lry) = pdb.gimp_selection_bounds(image)
   if not is_selection :
     # Resynthesizer will use the entire source image as corpus.
@@ -79,7 +79,7 @@ def new_resized_image(image, resize_ratio):
     # Resize new image in proportion to selection in source
     new_width = int((lrx - ulx) * resize_ratio)
     new_height = int((lry - uly) * resize_ratio)
-    
+
   new_basetype = pdb.gimp_image_base_type(image)  # same as source
   new_layertype = pdb.gimp_drawable_type(pdb.gimp_image_get_active_layer(image))
   new_image = pdb.gimp_image_new(new_width, new_height, new_basetype)
@@ -88,7 +88,7 @@ def new_resized_image(image, resize_ratio):
     new_layertype, "Texture", 100, NORMAL_MODE)
   pdb.gimp_image_add_layer(new_image, new_drawable, 0)
   return new_image, new_drawable
- 
+
 
 def display_image(image):
   try:
@@ -96,41 +96,41 @@ def display_image(image):
   except gimp.error:
     pass  # If runmode is NONINTERACTIVE, expect gimp_display_new() to fail
   gimp.displays_flush()
-  
+
 
 def render_texture(image, drawable, resize_ratio=2, make_tile=0):
   '''
-  Create a randomized texture image from the selection. 
-  The image can be suited for further, seamless tiling. 
+  Create a randomized texture image from the selection.
+  The image can be suited for further, seamless tiling.
   The image is same scale and resolution but resized from the selection.
   Not undoable, no changes to the source (you can just delete the new image.)
-  
+
   A selection in the source image is optional.
   If there is no selection, the resynthesizer will use the entire source image.
   '''
-  
+
   # Its all or nothing, user must delete new image if not happy.
   pdb.gimp_image_undo_disable(image)
-  
+
   '''
   Create new image, optionally resized, and display for it.
   '''
   new_image, new_drawable = new_resized_image(image, resize_ratio)
   pdb.gimp_image_undo_disable(new_image)
   if not new_drawable:
-    raise RuntimeError, "Failed create layer."
-  
+    raise RuntimeError("Failed create layer")
+
   # If using new resynthesizer with animation for debugging
   if debug:
     display_image(new_image)
-  
+
   '''
   copy original into temp and crop it to the selection to save memory in resynthesizer
   '''
   temp_image = pdb.gimp_image_duplicate(image)
   if not temp_image:
-      raise RuntimeError, "Failed duplicate image"
-  
+      raise RuntimeError("Failed duplicate image")
+
   # Get bounds, offset of selection
   (is_selection, ulx, uly, lrx, lry) = pdb.gimp_selection_bounds(image)
   if not is_selection :
@@ -138,15 +138,15 @@ def render_texture(image, drawable, resize_ratio=2, make_tile=0):
     pass
   else :
     pdb.gimp_image_crop(temp_image, lrx - ulx, lry - uly, ulx, uly)
- 
+
   # Don't flatten because it turns transparency to background (white usually)
   work_layer = pdb.gimp_image_get_active_layer(temp_image)
   if not work_layer:
-    raise RuntimeError, "Failed get active layer"
-  
+    raise RuntimeError("Failed get active layer")
+
   # Insure the selection is all (not necessary, resynthesizer will use all if no selection.)
   pdb.gimp_selection_all(temp_image)
-  
+
   # Settings for making edges suitable for seamless tiling afterwards.
   # That is what these settings mean in the resynthesizer:
   # wrap context probes in the target so that edges of target will be suitable for seamless tiling.
@@ -157,21 +157,21 @@ def render_texture(image, drawable, resize_ratio=2, make_tile=0):
   else :
     htile = 0
     vtile = 0
-  
+
   # Call resynthesizer
   # use_border is moot since there is no context (outside the target) in the newImage.
   # The target is the entire new image, the source is the cropped copy of the selection.
   #
   # 9 neighbors (a 3x3 patch) and 200 tries for speed, since new image is probably large
   # and source is probably natural (fractal), where quality is not important.
-  
+
   # For version of resynthesizer with uninverted selection
   # !!! Pass -1 for ID of no layer, not None
   pdb.plug_in_resynthesizer(new_image, new_drawable, htile, vtile, 0, work_layer.ID, -1, -1, 0.0, 0.117, 9, 200)
-  
+
   display_image(new_image)
-  
-  # Clean up. 
+
+  # Clean up.
   pdb.gimp_image_delete(temp_image)
   pdb.gimp_image_undo_enable(image)
   pdb.gimp_image_undo_enable(new_image)
@@ -188,17 +188,16 @@ register(
   N_("_Texture..."),
   "RGB*, GRAY*",
   [
-    (PF_IMAGE, "image",       "Input image", None),
-    (PF_DRAWABLE, "drawable", "Input drawable", None),
+    (PF_IMAGE,    "image",        "Input image",    None),
+    (PF_DRAWABLE, "drawable",     "Input drawable", None),
     # Spinner is digital and linear, slider is analog but exponential
-    (PF_SPINNER, "resize_ratio", _("Ratio of size of new image to source selection"), 2, (0.5, 10, 0.5)),
-    (PF_TOGGLE, "make_tile", _("Make new image edges suitable for seamless tiling"), 0 )
+    (PF_SPINNER,   "resize_ratio", _("Ratio of size of new image to source selection"), 2.0, (0.5, 10.0, 0.5)),
+    (PF_TOGGLE,    "make_tile",    _("Make new image edges suitable for seamless tiling"), 0 )
   ],
-  [(PF_IMAGE, "new_image", "New, synthesized texture.")],
+  [(PF_IMAGE,      "new_image",    _("New, synthesized texture."))],
   render_texture,
   menu="<Image>/Filters/Render",
   domain=("resynthesizer", gimp.locale_directory)
   )
 
 main()
-
