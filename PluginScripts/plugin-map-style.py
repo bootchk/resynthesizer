@@ -12,11 +12,11 @@ lloyd konneker, lkk
 Version:
 1.0 lkk 7/15/2010 Initial version.  Released to Gimp Registry.
 1.1 lkk 8/1/2010 Unreleased
-1.2 lkk 8/10/2010 
+1.2 lkk 8/10/2010
 
 Change log:
 _________________
-1.1 
+1.1
   Bug: Fixed test of mode variable, since it is a string, needs explicit test for == 1
   Bug: Added remove Selection Mask copy channel in make_grayscale_map
 1.2
@@ -93,7 +93,7 @@ _________________
 IN: The active image and layer.
     The selection in the active image.
     The selection in any layers chosen for source.
-OUT: The active image, altered.  The source is unaltered.  
+OUT: The active image, altered.  The source is unaltered.
   Target mode can be altered, but with the implied consent of the user.
 
 The print stmts go to the console, info to advanced users and debuggers.
@@ -110,7 +110,7 @@ contrast adjustment
 from gimpfu import *
 from math import acos
 
-gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+gettext.install("resynthesizer", gimp.locale_directory)
 
 # True if you want to display and retain working, temporary images
 debug = False
@@ -127,16 +127,16 @@ def display_debug_image(image) :
 def make_grayscale_map(image, drawable):
   '''
   Make a grayscale copy for a map.
-  
+
   Maps must be same size as their parent image.
-  
+
   If image is already grayscale, return it without copying.
-  
+
   Maps don't need a selection, since the resynthesizer looks at parent drawables for the selection.
   '''
   if pdb.gimp_image_base_type(image) == GRAY :
     return image, drawable
-    
+
   # Save selection, copy entire image, and restore
   original_selection = pdb.gimp_selection_save(image)
   pdb.gimp_selection_all(image) # copy requires selection
@@ -145,7 +145,7 @@ def make_grayscale_map(image, drawable):
     pdb.gimp_image_select_item(image, CHANNEL_OP_REPLACE, original_selection) # restore selection in image
     pdb.gimp_image_remove_channel(image, original_selection) # cleanup the copied selection mask
     # !!! Note remove_channel not drawable_delete
-  
+
   # Make a copy, greyscale
   temp_image = pdb.gimp_edit_paste_as_new()
   pdb.gimp_image_convert_grayscale(temp_image)
@@ -194,8 +194,8 @@ def synchronize_alphas(target_drawable, source_drawable) :
     if pdb.gimp_drawable_has_alpha(target_drawable) :
       print "Map style: Adding alpha channel to style source image copy since target image has alpha."
       pdb.gimp_layer_add_alpha (source_drawable)
-"""      
-      
+"""
+
 
 def copy_selection_to_image(drawable) :
   '''
@@ -204,7 +204,7 @@ def copy_selection_to_image(drawable) :
   This is called for the source image, where it helps performance to reduce size and flatten.
   '''
   image = pdb.gimp_drawable_get_image(drawable)
-  
+
   # copy selection or whole image
   pdb.gimp_edit_copy(drawable)
   image_copy = pdb.gimp_edit_paste_as_new()
@@ -214,7 +214,7 @@ def copy_selection_to_image(drawable) :
   # In earlier version, futzed with selection to deal with transparencey
   display_debug_image(image_copy)
   return image_copy, layer_copy
-    
+
 
 def synchronize_contrast( drawable, source_drawable, percent_transfer) :
   '''
@@ -254,21 +254,21 @@ def calculate_map_weight(percent_transfer) :
   By experiment, a sinusoid gives good results for linearizing the non-linear map_weight control.
   '''
   return acos((percent_transfer/100)*2 -1)/(2*3.14)
-  
+
 
 def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode ):
   '''
   Main body of plugin to transfer style from one image to another.
-  
+
   !!! Note map_mode is type string, "if map_mode:" will not work.
   '''
-  
+
   pdb.gimp_image_undo_group_start(image)
-  
+
   # Get image of source drawable
   source_image = pdb.gimp_drawable_get_image(source_drawable)
-  
-  ''' 
+
+  '''
   User-friendliness.
   Note the drawable chooser widget in Pygimp does not allow us to prefilter INDEXED mode.
   So check here and give a warning.
@@ -276,7 +276,7 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
   # These are the originals base types, and this plugin might change the base types
   original_source_base_type = pdb.gimp_image_base_type(source_image)
   original_target_base_type = pdb.gimp_image_base_type(image)
-  
+
   if original_source_base_type == INDEXED :
     pdb.gimp_message(_("The style source cannot be of mode INDEXED"));
     return
@@ -284,7 +284,7 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
   if image == source_image and drawable == source_drawable:
     is_source_copy = False
     '''
-    If source is same as target, 
+    If source is same as target,
     then the old resynthesizer required a selection (engine used inverse selection for corpus).
     New resynthesizer doesn't need a selection.
     If source same as target, effect is similar to a blur.
@@ -294,12 +294,12 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
     # Copy source always, for performance, and for possible mode change.
     is_source_copy = True
     source_image, source_drawable = copy_selection_to_image(source_drawable)
-    
+
     # Futz with modes if necessary.
     synchronize_modes(image, source_image)
-    
-    ''' 
-    Old resythesizer required both images to have alpha, or neither. 
+
+    '''
+    Old resythesizer required both images to have alpha, or neither.
     synchronize_alphas( drawable, source_drawable)
     '''
 
@@ -308,13 +308,13 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
   selection to a new layer, and later merge it back (since resynthesizer engine reads
   entire target into memory.  Low priority since rarely does user make a selection in target.
   '''
-  
+
   '''
-  !!! Note this plugin always sends maps to the resynthesizer, 
+  !!! Note this plugin always sends maps to the resynthesizer,
   and the "percent transfer" setting is always effective.
   However, maps may not be separate,copied images unless converted to grayscale.
   '''
-  
+
   # Copy and reduce maps to grayscale: at the option of the user
   # !!! Or if the target was GRAY and source is RGB, in which case maps give a better result.
   # Note that if the target was GRAY, we already upgraded it to RGB.
@@ -324,11 +324,11 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
     # Convert mode, but in new temp image and drawable
     target_map_image, target_map_drawable = make_grayscale_map(image, drawable)
     source_map_image, source_map_drawable = make_grayscale_map(source_image, source_drawable)
-    
+
     target_map = target_map_drawable
     source_map = source_map_drawable
     # later, delete temp images
-    
+
     # User control: adjust contrast of source_map as a function of percent transfer
     # Hard to explain why, but experimentation shows result more like user expectation.
     # TODO This could be improved.
@@ -339,25 +339,25 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
     source_map = source_drawable
     target_map = drawable
 
-    
+
   '''
   Parameters to resynthesizer:
-  
+
   htile and vtile = 1 since it reduces artifacts around edge
-  
+
   map_weight I linearize since easier on users than an exponential
-  
+
   use_border = 1 since there might be a selection and context (outside target).
-  
+
   9 neighbors (a 3x3 patch) and 200 tries for speed
-  
+
   '''
-  
+
   map_weight = calculate_map_weight(percent_transfer)
-    
+
   # !!! This is for version of resynthesizer, with an uninverted selection
   pdb.plug_in_resynthesizer(image, drawable, 1, 1, 1, source_drawable.ID, source_map.ID, target_map.ID, map_weight, 0.117, 9, 200)
-  
+
   # Clean up.
   # Delete working images: separate map images and copy of source image
   if not debug:
@@ -366,10 +366,10 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
       pdb.gimp_image_delete(source_map_image)
     if is_source_copy:  # if created a copy earlier
       pdb.gimp_image_delete(source_image)
-  
+
   pdb.gimp_image_undo_group_end(image)
   pdb.gimp_displays_flush()
-  
+
 
 register(
   "python_fu_map_style",
@@ -384,7 +384,7 @@ register(
     (PF_IMAGE, "image",       "Input image", None),
     (PF_DRAWABLE, "drawable", "Input drawable", None),
     (PF_DRAWABLE, "source_drawable", _("Source of style:"), None),
-    (PF_SLIDER, "percent_transfer", _("Percent transfer:"), 0, (10, 90, 10.0)),
+    (PF_SLIDER, "percent_transfer", _("Percent transfer:"), 10, (10, 90, 10.0)),
     (PF_RADIO, "map_mode", _("Map by:"), 0, ((_("Color and brightness"), 0),(_("Brightness only"),1)))
   ],
   [],
@@ -394,4 +394,3 @@ register(
   )
 
 main()
-

@@ -28,14 +28,14 @@ The GNU Public License is available at
 http://www.gnu.org/copyleft/gpl.html
 
 
-The effect for users:  
+The effect for users:
 widens the field of view, maintaining perspective of original
 Should be undoable, except for loss of selection.
 Should work on any image type, any count of layers and channels (although only active layer is affected.)
 
 Programming notes:
 Scheme uses - in names, python uses _
-Programming devt. cycle: 
+Programming devt. cycle:
 Initial creation: cp foo.py ~/.gimp-2.6/scripts, chmod +x, start gimp
 Refresh:  just copy, no need to restart gimp if the pdb registration is unchanged
 
@@ -45,8 +45,8 @@ OUT larger layer and image.  All other layers not enlarged.
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
-    
+gettext.install("resynthesizer", gimp.locale_directory, )
+
 def resizeImageCentered(image, percentEnlarge):
     # resize and center image by percent (converted to pixel units)
     deltaFraction = (percentEnlarge / 100) + 1.0
@@ -54,12 +54,12 @@ def resizeImageCentered(image, percentEnlarge):
     priorHeight = pdb.gimp_image_height(image)
     deltaWidth = priorWidth * deltaFraction
     deltaHeight = priorHeight * deltaFraction
-    centeredOffX = (deltaWidth - priorWidth)/  2 
-    centeredOffY = (deltaHeight - priorHeight) / 2 
+    centeredOffX = (deltaWidth - priorWidth)/  2
+    centeredOffY = (deltaHeight - priorHeight) / 2
     pdb.gimp_image_resize(image, deltaWidth, deltaHeight, centeredOffX, centeredOffY)
     #if not pdb.gimp_image_resize(image, deltaWidth, deltaHeight, centeredOffX, centeredOffY):
     #    raise RuntimeError, "Failed resize"
-        
+
 def shrinkSelectionByPercent(image, percent):
     # shrink selection by percent (converted to pixel units)
     deltaFraction = percent / 100
@@ -69,8 +69,8 @@ def shrinkSelectionByPercent(image, percent):
     deltaWidth = priorWidth * deltaFraction
     deltaHeight = priorHeight * deltaFraction
     # !!! Note total shrink percentage is halved (width of band is percentage/2)
-    maxDelta = max(deltaWidth, deltaHeight) / 2 
-    
+    maxDelta = max(deltaWidth, deltaHeight) / 2
+
     pdb.gimp_selection_shrink(image, maxDelta)
     #if not pdb.gimp_selection_shrink(image, maxDelta):
     #    raise RuntimeError,  "Failed shrink selection"
@@ -81,22 +81,22 @@ def uncrop(orgImage, drawable, percentEnlargeParam=10):
     Create frisket stencil selection in a temp image to pass as source (corpus) to plugin resynthesizer,
     which does the substantive work.
     '''
-    
+
     if not pdb.gimp_item_is_layer(drawable):
       pdb.gimp_message(_("A layer must be active, not a channel."))
       return
-      
+
     pdb.gimp_image_undo_group_start(orgImage)
-    
+
     # copy original into temp for later use
     tempImage = pdb.gimp_image_duplicate(orgImage)
     if not tempImage:
-        raise RuntimeError, "Failed duplicate image"
-    
+        raise RuntimeError("Failed duplicate image")
+
     '''
     Prepare target: enlarge canvas and select the new, blank outer ring
     '''
-    
+
     # Save original bounds to later select outer band
     pdb.gimp_selection_all(orgImage)
     selectAllPrior = pdb.gimp_selection_save(orgImage)
@@ -107,7 +107,7 @@ def uncrop(orgImage, drawable, percentEnlargeParam=10):
     # select outer band, the new blank canvas.
     pdb.gimp_selection_invert(orgImage)
     # Assert target image is ready.
-                  
+
     '''
     Prepare source (corpus) layer, a band at edge of original, in a dupe.
     Note the width of corpus band is same as width of enlargement band.
@@ -116,19 +116,19 @@ def uncrop(orgImage, drawable, percentEnlargeParam=10):
     # Could be alpha channel transparency
     workLayer = pdb.gimp_image_get_active_layer(tempImage)
     if not workLayer:
-        raise RuntimeError, "Failed get active layer"
+        raise RuntimeError("Failed get active layer")
     # Select outer band:  select all, shrink
     pdb.gimp_selection_all(tempImage)
     shrinkSelectionByPercent(tempImage, percentEnlargeParam)
     pdb.gimp_selection_invert(tempImage)    # invert interior selection into a frisket
     # Note that v1 resynthesizer required an inverted selection !!
     # No need to crop corpus to save memory.
-      
+
     # Note that the API hasn't changed but use_border param now has more values.
     # !!! The crux: use_border param=5 means inside out direction
-    pdb.plug_in_resynthesizer(orgImage, drawable, 0,0,5, workLayer.ID, -1, -1, 0.0, 0.117, 16, 500)
-    
-    # Clean up. 
+    pdb.plug_in_resynthesizer(orgImage, drawable, 0,0,5, workLayer, -1, -1, 0.0, 0.117, 16, 500)
+
+    # Clean up.
     # Any errors now are moot.
     pdb.gimp_selection_none(orgImage)
     pdb.gimp_image_remove_channel(orgImage, selectAllPrior)
@@ -138,7 +138,7 @@ def uncrop(orgImage, drawable, percentEnlargeParam=10):
 
 
 register(
-  "python_fu_uncrop",
+  "python-fu-uncrop",
   N_("Enlarge image by synthesizing a border that matches the edge, maintaining perspective.  Works best for small enlargement of natural edges. Undo a Crop instead, if possible! "),
   "Requires separate resynthesizer plugin.",
   "Lloyd Konneker",
@@ -158,4 +158,3 @@ register(
   )
 
 main()
-
