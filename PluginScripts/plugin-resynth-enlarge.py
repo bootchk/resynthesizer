@@ -77,9 +77,9 @@ def plugin_main(image, drawable, scale_factor):
       image,
       drawable,
       0, 0, 0,
-      temp_layer2.ID,  # corpus
-      temp_layer1.ID,  # input map
-      drawable.ID,     # output map is scaled up original itself
+      temp_layer2,  # corpus
+      temp_layer1,  # input map
+      drawable,     # output map is scaled up original itself
       1.0, 0.117, 8, 500)
 
   pdb.gimp_image_delete(temp_image1)

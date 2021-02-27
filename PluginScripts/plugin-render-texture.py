@@ -167,7 +167,7 @@ def render_texture(image, drawable, resize_ratio=2, make_tile=0):
 
   # For version of resynthesizer with uninverted selection
   # !!! Pass -1 for ID of no layer, not None
-  pdb.plug_in_resynthesizer(new_image, new_drawable, htile, vtile, 0, work_layer.ID, -1, -1, 0.0, 0.117, 9, 200)
+  pdb.plug_in_resynthesizer(new_image, new_drawable, htile, vtile, 0, work_layer, -1, -1, 0.0, 0.117, 9, 200)
 
   display_image(new_image)
 
