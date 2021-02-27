@@ -372,7 +372,7 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
 
 
 register(
-  "python_fu_map_style",
+  "python-fu-map-style",
   N_("Transfer style (color and surface) from a chosen source to the active layer. "),
   "Transforms image using art media and style from another image.  Maps or synthesizes texture or theme from one image onto another. Requires separate resynthesizer plugin.",
   "Lloyd Konneker (bootch nc.rr.com)",

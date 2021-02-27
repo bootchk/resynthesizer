@@ -80,9 +80,9 @@ def plugin_main(image, drawable, scale_factor):
       image,
       drawable,
       0, 0, 0,
-      temp_layer2.ID,  # corpus is smaller original
-      temp_layer1.ID,  # input map is blurred smaller original
-      drawable.ID,     # output map is original itself
+      temp_layer2,  # corpus is smaller original
+      temp_layer1,  # input map is blurred smaller original
+      drawable,     # output map is original itself
       1.0, 0.117, 8, 500)
 
   pdb.gimp_image_delete(temp_image1)
@@ -90,7 +90,7 @@ def plugin_main(image, drawable, scale_factor):
 
 
 register(
-  "python_fu_sharpen_resynthesized",
+  "python-fu-sharpen-resynthesized",
   N_("Sharpen image by synthesis."),
   "Requires separate resynthesizer plugin.",
   "Lloyd Konneker",

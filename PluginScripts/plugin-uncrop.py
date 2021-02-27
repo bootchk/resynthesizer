@@ -133,7 +133,7 @@ def uncrop(orgImage, drawable, percentEnlargeParam=10):
     pdb.gimp_selection_none(orgImage)
     pdb.gimp_image_remove_channel(orgImage, selectAllPrior)
     pdb.gimp_image_undo_group_end(orgImage)
-    pdb.gimp_displays_flush()
+    # No need for this, gimpfu does it: pdb.gimp_displays_flush()
     gimp.delete(tempImage)  # Comment out to debug corpus creation.
 
 
