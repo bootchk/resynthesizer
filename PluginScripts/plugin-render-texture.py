@@ -81,12 +81,13 @@ def new_resized_image(image, resize_ratio):
     new_height = int((lry - uly) * resize_ratio)
 
   new_basetype = pdb.gimp_image_base_type(image)  # same as source
-  new_layertype = pdb.gimp_drawable_type(pdb.gimp_image_get_active_layer(image))
+  active_layer = pdb.gimp_image_get_active_layer(image)
+  new_layertype = pdb.gimp_drawable_type(active_layer)
   new_image = pdb.gimp_image_new(new_width, new_height, new_basetype)
   # !!! Note that gimp_layer_new wants a layer type, not an image basetype
   new_drawable = pdb.gimp_layer_new(new_image, new_width, new_height,
     new_layertype, "Texture", 100, NORMAL_MODE)
-  pdb.gimp_image_add_layer(new_image, new_drawable, 0)
+  pdb.gimp_image_insert_layer(new_image, new_drawable, None, 0)
   return new_image, new_drawable
 
 

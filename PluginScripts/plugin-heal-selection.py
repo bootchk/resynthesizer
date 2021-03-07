@@ -154,7 +154,7 @@ def heal_selection(timg, tdrawable, samplingRadiusParam=50, directionParam=0, or
 
 
 register(
-  "python_fu_heal_selection",
+  "python-fu-heal-selection",
   N_("Heal the selection from surroundings as if using the heal tool."),
   "Requires separate resynthesizer plugin.",
   "Lloyd Konneker",
