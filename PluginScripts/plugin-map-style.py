@@ -166,6 +166,7 @@ def synchronize_modes(target_image, source_image) :
   '''
   target_mode = pdb.gimp_image_base_type(target_image)
   source_mode = pdb.gimp_image_base_type(source_image)
+  print("comparing modes")
   if target_mode != source_mode :
     # print("Map style: converted mode\n.")
     if target_mode == GRAY:
@@ -203,7 +204,7 @@ def copy_selection_to_image(drawable) :
   else return a copy of the entire source image.
   This is called for the source image, where it helps performance to reduce size and flatten.
   '''
-  image = pdb.gimp_drawable_get_image(drawable)
+  image = pdb.gimp_item_get_image(drawable)
 
   # copy selection or whole image
   pdb.gimp_edit_copy(drawable)
@@ -266,7 +267,7 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
   pdb.gimp_image_undo_group_start(image)
 
   # Get image of source drawable
-  source_image = pdb.gimp_drawable_get_image(source_drawable)
+  source_image = pdb.gimp_item_get_image(source_drawable)
 
   '''
   User-friendliness.
@@ -280,7 +281,8 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
   if original_source_base_type == INDEXED :
     pdb.gimp_message(_("The style source cannot be of mode INDEXED"));
     return
-
+  print("here2")
+  print(drawable, source_drawable)
   if image == source_image and drawable == source_drawable:
     is_source_copy = False
     '''
@@ -356,7 +358,7 @@ def transfer_style(image, drawable, source_drawable, percent_transfer, map_mode 
   map_weight = calculate_map_weight(percent_transfer)
 
   # !!! This is for version of resynthesizer, with an uninverted selection
-  pdb.plug_in_resynthesizer(image, drawable, 1, 1, 1, source_drawable.ID, source_map.ID, target_map.ID, map_weight, 0.117, 9, 200)
+  pdb.plug_in_resynthesizer(image, drawable, 1, 1, 1, source_drawable, source_map, target_map, map_weight, 0.117, 9, 200)
 
   # Clean up.
   # Delete working images: separate map images and copy of source image
