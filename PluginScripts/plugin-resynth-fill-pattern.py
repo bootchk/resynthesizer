@@ -41,13 +41,14 @@ def layer_from_pattern(image, pattern):
   Create a new image and layer having the same size as a pattern.
   '''
   new_basetype = pdb.gimp_image_base_type(image)  # same as source
-  new_layertype = pdb.gimp_drawable_type(pdb.gimp_image_get_active_layer(image))
+  active_layer = pdb.gimp_image_get_active_layer(image)
+  new_layertype = pdb.gimp_drawable_type(active_layer)
   pattern_width, pattern_height, bpp = pdb.gimp_pattern_get_info(pattern)
   new_image = pdb.gimp_image_new(pattern_width, pattern_height, new_basetype)
   # !!! Note that gimp_layer_new wants a layer type, not an image basetype
   new_drawable = pdb.gimp_layer_new(new_image, pattern_width, pattern_height,
     new_layertype, "Texture", 100, NORMAL_MODE)
-  pdb.gimp_image_add_layer(new_image, new_drawable, 0)
+  pdb.gimp_image_insert_layer(new_image, new_drawable, None, 0)
   return new_image, new_drawable
 
 
@@ -70,7 +71,7 @@ def guts(image, drawable, pattern):
   # -1, -1, 0: No maps and no map weight
   # DO pass pattern_layer.ID !!!
   # Resynthesizer is an engine, never interactive
-  pdb.plug_in_resynthesizer(image, drawable, 0, 0, 0, pattern_layer.ID, -1, -1, 0, 0.05, 8, 300)
+  pdb.plug_in_resynthesizer(image, drawable, 0, 0, 0, pattern_layer, -1, -1, 0, 0.05, 8, 300)
 
   # Clean up
   if not debug:
