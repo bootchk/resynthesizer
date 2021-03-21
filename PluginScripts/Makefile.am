@@ -14,8 +14,9 @@ scripts = \
 	plugin-render-texture.py	\
 	plugin-map-style.py	\
 	plugin-heal-transparency.py \
-	plugin-resynth-fill-pattern.py
-	
+	plugin-resynth-fill-pattern.py \
+	plugin-resynth-controls.py
+
 
 pluginexec_SCRIPTS = $(scripts)
 
