@@ -200,6 +200,14 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
 #include "resynthesizer.h"  // inner_run
 
 
+
+static GError *
+new_gerror_for_resynthesizer_and_string(const char * msg)
+{
+  GQuark * domain = g_quark_from_string("Resynthesizer");
+  return g_error_new_literal(domain, 0, msg);
+}
+
 /*
 Plugin run func.
 This is what GIMP calls.
@@ -242,8 +250,13 @@ resynthesizer_run (
   }
   else
   {
-    g_debug(result);
-// TODO put result into a GLibError
-    return gimp_procedure_new_return_values (procedure, GIMP_PDB_EXECUTION_ERROR, NULL);
+    GError * gerror;
+
+    // print to console
+    debug(result);
+
+    // GLibError having result as the message
+    gerror = new_gerror_for_resynthesizer_and_string(result);
+    return gimp_procedure_new_return_values (procedure, GIMP_PDB_EXECUTION_ERROR, gerror);
   }
 }
