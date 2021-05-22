@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: resynthesizer 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-24 21:05-0400\n"
-"PO-Revision-Date: 2021-04-28 22:17-0300\n"
+"PO-Revision-Date: 2021-05-22 13:33-0300\n"
 "Last-Translator: João Lima Neto <contato@joaolimaneto.com.br>\n"
 "Language-Team: Spanish\n"
 "Language: pt_BR\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.4.3\n"
 
 #: PluginScripts/plugin-heal-selection.py:42
 msgid "You must first select a region to heal."
@@ -158,9 +158,8 @@ msgid "Sharpen image by synthesis."
 msgstr "Aumentar a nitidez da imagem por síntese."
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
-#, fuzzy
 msgid "Sharpen by synthesis..."
-msgstr "_Nitidez por síntese..."
+msgstr "Nitidez por síntese..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
 msgid "Sharpening:"
