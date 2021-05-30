@@ -5,172 +5,44 @@ A set of plugins for the GIMP image editing app.
   Copyright 2000 2008  Paul Francis Harrison  
   Copyright 2002  Laurent Despeyroux  
   Copyright 2002  David Rodríguez García  
-  Copyright 2010-2011  Lloyd Konneker <bootch@nc.rr.com>  
+  Copyright 2010-2021  Lloyd Konneker 
 
 [![Build Status](https://travis-ci.org/bootchk/resynthesizer.svg?branch=master)](https://travis-ci.org/bootchk/resynthesizer)
 
+A library implementing the "resynthesizer" algorithm for texture transfer among images.
 
-## Quickstart
+And a suite of plugins, that use the algorithm, for the GIMP image processing application.
+The plugins do _not_ come with GIMP, they are "third-party" plugins.
 
-This repository is for developers and users who are familiar with building, especially on Linux.  
 
-If you are a GIMP user who would like to download an installer for just the Resynthesizer plugin, please see:
+## Resources
 
-* Plugin page: https://web.archive.org/web/20180225174428/http://registry.gimp.org/node/27986
-* Linux: https://github.com/pixlsus/registry.gimp.org_static/blob/master/registry.gimp.org/files/resynthesizer.tar_0.gz
-* Windows: https://github.com/pixlsus/registry.gimp.org_static/blob/master/registry.gimp.org/files/Resynthesizer_v1.0-i686.zip
+[Quick user's guide to the Resynthesizer plugins for GIMP](https://github.com/bootchk/resynthesizer/wiki/Quick-user's-guide-to-the-Resynthesizer-plugins-for-GIMP)
 
-If you want to install a package of third-party plugins (that includes Resynthesizer):
 
-* Linux: install the package "gimp-plugin-registry" (available for most distributions, including Debian and Ubuntu).  
 
-If you use OSX and want to install GIMP and a set of third-party plugins (including Resynthesizer) see:
+## Installation
 
-* https://sourceforge.net/projects/gimponosx/
+[install flatpaked Resynthesizer for Linux](https://github.com/bootchk/resynthesizer/wiki/Install-Resynthesizer#flatpak)
 
-Building this repository for Windows and OSX is not easy, and not documented here.
+[install Resynthesizer for Windows](https://github.com/bootchk/resynthesizer/wiki/Install-Resynthesizer#windows)
+
+[install Resynthesizer for MacOS](https://github.com/bootchk/resynthesizer/wiki/Install-Resynthesizer#mac-osx)
+
+[build from source](https://github.com/bootchk/resynthesizer/wiki/Build-Resynthesizer-from-source)
 
 ## Acknowledgements
 
 Paul Harrison had the original idea and implementation.  He did the hard work, took the leap of faith and experimented with a new algorithm.  His [website](http://www.logarithmic.net/pfh/) has many examples of using the Resynthesizer, links to an explanation of the algorithm, and other cool ideas.
 
-I fixed a few bugs (due to changes in GIMP), rewrote the Scheme plugins into Python, wrote a few plugins and gathered a few from others, made it better deal with alpha (transparency), threaded it, and made it into a reentrant library in C.
+I fixed a few bugs (due to changes in GIMP), rewrote the Scheme plugins into Python, wrote a few plugins, made it better deal with alpha (transparency), threaded it, and made it into a reentrant library in C.
 
-Several people have helped with the build process.
+Rob Antonishen contributed the basis for one plugin.
 
-## For users
-
-### Acquiring
-
-The plugins do _not_ come with GIMP.   You often can get them precompiled for your platform, with an installer.  You often can get them included in a larger package of plugins, such as the package gimp-plugin-registry for Linux, or GIMP Extensions Pack for Windows at SourceForge.
-
-### What they do
-
-Includes many plugins that do seemingly unrelated things, but all based on one powerful algorithm.  Provides these menu items in the GIMP Filter menu:
-
-* Enhance>Heal selection...  Retouch.  Like the heal tool, but automatic.  Replaces the selection to look like its surroundings.  Probably the most popular and useful.
-* Enhance>Heal transparency...  Like above, but you don't need to select anything, it heals every transparent pixel.
-* Enhance>Uncrop...  Makes the canvas larger and heals the new transparent border.  Not exactly the inverse of cropping, but almost:  reconstructs what might have been cropped earlier.
-* Enhance>Sharpen by synthesis... A variant of sharpening that _might_ give more plausible detail.
-* Enhance>Enlarge & sharpen...  Enlarge (increase the resolution) and sharpen.  _Might_ restore more plausible detail than simple scaling up and using other sharpens.
-
-* Map>Resynthesize...   A control panel.  The hardest to understand, but the most powerful.  Displays every control of the Resynthesizer engine.  Here, you can experiment with other uses of the algorithm.  The other plugins are simplified, special uses of this plugin.
-* Map>Style...  transfer the 'style' of one image to another.
-
-* Render>Texture..  Creates a new image having the texture from another image.  In other words, a seamless, irregular wallpaper (if the source image is smaller.)  (You can also use Map>Resynthesize to create tiles, and then you can create a regular but seamless pattern.)
-
-* Edit>Fill with pattern seamless...  (In the Edit menu, not the Filter menu.)  Somewhat similar to Render>Texture.  Fills with an irregular pattern from another image.  From RobA.
+Several people have helped with the build process and with translations.
 
 
 
-### Installing
-
-Instructions for most users who received a pre-built distribution (with resynthesizer.exe and resynthesizer-gui.exe already compiled) but without an installer.
-
-1.  Remove any older versions (see below.)
-
-2.  Copy all files to your home gimp directory for plugins (and make the Python files executable):
-
-~/.gimp-2.6/plug-ins (Linux)  
-c:\Doc...Settings\username\gimp-2.6\plug-ins (Windows)  
-
-
-### Removing older versions
-
-
-You should manually remove these older versions before installing this package.  They probably do NOT still work, and are duplicates at best.
-
-Author Paul Harrison
-
-* smart-remove.scm   Enhance>Smart remove object  
-* smart-enlarge.scm  Enhance>Smart enlarge        
-* smart-sharpen.scm  Enhance>Smart sharpen       
-* resynthesizer.exe  Map>Resynthesize  
-
-Author L. Konneker
-
-* smart-remove.scm          Enhance>Heal selection (patch)
-* plugin-map-style.scm      Map>Style
-* plugin-render-texture.scm Render>Texture 
-* uncrop-gimp-plugin.scm    Enhance>Uncrop
-
-Author Rob Antonishen:
-
-* resynth-pattern-fill.scm  Edit>Fill with resynthesized pattern
-
-They might be found in the usual places:
-
-Linux
-
-~/.gimp-2.x/plug-ins (.exe and .py)  
-~/.gimp-2.x/scripts  (.scm)  
-/usr/share/gimp/2.0/scripts (.scm)  
-/usr/local/lib/gimp/2.0/plugins (.exe and .py)  
-
-Windows
-
-c:\Program Files\GIMP-2.0\lib\gimp\2.0\plug-ins (.exe and .py)  
-c:\Program Files\GIMP-2.0\share\gimp\2.0\plug-ins (.scm)  
-c:\Doc...Settings\username\gimp-2.6\plug-ins  (.exe and .py)  
-c:\Doc...Settings\username\gimp-2.6\scripts  (.scm)  
-
-
-
-
-## Building
-
-### Versions
-
-Version 2.0 is a complete rewrite and is multithreaded.  Otherwise, functionally the same except when compiled threaded it is nondeterministic.  See ChangeLog for more discussion.
-
-Version 1.0 derives from version 0.16 maintained by the original author.
-
-See the NEWS file.
-
-### Linux
-
-Builds with GNU build tools.  Many of the build files (Makefile.am, configure.ac, etc.) were hacked from the gimp-plugin-template 2.2.0.
-
-To build and install a clean distribution, just ...
-
-```
-./autogen.sh
-./configure
-make
-make install
-```
-
-Installs to the shared Gimp directories.  Except on Ubuntu, it installs to /usr/local/lib/gimp/2.0/plug-ins and you may need to set the GIMP Edit>Preferences>Folders>Plugins> to include that path.
-
-For localization of the python scripts, you may also need to create a symbolic link to your prefered language file. Ex:
-
-sudo ln -s /usr/local/share/locale/fr/LC_MESSAGES/resynthesizer.mo /usr/share/locale/fr/LC_MESSAGES/resynthesizer.mo
-
-Note the default gcc flags seem to be: -g -O2 -Wall.
-To optimize more, pass the CFLAGS (perogative of the builder to alter compilation):
-
-make CFLAGS=-O3
-
-
-### Other platforms
-
-Other people build and package for Windows and OSX.
-
-I once used MinGW and MSYS.
-However it doesn't install plugins properly.
-You will need to copy files to the proper Gimp plugin install directory,
-typically from:  c:\MSYS\1.0\usr\local\lib\gimp\2.0\plug-ins to: c:\Doc...Settings\yourname\.gimp-2.6\plug-ins
-
-### Build chain
-
-When you run autogen.sh, it may complain of missing packages.
-
-To build resynthesizer (or any GIMP plugin) you need these developer packages:
-
-* automake
-* libglib2.0-dev
-* libgimp2.0-dev
-* intltool
 
 
 ## Programming or hacking
