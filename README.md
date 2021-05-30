@@ -18,6 +18,7 @@ If you are a GIMP user who would like to download an installer for just the Resy
 
 * Plugin page: https://web.archive.org/web/20180225174428/http://registry.gimp.org/node/27986
 * Linux: https://github.com/pixlsus/registry.gimp.org_static/blob/master/registry.gimp.org/files/resynthesizer.tar_0.gz
+* Linux flatpak: if you installed [GIMP as a flatpak](https://flathub.org/apps/details/org.gimp.GIMP), then you should install a flatpak of the Resynthesizer plugin with the command line `flatpak install flathub org.gimp.GIMP.Plugin.Resynthesizer`
 * Windows: https://github.com/pixlsus/registry.gimp.org_static/blob/master/registry.gimp.org/files/Resynthesizer_v1.0-i686.zip
 
 If you want to install a package of third-party plugins (that includes Resynthesizer):
