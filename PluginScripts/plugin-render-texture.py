@@ -86,6 +86,11 @@ def new_resized_image(image, resize_ratio):
   # !!! Note that gimp_layer_new wants a layer type, not an image basetype
   new_drawable = pdb.gimp_layer_new(new_image, new_width, new_height,
     new_layertype, "Texture", 100, NORMAL_MODE)
+  # The new layer is opaque, but the new image has transparent pixels (for case RGBA)
+  # Resynthesizer will not change the transparency, so make pixels opaque.
+  # Fill with white will make them opaque.
+  new_drawable.fill(WHITE_FILL)
+  # A new layer must be added to the image.
   pdb.gimp_image_add_layer(new_image, new_drawable, 0)
   return new_image, new_drawable
  

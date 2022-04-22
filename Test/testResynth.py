@@ -4,7 +4,7 @@ A script to test the resynthesizer.
 
 Lloyd Konneker
 
-Suite of several test cases.
+Suite of test cases.
 Most test cases are the plugins that call the resynthesizer engine plugin.
 A few are direct calls to the resynthesizer engine.
 Note the plugins must be installed, this calls them through the pdb.
@@ -23,26 +23,35 @@ Reference images are created on the first run.
 Delete a reference image and run testsuite again to create a new reference image.
 OR review the output in temp and if OK, paste it over the reference image.
 
-Note these call a version of the resynthesizer that is repeatable especially its random seed.
-Note that anytime you change the code 
+Note this test only works on a build of the resynthesizer that is repeatable i.e. deterministic
+especially its random seed.
+You must build with /lib/buildswitches.h having "//#define SYNTH_THREADED TRUE" i.e. commented out.
+
+Note that anytime you change the code (usually the engine)
 so that the prng pseudo random number generator sequence is changed
-this automated test will usually fail but the functional result will be as expected.
+this automated test will usually fail.
+Then you must manually inspect the output files to ensure the result is as expected,
+i.e. without glaring visual differences from the prior reference images.
+Then you usually need to replace the entire set of reference images.
 
 Invoke:
 cd resynthesizer/Test
 gimp -i --batch-interpreter python-fu-eval --batch - < testResynth.py
 
-It takes tens of minutes.  
-Then review the log, where a summary is printed last.  Everything should pass.
+The test takes tens of minutes.  
+Then review the log resynth-test.log.
+The log has a summary at the end.  
+Every test case should pass.
+If you want to see the results in real time, use 'tail -f resynth-test.log'
 
-Note save PPM because PPM format is large but repeatable,
+Note the test saves PPM format because PPM format is large but repeatable,
 whereas PNG is not repeatable because of timestamp.
 
 Note that the test harness creates a new image from a file and 
-saves the result separately from the input.
+saves the result image in a file separate from the input.
+That is, the input images files proper are sacrosanct.
 
 Note uses the logging module, mainly to avoid issues with print to stdout on some platforms.
-If you want to see the results in real time, use 'tail -f resynth-test.log'
 '''
 
 
@@ -288,6 +297,12 @@ def main():
   test = "image = pdb.python_fu_render_texture"
   parameters = "2, 1"
   runtest('grass-input', 'rendertexture', test, parameters, select=None)
+
+  # Render texture w alpha yields a new image that has alpha channel but pixels are all opaque
+  # !!! Note here the plugin returns a new image which we assign to image variable
+  test = "image = pdb.python_fu_render_texture"
+  parameters = "2, 1"
+  runtest('grass-input-alpha', 'rendertexturealpha', test, parameters, select=None)
   
   '''
   More straight resynthesis tests.
