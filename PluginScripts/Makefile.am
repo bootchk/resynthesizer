@@ -4,18 +4,17 @@
 ## pluginexecdir tells autotools where to install scripts
 ## scripts tells autotools the list of installable Python language scripts
 
-pluginexecdir = $(gimpplugindir)/plug-ins
+pluginexecdir = $(gimpplugindir)/scripts
 
 scripts = \
-	plugin-heal-selection.py	\
-	plugin-resynth-sharpen.py	\
-	plugin-resynth-enlarge.py	\
-	plugin-uncrop.py	\
-	plugin-render-texture.py	\
-	plugin-map-style.py	\
-	plugin-heal-transparency.py \
-	plugin-resynth-fill-pattern.py
-	
+	plugin-heal-selection.scm      \
+	plugin-resynth-sharpen.scm     \
+	plugin-resynth-enlarge.scm     \
+	plugin-uncrop.scm              \
+	plugin-render-texture.scm      \
+	plugin-map-style.scm           \
+	plugin-heal-transparency.scm   \
+	plugin-resynth-fill-pattern.scm
 
 pluginexec_SCRIPTS = $(scripts)
 
