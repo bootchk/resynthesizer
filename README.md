@@ -1,3 +1,7 @@
+# GIMP Resynthesizer without Python
+## about scm version
+[see wiki/README](https://github.com/itr-tert/gimp-resynthesizer-scm/wiki/README)
+
 # GIMP Resynthesizer Plugin Suite
 
 A set of plugins for the GIMP image editing app.
