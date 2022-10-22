@@ -136,6 +136,7 @@ lib/Makefile
 src/Makefile
 src/resynthesizer/Makefile
 src/resynthesizer-gui/Makefile
+src/resynthesizer-gettext/Makefile
 po/Makefile.in
 help/Makefile
 help/en/Makefile
