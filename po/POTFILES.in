@@ -1,15 +1,14 @@
 # List of source files containing translatable strings.
 
-src/resynthesizer-gettext/resynthesizer-gettext.c
+PluginScripts/plugin-heal-selection.scm
+PluginScripts/plugin-heal-transparency.scm
+PluginScripts/plugin-map-style.scm
+PluginScripts/plugin-render-texture.scm
+PluginScripts/plugin-resynth-enlarge.scm
+PluginScripts/plugin-resynth-fill-pattern.scm
+PluginScripts/plugin-resynth-sharpen.scm
+PluginScripts/plugin-uncrop.scm
 src/resynthesizer-gui/resynth-gui.c
 src/resynthesizer-gui/resynth-gui.h
 src/resynthesizer/resynthesizer.c
-PluginScripts/plugin-heal-selection.scm
-PluginScripts/plugin-resynth-sharpen.scm
-PluginScripts/plugin-resynth-enlarge.scm
-PluginScripts/plugin-uncrop.scm
-PluginScripts/plugin-render-texture.scm
-PluginScripts/plugin-map-style.scm
-PluginScripts/plugin-heal-transparency.scm
-PluginScripts/plugin-resynth-fill-pattern.scm
-
+src/resynthesizer-gettext/resynthesizer-gettext.c

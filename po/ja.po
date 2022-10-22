@@ -1,0 +1,404 @@
+# Japanese translation of Resynthesizer plug-in for GIMP
+# Copyright (C) 2022 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# itr-tert <itr.tert+code@gmail.com>, 2022.
+#
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2022-10-23 02:00+0900\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: PluginScripts/plugin-heal-selection.scm:84
+msgid "You must first select a region to heal."
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:228
+msgid "_Heal selection(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:231
+msgid "Heal the selection from surroundings as if using the heal tool."
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:232
+#: PluginScripts/plugin-heal-transparency.scm:83
+#: PluginScripts/plugin-map-style.scm:394
+#: PluginScripts/plugin-render-texture.scm:251
+#: PluginScripts/plugin-resynth-enlarge.scm:113
+#: PluginScripts/plugin-resynth-fill-pattern.scm:111
+#: PluginScripts/plugin-resynth-sharpen.scm:114
+#: PluginScripts/plugin-uncrop.scm:244
+msgid "Requires separate resynthesizer plugin."
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:244
+#: PluginScripts/plugin-heal-transparency.scm:95
+msgid "Context sampling width (pixels)"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:252
+msgid "Sample from"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:253
+msgid "All around"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:254
+msgid "Sides"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:255
+msgid "Above and below"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:256
+#: PluginScripts/plugin-heal-transparency.scm:105
+msgid "Filling order"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:257
+#: PluginScripts/plugin-heal-transparency.scm:106
+msgid "Random"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:258
+#: PluginScripts/plugin-heal-transparency.scm:107
+msgid "Inwards towards center"
+msgstr ""
+
+#: PluginScripts/plugin-heal-selection.scm:259
+#: PluginScripts/plugin-heal-transparency.scm:108
+msgid "Outwards from center"
+msgstr ""
+
+#: PluginScripts/plugin-heal-transparency.scm:40
+msgid "The active layer has no alpha channel to heal."
+msgstr ""
+
+#: PluginScripts/plugin-heal-transparency.scm:79
+msgid "_Heal transparency(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-heal-transparency.scm:82
+msgid ""
+"Removes alpha channel by synthesis.  Fill outward for edges, inward for "
+"holes."
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:272
+msgid "The style source cannot be of mode INDEXED"
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:389
+msgid "_Style(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:392
+msgid ""
+"Transfer style (color and surface) from a chosen source to the active layer. "
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:393
+msgid ""
+"Transforms image using art media and style from another image. Maps or "
+"synthesizes texture or theme from one image onto another. "
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:393
+msgid ""
+"Transforms image using art media and style from another image. Maps or "
+"synthesizes texture or theme from one image onto another. "
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:406
+msgid "Source of style"
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:407
+msgid "Percent transfer"
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:415
+msgid "Map by"
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:416
+msgid "Color and brightness"
+msgstr ""
+
+#: PluginScripts/plugin-map-style.scm:417
+msgid "Brightness only"
+msgstr ""
+
+#: PluginScripts/plugin-render-texture.scm:246
+msgid "_Texture(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-render-texture.scm:249
+msgid ""
+"Create a new image with texture from the current image or selection. "
+"Optionally, create image edges suited for further, seamless tiling. "
+msgstr ""
+
+#: PluginScripts/plugin-render-texture.scm:250
+msgid ""
+"New image is the same scale but seamless and irregular.  Use 'Map>Tile' for "
+"less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. "
+msgstr ""
+
+#: PluginScripts/plugin-render-texture.scm:264
+msgid "Ratio of size of new image to source selection"
+msgstr ""
+
+#: PluginScripts/plugin-render-texture.scm:271
+msgid "Make new image edges suitable for seamless tiling"
+msgstr ""
+
+#: PluginScripts/plugin-resynth-enlarge.scm:109
+msgid "_Enlarge & sharpen(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-resynth-enlarge.scm:112
+msgid "Enlarge image and synthesize to sharpen."
+msgstr ""
+
+#: PluginScripts/plugin-resynth-enlarge.scm:125
+msgid "Scale by"
+msgstr ""
+
+#: PluginScripts/plugin-resynth-fill-pattern.scm:107
+msgid "_Fill with pattern seamless(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-resynth-fill-pattern.scm:110
+msgid "Seamlessly fill with a pattern using synthesis."
+msgstr ""
+
+#: PluginScripts/plugin-resynth-fill-pattern.scm:123
+msgid "Pattern"
+msgstr ""
+
+#: PluginScripts/plugin-resynth-sharpen.scm:110
+msgid "_Sharpen by synthesis(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-resynth-sharpen.scm:113
+msgid "Sharpen image by synthesis."
+msgstr ""
+
+#: PluginScripts/plugin-resynth-sharpen.scm:126
+msgid "Sharpening"
+msgstr ""
+
+#: PluginScripts/plugin-uncrop.scm:166
+msgid "A layer must be active, not a channel."
+msgstr ""
+
+#: PluginScripts/plugin-uncrop.scm:240
+msgid "_Uncrop(scm)..."
+msgstr ""
+
+#: PluginScripts/plugin-uncrop.scm:243
+msgid ""
+"Enlarge image by synthesizing a border that matches the edge, maintaining "
+"perspective.  Works best for small enlargement of natural edges. Undo a Crop "
+"instead, if possible!"
+msgstr ""
+
+#: PluginScripts/plugin-uncrop.scm:256
+msgid "Percent enlargement"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.c:156
+msgid "Make tiles, apply themes, render texture, remove features, etc."
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.c:161
+msgid "_Resynthesize..."
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:115
+msgid "Context: "
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:123
+msgid "Random order, without context"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:124
+msgid "Random order, with context"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:125
+msgid "Randomized bands, concentric, inwards"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:126
+msgid ""
+"Randomized bands, horizontally, inwards (i.e. squeezing from top and bottom)"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:127
+msgid ""
+"Randomized bands, vertically, inwards (i.e. squeezing from left and right)"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:128
+msgid "Randomized bands, concentric, outwards (e.g. for uncrop)"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:129
+msgid ""
+"Randomized bands, horizontally, outwards, (i.e. expanding to top and bottom)"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:130
+msgid ""
+"Randomized bands, vertically, outwards (i.e. expanding to left and right)"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:131
+msgid ""
+"Randomized bands, concentric, inwards and outwards (i.e. squeezing in and "
+"out a donut)"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:228
+msgid "Resynthesize"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:240
+msgid "_OK"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:247
+msgid "_Cancel"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:260
+msgid "Options"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:264
+msgid "Tweaks"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:268
+msgid "Input"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:274
+msgid "Texture source: "
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:278
+msgid "Output"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:286
+msgid "Make horizontally tileable"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:290
+msgid "Make vertically tileable"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:297
+msgid "Texture transfer"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:306
+msgid "Use texture transfer"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:312
+msgid "Input map: "
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:317
+msgid "Output map: "
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:322
+msgid "Map importance:"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:329
+msgid ""
+"Resynthesizer operates by copying pixels, one at a time, from the input to "
+"the output. A neighbourhood of nearby pixels in the output are compared with "
+"neighbourhoods of pixels in the input. The pixel at the center of the best "
+"matching neighbourhood is copied to the output.\n"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:331
+msgid "Neighbourhood size:"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:334
+msgid "- How many nearby pixels in the output are to be used?\n"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:336
+msgid "Search thoroughness:"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:339
+msgid "- How many locations in the input are examined?\n"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:341
+msgid "Sensitivity to outliers:"
+msgstr ""
+
+#: src/resynthesizer-gui/resynth-gui.h:344
+msgid ""
+"- To what extent does a very bad match on a single pixel disqualify a "
+"location?\n"
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:350
+msgid "Incompatible image mode."
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:373
+msgid "Resynthesizer failed to get parameters."
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:388
+msgid ""
+"The input texture and output image must have the same number of color "
+"channels."
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:407
+msgid "The input and output maps must have the same mode"
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:412
+msgid "The input map should be the same size as the input texture image"
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:417
+msgid "The output map should be the same size as the output image"
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:503
+msgid "synthesizing..."
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:517
+msgid ""
+"The texture source is empty. Does any selection include non-transparent "
+"pixels?"
+msgstr ""
+
+#: src/resynthesizer/resynthesizer.c:521
+msgid ""
+"The output layer is empty. Does any selection have visible pixels in the "
+"active layer?"
+msgstr ""
