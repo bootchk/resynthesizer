@@ -16,16 +16,22 @@
 ;; http://www.gnu.org/copyleft/gpl.html
 
 ;; Author:
-;; itr-tert
+;; 2022 itr-tert
 ;;  Based on plugin-resynth-enlarge.py 2010 lloyd konneker
 ;;   Based on smart_enlarge.scm 2000 by Paul Harrison.
 
 
-;; gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+(define script-fu-enlarge-resynthesized (let
+()  ; indent keeper
 
-(define (_ m) "stub" m)
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
-(define (N_ m) "stub" m)
 
 (define-with-return
   (script-fu-enlarge-resynthesized image drawable scale-factor)
@@ -95,15 +101,16 @@
     (gimp-image-undo-group-end image)
     ))
 
+
 (script-fu-register
  ;; func name
  "script-fu-enlarge-resynthesized"
  ;; menu label
- (N_ "Enlarge & sharpen(scm)...")
+ (SG_"_Enlarge & sharpen(scm)...")
  ;; description
  (string-append
-  (N_ "Enlarge image and synthesize to sharpen.")
-  (N_ "Requires separate resynthesizer plugin"))
+  (SG_"Enlarge image and synthesize to sharpen.")
+  (SG_"Requires separate resynthesizer plugin."))
  ;; author
  "Lloyd Konneker"
  ;; copyright notice
@@ -115,7 +122,7 @@
  ;; parameters
  SF-IMAGE "Image" 0
  SF-DRAWABLE "Drawable" 0
- SF-ADJUSTMENT (_ "Scale by:")  ; scale_factor
+ SF-ADJUSTMENT (G_"Scale by")  ; scale_factor
  (list 2           ; value
        1           ; lower
        32          ; upper
@@ -130,3 +137,6 @@
 
 (script-fu-menu-register "script-fu-enlarge-resynthesized"
                          "<Image>/Filters/Resynthesizer(scm)/")
+
+script-fu-enlarge-resynthesized
+))

@@ -15,8 +15,6 @@
 ;; The GNU Public License is available at
 ;; http://www.gnu.org/copyleft/gpl.html
 
-;; Increase image/canvas size and synthesize outer band from edge of original.
-
 ;; Author:
 ;; lloyd konneker, lkk, itr-tert
 
@@ -24,6 +22,8 @@
 ;; 1.0 lkk 2009-5-15 Initial version in scheme, released to Gimp Registry.
 ;; 1.1 lkk 2009-9-21 Translate to python.
 ;; later versions, see git log
+
+;; Increase image/canvas size and synthesize outer band from edge of original.
 
 ;; The effect for users:
 ;; widens the field of view, maintaining perspective of original
@@ -34,12 +34,17 @@
 ;; OUT larger layer and image.  All other layers not enlarged.
 
 
-;;gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+(define script-fu-uncrop (let
+()  ; indent keeper
 
 
-(define (_ m) "stub" m)
-
-(define (N_ m) "stub" m)
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
 
 (define-with-return (uncrop-test)
@@ -158,7 +163,7 @@
 
   (gimp-message-set-handler MESSAGE-BOX)
   (when (<> TRUE (car (gimp-item-is-layer drawable)))
-    (gimp-message (_ "A layer must be active, not a channel."))
+    (gimp-message (G_"A layer must be active, not a channel."))
     (return))
 
   (gimp-image-undo-group-start orgImage)
@@ -232,11 +237,11 @@
  ;; func name
  "script-fu-uncrop"
  ;; menu label
- (N_ "Uncrop(scm)...")
+ (SG_"_Uncrop(scm)...")
  ;; description
  (string-append
-  (N_ "Enlarge image by synthesizing a border that matches the edge, maintaining perspective.  Works best for small enlargement of natural edges. Undo a Crop instead, if possible! ")
-  (N_ "Requires separate resynthesizer plugin."))
+  (SG_ "Enlarge image by synthesizing a border that matches the edge, maintaining perspective.  Works best for small enlargement of natural edges. Undo a Crop instead, if possible!")
+  (SG_ "Requires separate resynthesizer plugin."))
  ;; author
  "Lloyd Konneker"
  ;; copyright notice
@@ -248,7 +253,7 @@
  ;; parameters
  SF-IMAGE    "Image"    0
  SF-DRAWABLE "Drawable" 0
- SF-ADJUSTMENT (_ "Percent enlargement")
+ SF-ADJUSTMENT (G_"Percent enlargement")
  (list 10   ; value
        0    ; lower
        100  ; upper
@@ -262,3 +267,5 @@
 
 (script-fu-menu-register "script-fu-uncrop"
                          "<Image>/Filters/Resynthesizer(scm)/")
+script-fu-uncrop
+))

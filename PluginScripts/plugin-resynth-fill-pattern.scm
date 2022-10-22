@@ -18,18 +18,24 @@
 ;; Front end to the resynthesizer plugin to make a seamless fill.
 
 ;; Author:
-;;  itr-tert
+;;  2022 itr-tert
 ;;   Based on plugin-resynth-fill-pattern.py Copyright 2011 lloyd konneker
 ;;   Idea by Rob Antonishen
 
 
-;; gettext.install("resynthesizer", gimp.locale_directory, unicode=True);
+(define script-fu-fill-pattern-resynth (let
+()  ; indent keeper
 
-(define (_ m) "stub" m)
+(define debug #f)
 
-(define (N_ m) "stub" m)
 
-(define debug FALSE)
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
 
 (define (layer-from-pattern image pattern)
@@ -60,7 +66,7 @@
     ;; Fill it with pattern
     (gimp-drawable-fill pattern-layer PATTERN-FILL)
 
-    (when (= debug TRUE)
+    (when debug
       (gimp-display-new pattern-image)
       (gimp-displays-flush))
 
@@ -73,7 +79,7 @@
                            0  0  0  pattern-layer
                            -1  -1  0  0.05  8  300)
     ;; Clean up
-    (when (= debug FALSE)
+    (unless debug
       ;; Delete image that is displayed throws RuntimeError
       (gimp-image-delete pattern-image))))
 
@@ -98,11 +104,11 @@
  ;; func name
  "script-fu-fill-pattern-resynth"
  ;; menu label
- (N_ "_Fill with pattern seamless(scm)...")
+ (SG_"_Fill with pattern seamless(scm)...")
  ;; description
  (string-append
-  (N_ "Seamlessly fill with a pattern using synthesis.")
-  (N_ "Requires separate resynthesizer plugin."))
+  (G_"Seamlessly fill with a pattern using synthesis.")
+  (G_"Requires separate resynthesizer plugin."))
  ;; author
  "Lloyd Konneker"
  ;; copyright notice
@@ -114,7 +120,7 @@
  ;; parameters
  SF-IMAGE "Image" 0
  SF-DRAWABLE "Drawable" 0
- SF-PATTERN  (_ "Pattern:") "Maple Leaves"
+ SF-PATTERN  (G_"Pattern") "Maple Leaves"
  )
 
 (script-fu-menu-register "script-fu-fill-pattern-resynth"
@@ -122,3 +128,6 @@
 
 (script-fu-menu-register "script-fu-fill-pattern-resynth"
                          "<Image>/Filters/Resynthesizer(scm)/")
+
+script-fu-fill-pattern-resynth
+))

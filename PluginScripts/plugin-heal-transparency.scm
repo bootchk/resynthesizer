@@ -19,11 +19,17 @@
 ;;  Based on plugin-heal-transparency.py Copyright 2010 lloyd konneker (bootch at nc.rr.com)
 
 
-;; gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+(define script-fu-heal-transparency (let
+()  ; indent keeper
 
-(define (_ m) "stub" m)
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
-(define (N_ m) "stub" m)
 
 (define-with-return
   (script-fu-heal-transparency
@@ -31,7 +37,7 @@
   (let ((org-selection nil))
     ;; precondition should be enforced by Gimp according to image modes allowed.
     (when (= FALSE (car (gimp-drawable-has-alpha tdrawable)))
-      (gimp-message "The active layer has no alpha channel to heal.")
+      (gimp-message (G_"The active layer has no alpha channel to heal."))
       (return))
 
     (gimp-image-undo-group-start timg)
@@ -70,11 +76,11 @@
  ;; func name
  "script-fu-heal-transparency"
  ;; menu label
- (N_ "Heal transparency(scm)...")
+ (SG_"_Heal transparency(scm)...")
  ;; description
  (string-append
-  (N_ "Removes alpha channel by synthesis.  Fill outward for edges, inward for holes.")
-  (N_ "Requires separate resynthesizer plugin."))
+  (SG_"Removes alpha channel by synthesis.  Fill outward for edges, inward for holes.")
+  (SG_"Requires separate resynthesizer plugin."))
  ;; author
  "Lloyd Konneker"
  ;; copyright notice
@@ -85,10 +91,8 @@
  "RGBA, GRAYA"  ; !!! Requires an alpha channel to heal
  ;; parameters
  SF-IMAGE "Image" 0
-
  SF-DRAWABLE "Drawable" 0
-
- SF-ADJUSTMENT (_ "Context sampling width (pixels):")
+ SF-ADJUSTMENT (G_"Context sampling width (pixels)")
  (list 50          ; value
        1           ; lower
        10000       ; upper
@@ -98,14 +102,16 @@
        SF-SPINNER) ; type
 
  ;; 2 is the default in the original py.
- SF-OPTION (_ "Filling order:") (list
-				 (_ "Random")
-				 (_ "Inwards towards center")
-				 (_ "Outwards from center"))
- )
+ SF-OPTION (G_"Filling order")
+ (list (G_"Random")
+       (G_"Inwards towards center")
+       (G_"Outwards from center")))
 
 (script-fu-menu-register "script-fu-heal-transparency"
 			 "<Image>/Filters/Enhance")
 
 (script-fu-menu-register "script-fu-heal-transparency"
                          "<Image>/Filters/Resynthesizer(scm)/")
+
+script-fu-heal-transparency
+))

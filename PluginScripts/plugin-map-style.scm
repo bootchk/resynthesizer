@@ -104,13 +104,19 @@
 ;; contrast adjustment
 
 
-;; gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
-
-(define (_ m) "stub" m)
-
-(define (N_ m) "stub" m)
+(define script-fu-map-style (let
+()  ; indent keeper
 
 (define debug #f)  ; #t if you want to display and retain working, temporary images
+
+
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
 
 (define (display-debug-image image)
@@ -263,7 +269,7 @@
          (map-weight nil)
          )
     (when (= INDEXED original-source-base-type)
-      (gimp-message (_ "The style source cannot be of mode INDEXED"))
+      (gimp-message (G_"The style source cannot be of mode INDEXED"))
       (return))
 
     (if (and (= image source-image)
@@ -380,11 +386,12 @@
  ;; func name
  "script-fu-map-style"
  ;; menu label
- (N_ "Style(scm)...")
+ (SG_"_Style(scm)...")
  ;; description
  (string-append
-  (N_ "Transfer style (color and surface) from a chosen source to the active layer. ")
-  (N_ "Transforms image using art media and style from another image.  Maps or synthesizes texture or theme from one image onto another. Requires separate resynthesizer plugin."))
+  (SG_"Transfer style (color and surface) from a chosen source to the active layer. ")
+  (SG_"Transforms image using art media and style from another image. Maps or synthesizes texture or theme from one image onto another. ")
+  (SG_"Requires separate resynthesizer plugin."))
  ;; author
  "Lloyd Konneker (bootch nc.rr.com)"
  ;; copyright notice
@@ -396,19 +403,24 @@
  ;; parameters
  SF-IMAGE    "Image"    0
  SF-DRAWABLE "Drawable" 0
- SF-DRAWABLE (_ "Source of style:") -1
- SF-ADJUSTMENT (_ "Percent transfer:") (list 0    ; value
-                                             10   ; lower
-                                             90   ; upper
-                                             10   ; step_inc
-                                             20   ; page_inc
-                                             3    ; digits
-                                             SF-SLIDER)
- SF-OPTION (_ "Map by:") (list (_ "Color and brightness")
-                               (_ "Brightness only")))
+ SF-DRAWABLE   (G_"Source of style") -1
+ SF-ADJUSTMENT (G_"Percent transfer")
+ (list 0    ; value
+       10   ; lower
+       90   ; upper
+       10   ; step_inc
+       20   ; page_inc
+       3    ; digits
+       SF-SLIDER)
+ SF-OPTION (G_"Map by")
+ (list (G_"Color and brightness")
+       (G_"Brightness only")))
 
 (script-fu-menu-register "script-fu-map-style"
                          "<Image>/Filters/Map")
 
 (script-fu-menu-register "script-fu-map-style"
                          "<Image>/Filters/Resynthesizer(scm)/")
+
+script-fu-map-style
+))

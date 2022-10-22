@@ -1,31 +1,37 @@
 ;; Gimp plugin "Sharpen by resynthesis"
-;; Requires resynthesizer plug_in (v2).
 
 ;; License:
-
+;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation; either version 2 of the License, or
 ;; (at your option) any later version.
-
+;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-
+;;
 ;; The GNU Public License is available at
 ;; http://www.gnu.org/copyleft/gpl.html
 
-;; Author: itr-tert
+;; Author:
+;;  2022 itr-tert
 ;;  Based on plugin-resynth-sharpen.py 2010 lloyd konneker (bootch at nc.rr.com)
 ;;   Based on smart_enlarge.scm 2000 by Paul Harrison.
 
 
-;; gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+(define script-fu-sharpen-resynthesized (let
+()  ; indent keeper
 
-(define (_ m) "stub" m)
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
-(define (N_ m) "stub" m)
 
 (define-with-return
   (script-fu-sharpen-resynthesized image drawable scale-factor)
@@ -101,11 +107,11 @@
  ;; func name
  "script-fu-sharpen-resynthesized"
  ;; menu label
- (N_ "Sharpen by synthesis(scm)...")
+ (SG_"_Sharpen by synthesis(scm)...")
  ;; description
  (string-append
-  (N_ "Sharpen image by synthesis.")
-  (N_ "Requires separate resynthesizer plugin."))
+  (SG_"Sharpen image by synthesis.")
+  (SG_"Requires separate resynthesizer plugin."))
  ;; author
  "Lloyd Konneker"
  ;; copyright notice
@@ -117,7 +123,7 @@
  ;; parameters
  SF-IMAGE "Image" 0
  SF-DRAWABLE "Drawable" 0
- SF-ADJUSTMENT (_ "Sharpening:")  ; sharpen_factor
+ SF-ADJUSTMENT (G_"Sharpening")  ; sharpen_factor
   (list 2           ; value
         1           ; lower
         32          ; upper
@@ -132,3 +138,6 @@
 
 (script-fu-menu-register "script-fu-sharpen-resynthesized"
                          "<Image>/Filters/Resynthesizer(scm)/")
+
+script-fu-sharpen-resynthesized
+))

@@ -56,13 +56,19 @@
 ;;
 
 
-;; gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+(define script-fu-render-texture (let
+()  ; indent keeper
 
-(define (_ m) "stub" m)
+(define debug #f)
 
-(define (N_ m) "stub" m)
 
-(define debug FALSE)
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
 
 (define (test)
@@ -157,7 +163,7 @@
       (throw "Failed create layer."))
 
     ;; If using new resynthesizer with animation for debugging
-    (when (= TRUE debug)
+    (when debug
       (display-image new-image))
 
     ;;
@@ -237,11 +243,12 @@
  ;; func name
  "script-fu-render-texture"
  ;; menu label
- (N_ "_Texture(scm)...")
+ (SG_"_Texture(scm)...")
  ;; description
  (string-append
-  "Create a new image with texture from the current image or selection. Optionally, create image edges suited for further, seamless tiling. "
-  "New image is the same scale but seamless and irregular.  Use 'Map>Tile' for less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. Requires separate resynthesizer plugin.")
+  (SG_"Create a new image with texture from the current image or selection. Optionally, create image edges suited for further, seamless tiling. ")
+  (SG_"New image is the same scale but seamless and irregular.  Use 'Map>Tile' for less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. ")
+  (SG_"Requires separate resynthesizer plugin."))
  ;; author
  "Lloyd Konneker"
  ;; copyright notice
@@ -254,19 +261,22 @@
  SF-IMAGE    "Image"    0
  SF-DRAWABLE "Drawable" 0
  ;; Spinner is digital and linear, slider is analog but exponential
- SF-ADJUSTMENT (_ "Ratio of size of new image to source selection")
+ SF-ADJUSTMENT (G_"Ratio of size of new image to source selection")
  (list 2   ; value
        0.5 ; lower
        10  ; upper
        0.5 ; step_inc
        1   ; page_inc
        SF-SPINNER)
- SF-TOGGLE (_ "Make new image edges suitable for seamless tiling") FALSE
+ SF-TOGGLE (G_"Make new image edges suitable for seamless tiling") FALSE
+ ;; output: [(PF_IMAGE, "new_image", "New, synthesized texture.")]
  )
-;; output: [(PF_IMAGE, "new_image", "New, synthesized texture.")]
 
 (script-fu-menu-register "script-fu-render-texture"
                          "<Image>/Filters/Render")
 
 (script-fu-menu-register "script-fu-render-texture"
                          "<Image>/Filters/Resynthesizer(scm)/")
+
+script-fu-render-texture
+))

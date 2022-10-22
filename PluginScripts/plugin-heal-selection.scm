@@ -1,7 +1,7 @@
 ;; Gimp plugin "Heal selection"
 
 ;; License:
-
+;;
 ;;   This program is free software; you can redistribute it and/or modify
 ;;   it under the terms of the GNU General Public License as published by
 ;;   the Free Software Foundation; either version 2 of the License, or
@@ -15,18 +15,24 @@
 ;;   The GNU Public License is available at
 ;;   http://www.gnu.org/copyleft/gpl.html
 
-;; plugin-heal-selection.scm Copyright 2022 itr-tert
+;; Copyright 2022 itr-tert
 ;;  Based on plugin-heal-selection.py Copyright 2009 lloyd konneker (bootch at nc.rr.com)
 ;;   Based on smart_remove.scm Copyright 2000 by Paul Harrison.
 
 
-;; gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
+(define script-fu-heal-selection (let
+()  ; indent keeper
 
-(define (_ m) "stub" m)
+(define debug #f)
 
-(define (N_ m) "stub" m)
 
-(define debug FALSE)
+(define (gettext msgid)
+  (catch msgid
+	 (car (plug-in-resynthesizer-gettext msgid))))
+(define (N_ m) m)  ; like gettext-noop
+(define (G_ m) (gettext m))
+(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
+(define (SG_ m) (S_ (G_ m)))
 
 
 (define-with-return (script-fu-heal-selection-test)
@@ -48,7 +54,7 @@
   (script-fu-heal-selection
    timg tdrawable samplingRadiusParam directionParam orderParam)
   "Create stencil selection in a temp image to pass as source (corpus) to plugin resynthesizer,
-   which does the substantive work."
+     which does the substantive work."
 
   (let ((targetBounds nil)
 	(tempImage nil)
@@ -75,7 +81,7 @@
     (set! samplingRadiusParam (floor samplingRadiusParam))
 
     (when (= TRUE (car (gimp-selection-is-empty timg)))
-      (gimp-message (_ "You must first select a region to heal."))
+      (gimp-message (G_ "You must first select a region to heal."))
       (return))
 
     (gimp-image-undo-group-start timg)
@@ -182,7 +188,7 @@
 
     ;; Note that the old resynthesizer required an inverted selection !!
 
-    (when (= debug TRUE)
+    (when debug
       (catch "do nothing when error"
 	     (gimp-display-new tempImage)
 	     (gimp-displays-flush)
@@ -210,7 +216,7 @@
      )
 
     ;; Clean up
-    (when (= debug FALSE)
+    (unless debug
       (gimp-image-delete tempImage))
     (gimp-image-undo-group-end timg)
     ))
@@ -219,26 +225,23 @@
  ;; func name
  "script-fu-heal-selection"
  ;; menu label
- "Heal selection(scm)..."
+ (SG_"_Heal selection(scm)...")
  ;; description
  (string-append
-  (N_ "Heal the selection from surroundings as if using the heal tool.")
-  "Requires separate resynthesizer plugin.")
+  (SG_"Heal the selection from surroundings as if using the heal tool.")
+  (SG_"Requires separate resynthesizer plugin."))
  ;; author
- "Lloyd Konneker <>"
+ "Lloyd KonnekerZ"
  ;; copyright notice
  "2009 Lloyd Konneker"
  ;; date created
  "2009"
  ;; image type that the script works on
  "RGB*, GRAY*"
-
  ;; parameters
  SF-IMAGE "Image" 0
-
  SF-DRAWABLE "Drawable" 0
-
- SF-ADJUSTMENT (_ "Context sampling width (pixels):")
+ SF-ADJUSTMENT (G_"Context sampling width (pixels)")
  (list 50          ; value
        1           ; lower
        10000       ; upper
@@ -246,22 +249,20 @@
        10          ; page_inc
        0           ; digits
        SF-SPINNER) ; type
-
- SF-OPTION (_ "Sample from:") (list
-			       (_ "All around")
-			       (_ "Sides")
-			       (_ "Above and below"))
-
- SF-OPTION (_ "Filling order:") (list
-				 (_ "Random")
-				 (_ "Inwards towards center")
-				 (_ "Outwards from center"))
- )
+ SF-OPTION (G_"Sample from")
+ (list (G_"All around")
+       (G_"Sides")
+       (G_"Above and below"))
+ SF-OPTION (G_"Filling order")
+ (list (G_"Random")
+       (G_"Inwards towards center")
+       (G_"Outwards from center")))
 
 (script-fu-menu-register "script-fu-heal-selection"
-			 "<Image>/Filters/Enhance")
+			  "<Image>/Filters/Enhance")
 
 (script-fu-menu-register "script-fu-heal-selection"
                          "<Image>/Filters/Resynthesizer(scm)/")
 
-;; (script-fu-heal-selection-test)
+script-fu-heal-selection
+))
