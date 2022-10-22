@@ -50,5 +50,13 @@
 Makefile.in
 Makefile
 
+/src/resynthesizer/resynthesizer
+/src/resynthesizer-gui/resynthesizer_gui
+/src/resynthesizer-gettext/resynthesizer_gettext
+
+POTFILES
+stamp-it
+stamp-h1
+
 # ignore separate build directory 
 /build
