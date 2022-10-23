@@ -13,15 +13,15 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.scm:84
 msgid "You must first select a region to heal."
-msgstr ""
+msgstr "修復する範囲を選択してください。"
 
 #: PluginScripts/plugin-heal-selection.scm:228
 msgid "_Heal selection(scm)..."
-msgstr ""
+msgstr "選択範囲を修復(scm)..."
 
 #: PluginScripts/plugin-heal-selection.scm:231
 msgid "Heal the selection from surroundings as if using the heal tool."
-msgstr ""
+msgstr "修復ブラシのように周囲の特徴で選択範囲を修復します。"
 
 #: PluginScripts/plugin-heal-selection.scm:232
 #: PluginScripts/plugin-heal-transparency.scm:83
@@ -32,240 +32,238 @@ msgstr ""
 #: PluginScripts/plugin-resynth-sharpen.scm:114
 #: PluginScripts/plugin-uncrop.scm:244
 msgid "Requires separate resynthesizer plugin."
-msgstr ""
+msgstr "resynthesizer plugin 本体が必要です。"
 
 #: PluginScripts/plugin-heal-selection.scm:244
 #: PluginScripts/plugin-heal-transparency.scm:95
 msgid "Context sampling width (pixels)"
-msgstr ""
+msgstr "特徴抽出範囲(px)"
 
 #: PluginScripts/plugin-heal-selection.scm:252
 msgid "Sample from"
-msgstr ""
+msgstr "特徴抽出を"
 
 #: PluginScripts/plugin-heal-selection.scm:253
 msgid "All around"
-msgstr ""
+msgstr "上下左右から"
 
 #: PluginScripts/plugin-heal-selection.scm:254
 msgid "Sides"
-msgstr ""
+msgstr "左右から"
 
 #: PluginScripts/plugin-heal-selection.scm:255
 msgid "Above and below"
-msgstr ""
+msgstr "上下から"
 
 #: PluginScripts/plugin-heal-selection.scm:256
 #: PluginScripts/plugin-heal-transparency.scm:105
 msgid "Filling order"
-msgstr ""
+msgstr "塗り潰し方向"
 
 #: PluginScripts/plugin-heal-selection.scm:257
 #: PluginScripts/plugin-heal-transparency.scm:106
 msgid "Random"
-msgstr ""
+msgstr "ランダム"
 
 #: PluginScripts/plugin-heal-selection.scm:258
 #: PluginScripts/plugin-heal-transparency.scm:107
 msgid "Inwards towards center"
-msgstr ""
+msgstr "外側から内側へ"
 
 #: PluginScripts/plugin-heal-selection.scm:259
 #: PluginScripts/plugin-heal-transparency.scm:108
 msgid "Outwards from center"
-msgstr ""
+msgstr "内側から外側へ"
 
 #: PluginScripts/plugin-heal-transparency.scm:40
 msgid "The active layer has no alpha channel to heal."
-msgstr ""
+msgstr "アクティブレイヤーには修復するためのアルファチャンネルがありません。"
 
 #: PluginScripts/plugin-heal-transparency.scm:79
 msgid "_Heal transparency(scm)..."
-msgstr ""
+msgstr "透過部分を修復(scm)..."
 
 #: PluginScripts/plugin-heal-transparency.scm:82
 msgid ""
 "Removes alpha channel by synthesis.  Fill outward for edges, inward for "
 "holes."
-msgstr ""
+msgstr "アルファチャンネルを合成で消す。端の場合は内側から外側へ、穴の場合は外側から内側へ。"
 
 #: PluginScripts/plugin-map-style.scm:272
 msgid "The style source cannot be of mode INDEXED"
-msgstr ""
+msgstr "スタイル(特徴)ソースの画像モードをINDEXEDには出来ません。"
 
 #: PluginScripts/plugin-map-style.scm:389
 msgid "_Style(scm)..."
-msgstr ""
+msgstr "スタイル(scm)..."
 
 #: PluginScripts/plugin-map-style.scm:392
 msgid ""
 "Transfer style (color and surface) from a chosen source to the active layer. "
-msgstr ""
+msgstr "選択したソースからアクティブレイヤーへスタイル(色と表面パターン)を転写します。"
 
 #: PluginScripts/plugin-map-style.scm:393
 msgid ""
 "Transforms image using art media and style from another image. Maps or "
 "synthesizes texture or theme from one image onto another. "
-msgstr ""
-
-#: PluginScripts/plugin-map-style.scm:393
-msgid ""
-"Transforms image using art media and style from another image. Maps or "
-"synthesizes texture or theme from one image onto another. "
-msgstr ""
+msgstr "別の画像のアートメディアとスタイルで画像の性質を変えます。"
+"ある画像から別の画像へテクスチャやテーマをマップあるいは合成します。"
 
 #: PluginScripts/plugin-map-style.scm:406
 msgid "Source of style"
-msgstr ""
+msgstr "スタイル(特徴)ソース"
 
 #: PluginScripts/plugin-map-style.scm:407
 msgid "Percent transfer"
-msgstr ""
+msgstr "転写率"
 
 #: PluginScripts/plugin-map-style.scm:415
 msgid "Map by"
-msgstr ""
+msgstr "マッピングモード"
 
 #: PluginScripts/plugin-map-style.scm:416
 msgid "Color and brightness"
-msgstr ""
+msgstr "色と輝度"
 
 #: PluginScripts/plugin-map-style.scm:417
 msgid "Brightness only"
-msgstr ""
+msgstr "輝度のみ"
 
 #: PluginScripts/plugin-render-texture.scm:246
 msgid "_Texture(scm)..."
-msgstr ""
+msgstr "テクスチャー(scm)..."
 
 #: PluginScripts/plugin-render-texture.scm:249
 msgid ""
 "Create a new image with texture from the current image or selection. "
 "Optionally, create image edges suited for further, seamless tiling. "
-msgstr ""
+msgstr "現在の画像または選択範囲をテクスチャ化した画像を生成します。"
+"オプションで、画像端をシームレスに並べられるように--タイリング出来るようにします。"
 
 #: PluginScripts/plugin-render-texture.scm:250
 msgid ""
 "New image is the same scale but seamless and irregular.  Use 'Map>Tile' for "
 "less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. "
-msgstr ""
+msgstr "新しい画像は縮尺は同じですがシームレスで、また内容は不規則になります。"
+"[カラーマッピング / シームレスタイル]を利用すれば不規則性の少ない結果が得られます。"
+"[編集 / 再合成パターンで塗り潰す]を利用すればでは不規則性の多い結果が得られます。"
 
 #: PluginScripts/plugin-render-texture.scm:264
 msgid "Ratio of size of new image to source selection"
-msgstr ""
+msgstr "生成画像と選択範囲のサイズ比"
 
 #: PluginScripts/plugin-render-texture.scm:271
 msgid "Make new image edges suitable for seamless tiling"
-msgstr ""
+msgstr "生成画像の端をシームレスに並べられるようにする"
 
 #: PluginScripts/plugin-resynth-enlarge.scm:109
 msgid "_Enlarge & sharpen(scm)..."
-msgstr ""
+msgstr "拡大して鮮明化(scm)..."
 
 #: PluginScripts/plugin-resynth-enlarge.scm:112
 msgid "Enlarge image and synthesize to sharpen."
-msgstr ""
+msgstr "画像を拡大して鮮明化のために合成します。"
 
 #: PluginScripts/plugin-resynth-enlarge.scm:125
 msgid "Scale by"
-msgstr ""
+msgstr "拡大係数"
 
 #: PluginScripts/plugin-resynth-fill-pattern.scm:107
 msgid "_Fill with pattern seamless(scm)..."
-msgstr ""
+msgstr "シームレスにパターンで塗り潰す(scm)...	"
 
 #: PluginScripts/plugin-resynth-fill-pattern.scm:110
 msgid "Seamlessly fill with a pattern using synthesis."
-msgstr ""
+msgstr "合成を使ってシームレスにパターンで塗り潰す。"
 
 #: PluginScripts/plugin-resynth-fill-pattern.scm:123
 msgid "Pattern"
-msgstr ""
+msgstr "パターン"
 
 #: PluginScripts/plugin-resynth-sharpen.scm:110
 msgid "_Sharpen by synthesis(scm)..."
-msgstr ""
+msgstr "合成して鮮明化(scm)..."
 
 #: PluginScripts/plugin-resynth-sharpen.scm:113
 msgid "Sharpen image by synthesis."
-msgstr ""
+msgstr "合成により画像を鮮明化します。"
 
 #: PluginScripts/plugin-resynth-sharpen.scm:126
 msgid "Sharpening"
-msgstr ""
+msgstr "鮮明化係数"
 
 #: PluginScripts/plugin-uncrop.scm:166
 msgid "A layer must be active, not a channel."
-msgstr ""
+msgstr "画像レイヤーがアクティブである必要があります、またチャンネルを選択しないでください。"
 
 #: PluginScripts/plugin-uncrop.scm:240
 msgid "_Uncrop(scm)..."
-msgstr ""
+msgstr "逆切り抜き(scm)..."
 
 #: PluginScripts/plugin-uncrop.scm:243
 msgid ""
 "Enlarge image by synthesizing a border that matches the edge, maintaining "
 "perspective.  Works best for small enlargement of natural edges. Undo a Crop "
 "instead, if possible!"
-msgstr ""
+msgstr "現画像の端と一致する周囲を合成することで"
 
 #: PluginScripts/plugin-uncrop.scm:256
 msgid "Percent enlargement"
-msgstr ""
+msgstr "拡大率 100% +"
 
 #: src/resynthesizer-gui/resynth-gui.c:156
 msgid "Make tiles, apply themes, render texture, remove features, etc."
-msgstr ""
+msgstr "タイル化、テーマ適用、テクスチャ下塗り、特徴削除など。"
 
 #: src/resynthesizer-gui/resynth-gui.c:161
 msgid "_Resynthesize..."
-msgstr ""
+msgstr "Resynthesize..."
 
 #: src/resynthesizer-gui/resynth-gui.h:115
 msgid "Context: "
-msgstr ""
+msgstr "コンテキスト: "
 
 #: src/resynthesizer-gui/resynth-gui.h:123
 msgid "Random order, without context"
-msgstr ""
+msgstr "ランダム順, コンテキストなし"
 
 #: src/resynthesizer-gui/resynth-gui.h:124
 msgid "Random order, with context"
-msgstr ""
+msgstr "ランダム順, コンテキストあり"
 
 #: src/resynthesizer-gui/resynth-gui.h:125
 msgid "Randomized bands, concentric, inwards"
-msgstr ""
+msgstr "帯域ランダム化、同心に、内向きに"
 
 #: src/resynthesizer-gui/resynth-gui.h:126
 msgid ""
 "Randomized bands, horizontally, inwards (i.e. squeezing from top and bottom)"
-msgstr ""
+msgstr "帯域ランダム化、水平に、内向きに(例: 上と下から押し込む)"
 
 #: src/resynthesizer-gui/resynth-gui.h:127
 msgid ""
 "Randomized bands, vertically, inwards (i.e. squeezing from left and right)"
-msgstr ""
+msgstr "帯域ランダム化、垂直に、内向きに(例: 左と右から押し込む)"
 
 #: src/resynthesizer-gui/resynth-gui.h:128
 msgid "Randomized bands, concentric, outwards (e.g. for uncrop)"
-msgstr ""
+msgstr "帯域ランダム化、同心に、外向きに(例: 逆切り抜き)"
 
 #: src/resynthesizer-gui/resynth-gui.h:129
 msgid ""
 "Randomized bands, horizontally, outwards, (i.e. expanding to top and bottom)"
-msgstr ""
+msgstr "帯域ランダム化、水平に、外向きに(例: 上と下へ拡張)"
 
 #: src/resynthesizer-gui/resynth-gui.h:130
 msgid ""
 "Randomized bands, vertically, outwards (i.e. expanding to left and right)"
-msgstr ""
+msgstr "帯域ランダム化、垂直に、外向きに(例: 左と右へ拡張)"
 
 #: src/resynthesizer-gui/resynth-gui.h:131
 msgid ""
 "Randomized bands, concentric, inwards and outwards (i.e. squeezing in and "
 "out a donut)"
-msgstr ""
+msgstr "帯域ランダム化、同心に、内向きと外向きに(例: ドーナツを押し込む、押し出す)"
 
 #: src/resynthesizer-gui/resynth-gui.h:228
 msgid "Resynthesize"
@@ -277,55 +275,55 @@ msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:247
 msgid "_Cancel"
-msgstr ""
+msgstr "キャンセル"
 
 #: src/resynthesizer-gui/resynth-gui.h:260
 msgid "Options"
-msgstr ""
+msgstr "オプション"
 
 #: src/resynthesizer-gui/resynth-gui.h:264
 msgid "Tweaks"
-msgstr ""
+msgstr "微調整"
 
 #: src/resynthesizer-gui/resynth-gui.h:268
 msgid "Input"
-msgstr ""
+msgstr "入力"
 
 #: src/resynthesizer-gui/resynth-gui.h:274
 msgid "Texture source: "
-msgstr ""
+msgstr "テクスチャソース"
 
 #: src/resynthesizer-gui/resynth-gui.h:278
 msgid "Output"
-msgstr ""
+msgstr "出力"
 
 #: src/resynthesizer-gui/resynth-gui.h:286
 msgid "Make horizontally tileable"
-msgstr ""
+msgstr "水平にタイル化可能に"
 
 #: src/resynthesizer-gui/resynth-gui.h:290
 msgid "Make vertically tileable"
-msgstr ""
+msgstr "垂直にタイル化可能に"
 
 #: src/resynthesizer-gui/resynth-gui.h:297
 msgid "Texture transfer"
-msgstr ""
+msgstr "テクスチャ転送"
 
 #: src/resynthesizer-gui/resynth-gui.h:306
 msgid "Use texture transfer"
-msgstr ""
+msgstr "テクスチャ転送する"
 
 #: src/resynthesizer-gui/resynth-gui.h:312
 msgid "Input map: "
-msgstr ""
+msgstr "入力マップ"
 
 #: src/resynthesizer-gui/resynth-gui.h:317
 msgid "Output map: "
-msgstr ""
+msgstr "出力マップ"
 
 #: src/resynthesizer-gui/resynth-gui.h:322
 msgid "Map importance:"
-msgstr ""
+msgstr "マップ重視度"
 
 #: src/resynthesizer-gui/resynth-gui.h:329
 msgid ""
@@ -333,72 +331,74 @@ msgid ""
 "the output. A neighbourhood of nearby pixels in the output are compared with "
 "neighbourhoods of pixels in the input. The pixel at the center of the best "
 "matching neighbourhood is copied to the output.\n"
-msgstr ""
+msgstr "Resynthesizer は 1 pixel ずつ入力から出力へコピーすることで動作します。"
+"出力内の近傍ピクセルと入力内の近傍ピクセルが比較されます。"
+"最も一致している近傍の中心ピクセルが出力にコピーされます。\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:331
 msgid "Neighbourhood size:"
-msgstr ""
+msgstr "近傍サイズ"
 
 #: src/resynthesizer-gui/resynth-gui.h:334
 msgid "- How many nearby pixels in the output are to be used?\n"
-msgstr ""
+msgstr "- 出力側の近傍ピクセルをいくつにするか\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:336
 msgid "Search thoroughness:"
-msgstr ""
+msgstr "探索徹底度"
 
 #: src/resynthesizer-gui/resynth-gui.h:339
 msgid "- How many locations in the input are examined?\n"
-msgstr ""
+msgstr "- どれぐらい入力側を調べるか？\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:341
 msgid "Sensitivity to outliers:"
-msgstr ""
+msgstr "外れ値感度"
 
 #: src/resynthesizer-gui/resynth-gui.h:344
 msgid ""
 "- To what extent does a very bad match on a single pixel disqualify a "
 "location?\n"
-msgstr ""
+msgstr "- ある単一ピクセルの一致度が非常に悪い場合、どれぐらいで不適とするか？\n"
 
 #: src/resynthesizer/resynthesizer.c:350
 msgid "Incompatible image mode."
-msgstr ""
+msgstr "非互換の画像モードです。"
 
 #: src/resynthesizer/resynthesizer.c:373
 msgid "Resynthesizer failed to get parameters."
-msgstr ""
+msgstr "Resynthesizer はパラメーターを取得できませんでした。"
 
 #: src/resynthesizer/resynthesizer.c:388
 msgid ""
 "The input texture and output image must have the same number of color "
 "channels."
-msgstr ""
+msgstr "入力テクスチャと出力側画像は同じ数のカラーチャンネルが必要です。"
 
 #: src/resynthesizer/resynthesizer.c:407
 msgid "The input and output maps must have the same mode"
-msgstr ""
+msgstr "入力と出力マップは同じ画像モードである必要があります。"
 
 #: src/resynthesizer/resynthesizer.c:412
 msgid "The input map should be the same size as the input texture image"
-msgstr ""
+msgstr "入力マップは入力テクスチャ画像と同じサイズである必要があります。"
 
 #: src/resynthesizer/resynthesizer.c:417
 msgid "The output map should be the same size as the output image"
-msgstr ""
+msgstr "出力マップは出力画像と同じサイズである必要があります。"
 
 #: src/resynthesizer/resynthesizer.c:503
 msgid "synthesizing..."
-msgstr ""
+msgstr "合成中..."
 
 #: src/resynthesizer/resynthesizer.c:517
 msgid ""
 "The texture source is empty. Does any selection include non-transparent "
 "pixels?"
-msgstr ""
+msgstr "テクスチャソースが空です。不透明な部分を選択範囲に含めていますか？"
 
 #: src/resynthesizer/resynthesizer.c:521
 msgid ""
 "The output layer is empty. Does any selection have visible pixels in the "
 "active layer?"
-msgstr ""
+msgstr "出力レイヤーが空です。アクティブレイヤーの選択範囲に可視ピクセルは含まれていますか？"
