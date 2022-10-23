@@ -2,7 +2,7 @@
 
 bin_PROGRAMS = resynthesizer
 
-bindir = $(GIMP_LIBDIR)/plug-ins
+bindir = $(gimpplugindir)/plug-ins
 
 # resynthesizer is a GIMP plugin calling libresynthesizer
 resynthesizer_SOURCES = resynthesizer.c 
@@ -10,7 +10,7 @@ resynthesizer_SOURCES = resynthesizer.c
 
 # lkk Note glibProxy.c not needed for resynthesizer for GIMP
 # but IS needed when using GIMP as a test harness to the standalone engine
-  
+
 
 # These are for the resynthesizer plugin adaption to engine
 #  resynth-pdb.h
@@ -29,7 +29,7 @@ resynthesizer_CPPFLAGS =\
 
 # resynthesizer GIMP plugin calls GIMP lib and convenience library (i.e. local) libresynthesizer
 # libresynthesizer in turn depends on math and gthread-2.0
-LDADD = $(GIMP_LIBS) ../../lib/libresynthesizer.a -lm -lgthread-2.0
+LDADD = ../../lib/libresynthesizer.a $(GIMP_LIBS) -lm -lgthread-2.0
 
 
 

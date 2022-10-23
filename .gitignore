@@ -17,6 +17,8 @@
 
 # Ignore object files
 *.o
+*.a
+*.exe
 
 # Ignore
 *.Po
@@ -39,6 +41,8 @@
 /compile
 /config.h
 /config.h.in
+/config.guess
+/config.sub
 /config.status
 /configure
 /depcomp

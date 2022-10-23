@@ -2,7 +2,7 @@
 
 bin_PROGRAMS = resynthesizer_gui
 
-bindir = $(GIMP_LIBDIR)/plug-ins
+bindir = $(gimpplugindir)/plug-ins
 
 # resynthesizer_gui is plugin that calls resynthesizer plugin
 resynthesizer_gui_SOURCES = resynth-gui.c

@@ -30,7 +30,8 @@ dnl lkk This macro only confirms that the given file is in configure's notion of
 AC_CONFIG_SRCDIR([src/resynthesizer/resynthesizer.c])
 AM_CONFIG_HEADER(config.h)
 
-AM_INIT_AUTOMAKE(no-define)
+dnl AM_INIT_AUTOMAKE(no-define)
+AM_INIT_AUTOMAKE([foreign])
 
 AC_ISC_POSIX
 AC_PROG_CC
@@ -63,8 +64,8 @@ PKG_CHECK_MODULES(GIMP,
 AC_SUBST(GIMP_CFLAGS)
 AC_SUBST(GIMP_LIBS)
 
-GIMP_LIBDIR=`$PKG_CONFIG --variable=gimplibdir gimp-2.0`
-AC_SUBST(GIMP_LIBDIR)
+dnl GIMP_LIBDIR=`$PKG_CONFIG --variable=gimplibdir gimp-2.0`
+dnl AC_SUBST(GIMP_LIBDIR)
 
 
 dnl i18n stuff
@@ -143,5 +144,12 @@ help/en/Makefile
 help/images/Makefile
 PluginScripts/Makefile
 ])
+
+AC_CANONICAL_HOST
+case $host_os in
+    dnl WindowsOS
+    *cygwin* | *mingw* )
+        LDFLAGS="$LDFLAGS -mwindows"
+esac
 
 AC_OUTPUT

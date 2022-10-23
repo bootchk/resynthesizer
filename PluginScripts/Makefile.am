@@ -4,7 +4,7 @@
 ## pluginexecdir tells autotools where to install scripts
 ## scripts tells autotools the list of installable Python language scripts
 
-pluginexecdir = $(gimpplugindir)/scripts
+pluginexecdir = $(gimpplugindir)/scripts/resynthesizer/
 
 scripts = \
 	plugin-heal-selection.scm      \
