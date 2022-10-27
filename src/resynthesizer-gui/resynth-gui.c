@@ -36,6 +36,7 @@
 
 #include "config.h" // GNU buildtools local configuration
 #include "../plugin-intl.h"  // i18n macros
+#include "../resynth-path.h"
 
 #include <libgimp/gimp.h>
 #include <libgimp/gimpui.h>
@@ -65,12 +66,8 @@ static void run(
   values[0].type = GIMP_PDB_STATUS;
   values[0].data.d_status = GIMP_PDB_SUCCESS;
 
-    /*  Initialize i18n support  */
-#if defined(G_OS_WIN32)
-  bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
-#else
-  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-#endif
+  /*  Initialize i18n support  */
+  bindtextdomain (GETTEXT_PACKAGE, get_resynthesizer_locale_dir());
 #ifdef HAVE_BIND_TEXTDOMAIN_CODESET
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
@@ -149,7 +146,7 @@ query()
   gint nargs = sizeof(resynth_paramdefs)/sizeof(resynth_paramdefs[0]);
   gint nreturn_vals = 0;
 
-  gimp_plugin_domain_register (RESYNTH_DOMAIN_NAME, LOCALEDIR);
+  gimp_plugin_domain_register (RESYNTH_DOMAIN_NAME, get_resynthesizer_locale_dir());
   
   gimp_install_procedure(
     RESYNTH_CONTROLS_PDB_NAME,

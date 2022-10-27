@@ -12,13 +12,11 @@ resynthesizer_gui_SOURCES = resynth-gui.c
 #  resynth-parameters.c
 #  resynth-constants.h 
 
-AM_CPPFLAGS = \
-	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
-	-DDATADIR=\""$(DATADIR)"\"
+# AM_CPPFLAGS = \
+# 	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
+#	-DDATADIR=\""$(DATADIR)"\"
 
 resynthesizer_gui_CPPFLAGS =\
-	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
-	-DDATADIR=\""$(DATADIR)"\"  \
 	-I$(top_srcdir)		\
 	@GIMP_CFLAGS@		\
 	-I$(includedir)

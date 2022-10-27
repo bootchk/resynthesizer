@@ -8,6 +8,7 @@
 
 # Ignore editor backup files
 *~
+.\#*
 
 # Ignore Python byte compiled files
 *.pyc

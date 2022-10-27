@@ -19,8 +19,6 @@ resynthesizer_SOURCES = resynthesizer.c
 
 # resynthesizer plugin uses libresynthesizer
 resynthesizer_CPPFLAGS =\
-	-DLOCALEDIR=\""$(LOCALEDIR)"\"		\
-	-DDATADIR=\""$(DATADIR)"\"  \
 	-I$(top_srcdir)		\
 	@GIMP_CFLAGS@		\
 	-I$(includedir) \
@@ -30,8 +28,3 @@ resynthesizer_CPPFLAGS =\
 # resynthesizer GIMP plugin calls GIMP lib and convenience library (i.e. local) libresynthesizer
 # libresynthesizer in turn depends on math and gthread-2.0
 LDADD = ../../lib/libresynthesizer.a $(GIMP_LIBS) -lm -lgthread-2.0
-
-
-
-
-

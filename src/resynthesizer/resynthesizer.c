@@ -73,6 +73,7 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 
 #include "../../config.h" // GNU buildtools local configuration
 #include "../plugin-intl.h" // i18n macros
+#include "../resynth-path.h"
 
 #include <libgimp/gimp.h>
 #include <glib/gprintf.h>
@@ -323,14 +324,8 @@ static void run(
   start_time = clock();
   #endif
   
-  // internationalization i18n
-  // Note these constants are defined in the build environment.
   /*  Initialize i18n support  */
-#if defined(G_OS_WIN32)
-  bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
-#else
-  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-#endif
+  bindtextdomain (GETTEXT_PACKAGE, get_resynthesizer_locale_dir());
 #ifdef HAVE_BIND_TEXTDOMAIN_CODESET
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif

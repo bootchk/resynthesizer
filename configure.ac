@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl lkk 2011 Hacked from gimp-plugin-template configure.in
 dnl changed name and added PluginScript/Makefile
 
-AC_PREREQ(2.54)
+AC_PREREQ([2.71])
 
 dnl Name your plug-in here
 dnl lkk 2011 Changed name and version digits
@@ -17,7 +17,7 @@ m4_define([plugin_micro_version], [0])
 m4_define([plugin_version],
           [plugin_major_version.plugin_minor_version.plugin_micro_version])
 
-AC_INIT([plugin_name], [plugin_version])
+AC_INIT([plugin_name],[plugin_version])
 
 AC_DEFINE(PLUGIN_NAME, PACKAGE_NAME, [Plug-In name])
 AC_DEFINE(PLUGIN_VERSION, PACKAGE_VERSION, [Plug-In version])
@@ -30,13 +30,11 @@ dnl lkk This macro only confirms that the given file is in configure's notion of
 AC_CONFIG_SRCDIR([src/resynthesizer/resynthesizer.c])
 AM_CONFIG_HEADER(config.h)
 
-dnl AM_INIT_AUTOMAKE(no-define)
 AM_INIT_AUTOMAKE([foreign])
 
-AC_ISC_POSIX
+AC_SEARCH_LIBS([strerror],[cposix])
 AC_PROG_CC
 AM_PROG_CC_STDC
-AC_HEADER_STDC
 
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
@@ -45,14 +43,14 @@ AM_MAINTAINER_MODE
 
 
 dnl Use -Wall if we have gcc.
-changequote(,)dnl
+changequote(,)
 if test "x$GCC" = "xyes"; then
   case " $CFLAGS " in
   *[\ \	]-Wall[\ \	]*) ;;
   *) CFLAGS="$CFLAGS -Wall" ;;
   esac
 fi
-changequote([,])dnl
+changequote([,])
 
 
 GIMP_REQUIRED_VERSION=2.2.0
@@ -64,9 +62,6 @@ PKG_CHECK_MODULES(GIMP,
 AC_SUBST(GIMP_CFLAGS)
 AC_SUBST(GIMP_LIBS)
 
-dnl GIMP_LIBDIR=`$PKG_CONFIG --variable=gimplibdir gimp-2.0`
-dnl AC_SUBST(GIMP_LIBDIR)
-
 
 dnl i18n stuff
 
@@ -75,11 +70,13 @@ GETTEXT_PACKAGE=resynthesizer
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
 				    [The gettext translation domain.])
+xgettext_args="--keyword=SG_ --keyword=G_"
+AC_SUBST(xgettext_args)
 
 dnl Add the languages which your application supports here.
 ALL_LINGUAS="es fr ru pt_BR ja"
 
-AC_PROG_INTLTOOL
+IT_PROG_INTLTOOL
 AM_GLIB_GNU_GETTEXT
 
 AC_CHECK_FUNCS(bind_textdomain_codeset)
@@ -93,10 +90,8 @@ dnl gimpplugindir="$libdir/$PACKAGE/gimp_plugin_version"
 gimpplugindir="$libdir/gimp/2.0"
 AC_SUBST(gimpplugindir)
 
-LOCALEDIR='${datadir}/locale'
+localedir="$gimpplugindir/plug-ins/resynthesizer-locale"
 DATADIR='${datadir}/plugin_name'
-
-AC_SUBST(LOCALEDIR)
 AC_SUBST(DATADIR)
 
 
@@ -127,7 +122,6 @@ fi
 
 dnl lkk July 2011
 AC_PROG_RANLIB
-dnl AC_PROG_LIBTOOL
 
 dnl lkk 2011 Added PluginScripts/Makefile
 dnl lkk 2015 Break src into lib, src/resynthesizer, src/resynthesizer-gui
@@ -145,11 +139,13 @@ help/images/Makefile
 PluginScripts/Makefile
 ])
 
+
 AC_CANONICAL_HOST
 case $host_os in
     dnl WindowsOS
     *cygwin* | *mingw* )
         LDFLAGS="$LDFLAGS -mwindows"
 esac
+
 
 AC_OUTPUT

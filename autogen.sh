@@ -190,11 +190,10 @@ fi
 $AUTOMAKE --add-missing || exit 1
 autoconf || exit 1
 
-glib-gettextize --copy --force || exit 1
 intltoolize --copy --force --automake || exit 1
 
 # Add arguments to xgettext (what is the correct way?)
-sed --in-place po/Makefile.in.in -e 's/^\(GENPOT[\t ]*=\)\(.*\)$/\1 XGETTEXT_ARGS="--keyword=SG_ --keyword=G_" \2/'
+sed --in-place po/Makefile.in.in -e 's/^\(GENPOT[\t ]*=\)\(.*\)$/\1 XGETTEXT_ARGS="@xgettext_args@" \2/'
 
 cd $ORIGDIR
 
