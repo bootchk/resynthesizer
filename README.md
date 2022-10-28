@@ -2,6 +2,15 @@
 ## about scm version
 [see wiki/README](https://github.com/itr-tert/gimp-resynthesizer-scm/wiki/README)
 
+## Installation
+[Wiki:Download and Install: GIMP resynthesizer scm](https://github.com/itr-tert/gimp-resynthesizer-scm/wiki/Download-and-Install:-GIMP-resynthesizer-scm)
+
+[Download: .zip file for Windows](https://github.com/itr-tert/gimp-resynthesizer-scm-download/raw/main/gimp-resynthesizer-scm-win.zip)
+
+[Download: .deb for amd64 Debian/Ubuntu, GNU/Linux](https://github.com/itr-tert/gimp-resynthesizer-scm-download/raw/main/gimp-resynthesizer-scm.deb)
+
+----
+
 # GIMP Resynthesizer Plugin Suite
 
 A set of plugins for the GIMP image editing app.
