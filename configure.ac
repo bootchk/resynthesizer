@@ -74,7 +74,7 @@ xgettext_args="--keyword=SG_ --keyword=G_"
 AC_SUBST(xgettext_args)
 
 dnl Add the languages which your application supports here.
-ALL_LINGUAS="es fr ru pt_BR ja"
+ALL_LINGUAS="es fr ru pt_BR ja tr"
 
 IT_PROG_INTLTOOL
 AM_GLIB_GNU_GETTEXT

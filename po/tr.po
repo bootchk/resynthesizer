@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: GIMP resynthesizer plugin master\n"
 "Report-Msgid-Bugs-To: https://github.com/bootchk/resynthesizer\n"
 "POT-Creation-Date: 2022-08-29 12:22+0300\n"
-"PO-Revision-Date: 2022-08-29 23:22+0300\n"
+"PO-Revision-Date: 2022-08-29 12:22+0300\n"
 "Last-Translator: Sabri Ünal <libreajans@gmail.com>\n"
 "Language-Team: Turkish <gnome-turk@gnome.org>\n"
 "Language: tr\n"
@@ -41,17 +41,17 @@ msgstr ""
 
 # Menü Öğesi olduğu için başlık düzeni
 #: PluginScripts/plugin-heal-selection.py:162
-msgid "_Heal selection..."
-msgstr "_Seçimi İyileştir..."
+msgid "_Heal selection(scm)..."
+msgstr "Seçimi İyileştir(scm)..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
-msgid "Context sampling width (pixels):"
-msgstr "Bağlam örnekleme genişliği (piksel):"
+msgid "Context sampling width (pixels)"
+msgstr "Bağlam örnekleme genişliği (piksel)"
 
 #: PluginScripts/plugin-heal-selection.py:168
-msgid "Sample from:"
-msgstr "Örnek kaynağı:"
+msgid "Sample from"
+msgstr "Örnek kaynağı"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "All around"
@@ -67,8 +67,8 @@ msgstr "Üst ve alt"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
-msgid "Filling order:"
-msgstr "Doldurma sırası:"
+msgid "Filling order"
+msgstr "Doldurma sırası"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
@@ -95,8 +95,12 @@ msgstr ""
 
 # Menü Öğesi olduğu için başlık düzeni
 #: PluginScripts/plugin-heal-transparency.py:77
-msgid "Heal transparency..."
-msgstr "Saydamlık İyileştir..."
+msgid "_Heal transparency(scm)..."
+msgstr "Saydamlık İyileştir(scm)..."
+
+#: PluginScripts/plugin-heal-transparency.scm:40
+msgid "The active layer has no alpha channel to heal."
+msgstr ""
 
 #: PluginScripts/plugin-map-style.py:281
 msgid "The style source cannot be of mode INDEXED"
@@ -107,22 +111,28 @@ msgid ""
 "Transfer style (color and surface) from a chosen source to the active layer. "
 msgstr "Seçilen kaynaktan aktif katmana biçem (renk ve yüzey) aktar."
 
+#: PluginScripts/plugin-map-style.scm:393
+msgid ""
+"Transforms image using art media and style from another image. Maps or "
+"synthesizes texture or theme from one image onto another. "
+msgstr ""
+
 # Menü öğesi
 #: PluginScripts/plugin-map-style.py:381
-msgid "Style..."
-msgstr "Biçem..."
+msgid "_Style(scm)..."
+msgstr "Biçem(scm)..."
 
 #: PluginScripts/plugin-map-style.py:386
-msgid "Source of style:"
-msgstr "Biçem kaynağı:"
+msgid "Source of style"
+msgstr "Biçem kaynağı"
 
 #: PluginScripts/plugin-map-style.py:387
-msgid "Percent transfer:"
-msgstr "Aktarım yüzdesi:"
+msgid "Percent transfer"
+msgstr "Aktarım yüzdesi"
 
 #: PluginScripts/plugin-map-style.py:388
-msgid "Map by:"
-msgstr "Eşlem ölçütü:"
+msgid "Map by"
+msgstr "Eşlem ölçütü"
 
 #: PluginScripts/plugin-map-style.py:388
 msgid "Color and brightness"
@@ -140,9 +150,15 @@ msgstr ""
 "Geçerli görüntü veya seçimden dokulu yeni görüntü oluştur. İsteğe bağlı "
 "olarak, daha fazla dikişsiz döşeme için uygun görüntü kenarları oluştur. "
 
+#: PluginScripts/plugin-render-texture.scm:250
+msgid ""
+"New image is the same scale but seamless and irregular.  Use 'Map>Tile' for "
+"less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. "
+msgstr ""
+
 #: PluginScripts/plugin-render-texture.py:193
-msgid "_Texture..."
-msgstr "_Doku..."
+msgid "_Texture(scm)..."
+msgstr "Doku(scm)..."
 
 #: PluginScripts/plugin-render-texture.py:199
 msgid "Ratio of size of new image to source selection"
@@ -158,24 +174,24 @@ msgstr "Görüntüyü genişlet ve keskinleştirmek için sentezle."
 
 # Menü öğesi olduğu için başlık düzeni tercih edildi.
 #: PluginScripts/plugin-resynth-enlarge.py:97
-msgid "Enlarge & sharpen..."
-msgstr "Genişlet ve Keskinleştir..."
+msgid "_Enlarge & sharpen(scm)..."
+msgstr "Genişlet ve Keskinleştir(scm)..."
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
-msgid "Scale by:"
-msgstr "Ölçek boyut:"
+msgid "Scale by"
+msgstr "Ölçek boyut"
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:100
 msgid "Seamlessly fill with a pattern using synthesis."
 msgstr "Sentezleme kullanarak desenle dikişsiz doldur."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
-msgid "_Fill with pattern seamless..."
-msgstr "_Desenle Dikişsiz Doldur..."
+msgid "_Fill with pattern seamless(scm)..."
+msgstr "Desenle Dikişsiz Doldur(scm)..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
-msgid "Pattern:"
-msgstr "Desen:"
+msgid "Pattern"
+msgstr "Desen"
 
 #: PluginScripts/plugin-resynth-sharpen.py:94
 msgid "Sharpen image by synthesis."
@@ -183,12 +199,12 @@ msgstr "Sentezleyerek resmi keskinleştir."
 
 # Menü öğesi olduğu için başlık düzeni tercih edildi.
 #: PluginScripts/plugin-resynth-sharpen.py:99
-msgid "Sharpen by synthesis..."
-msgstr "Sentezleyerek Keskinleştir..."
+msgid "_Sharpen by synthesis(scm)..."
+msgstr "Sentezleyerek Keskinleştir(scm)..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
-msgid "Sharpening:"
-msgstr "Keskinleştirme:"
+msgid "Sharpening"
+msgstr "Keskinleştirme"
 
 #: PluginScripts/plugin-uncrop.py:86
 msgid "A layer must be active, not a channel."
@@ -205,8 +221,8 @@ msgstr ""
 "Mümkünse bunun yerine bir Kırpmayı geri alın! "
 
 #: PluginScripts/plugin-uncrop.py:147
-msgid "Uncrop..."
-msgstr "Kırpmayı Kaldır..."
+msgid "_Uncrop(scm)..."
+msgstr "Kırpmayı Kaldır(scm)..."
 
 # Yerine uygun çeviri yapıldı.
 #: PluginScripts/plugin-uncrop.py:152
@@ -347,7 +363,7 @@ msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:331
 msgid "Neighbourhood size:"
-msgstr "Komşuluk boyutu:"
+msgstr "Komşuluk boyutu"
 
 #: src/resynthesizer-gui/resynth-gui.h:334
 msgid "- How many nearby pixels in the output are to be used?\n"
@@ -363,7 +379,7 @@ msgstr "- Girdide kaç konum incelenecek?\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:341
 msgid "Sensitivity to outliers:"
-msgstr "Aykırı değerlere duyarlılık:"
+msgstr "Aykırı değerlere duyarlılık"
 
 #: src/resynthesizer-gui/resynth-gui.h:344
 msgid ""
