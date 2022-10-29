@@ -42,7 +42,7 @@ msgstr ""
 # Menü Öğesi olduğu için başlık düzeni
 #: PluginScripts/plugin-heal-selection.py:162
 msgid "_Heal selection(scm)..."
-msgstr "Seçimi İyileştir(scm)..."
+msgstr "_Seçimi İyileştir (scm)..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
@@ -96,7 +96,7 @@ msgstr ""
 # Menü Öğesi olduğu için başlık düzeni
 #: PluginScripts/plugin-heal-transparency.py:77
 msgid "_Heal transparency(scm)..."
-msgstr "Saydamlık İyileştir(scm)..."
+msgstr "_Saydamlık İyileştir (scm)..."
 
 #: PluginScripts/plugin-heal-transparency.scm:40
 msgid "The active layer has no alpha channel to heal."
@@ -120,7 +120,7 @@ msgstr ""
 # Menü öğesi
 #: PluginScripts/plugin-map-style.py:381
 msgid "_Style(scm)..."
-msgstr "Biçem(scm)..."
+msgstr "_Biçem (scm)..."
 
 #: PluginScripts/plugin-map-style.py:386
 msgid "Source of style"
@@ -158,7 +158,7 @@ msgstr ""
 
 #: PluginScripts/plugin-render-texture.py:193
 msgid "_Texture(scm)..."
-msgstr "Doku(scm)..."
+msgstr "_Doku (scm)..."
 
 #: PluginScripts/plugin-render-texture.py:199
 msgid "Ratio of size of new image to source selection"
@@ -175,7 +175,7 @@ msgstr "Görüntüyü genişlet ve keskinleştirmek için sentezle."
 # Menü öğesi olduğu için başlık düzeni tercih edildi.
 #: PluginScripts/plugin-resynth-enlarge.py:97
 msgid "_Enlarge & sharpen(scm)..."
-msgstr "Genişlet ve Keskinleştir(scm)..."
+msgstr "_Genişlet ve Keskinleştir (scm)..."
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
 msgid "Scale by"
@@ -187,7 +187,7 @@ msgstr "Sentezleme kullanarak desenle dikişsiz doldur."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
 msgid "_Fill with pattern seamless(scm)..."
-msgstr "Desenle Dikişsiz Doldur(scm)..."
+msgstr "_Desenle Dikişsiz Doldur (scm)..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
 msgid "Pattern"
@@ -200,7 +200,7 @@ msgstr "Sentezleyerek resmi keskinleştir."
 # Menü öğesi olduğu için başlık düzeni tercih edildi.
 #: PluginScripts/plugin-resynth-sharpen.py:99
 msgid "_Sharpen by synthesis(scm)..."
-msgstr "Sentezleyerek Keskinleştir(scm)..."
+msgstr "_Sentezleyerek Keskinleştir (scm)..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
 msgid "Sharpening"
@@ -222,7 +222,7 @@ msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:147
 msgid "_Uncrop(scm)..."
-msgstr "Kırpmayı Kaldır(scm)..."
+msgstr "_Kırpmayı Kaldır (scm)..."
 
 # Yerine uygun çeviri yapıldı.
 #: PluginScripts/plugin-uncrop.py:152
@@ -379,7 +379,7 @@ msgstr "- Girdide kaç konum incelenecek?\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:341
 msgid "Sensitivity to outliers:"
-msgstr "Aykırı değerlere duyarlılık"
+msgstr "Aykırı değerlere duyarlılık:"
 
 #: src/resynthesizer-gui/resynth-gui.h:344
 msgid ""

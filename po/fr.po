@@ -32,7 +32,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:162
 msgid "_Heal selection(scm)..."
-msgstr "Corriger la sélection(scm)..."
+msgstr "_Corriger la sélection(scm)..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
@@ -85,7 +85,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-transparency.py:77
 msgid "_Heal transparency(scm)..."
-msgstr "Corriger la transparence(scm)..."
+msgstr "_Corriger la transparence(scm)..."
 
 #: PluginScripts/plugin-map-style.py:281
 msgid "The style source cannot be of mode INDEXED"
@@ -106,7 +106,7 @@ msgstr ""
 
 #: PluginScripts/plugin-map-style.py:381
 msgid "_Style(scm)..."
-msgstr "Style(scm)..."
+msgstr "_Style(scm)..."
 
 #: PluginScripts/plugin-map-style.py:386
 msgid "Source of style"
@@ -144,7 +144,7 @@ msgstr ""
 
 #: PluginScripts/plugin-render-texture.py:188
 msgid "_Texture(scm)..."
-msgstr "Texture(scm)..."
+msgstr "_Texture(scm)..."
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
@@ -160,7 +160,7 @@ msgstr "Agrandir l'image et synthétiser pour augmenter la netteté."
 
 #: PluginScripts/plugin-resynth-enlarge.py:97
 msgid "_Enlarge & sharpen(scm)..."
-msgstr "Agrandir et augmenter la netteté(scm)..."
+msgstr "_Agrandir et augmenter la netteté(scm)..."
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
 msgid "Scale by"
@@ -172,7 +172,7 @@ msgstr "Remplir avec un motif raccordable en utilisant la synthèse."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
 msgid "_Fill with pattern seamless(scm)..."
-msgstr "Remplir avec un motif raccordable(scm)..."
+msgstr "_Remplir avec un motif raccordable(scm)..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
 msgid "Pattern"
@@ -184,7 +184,7 @@ msgstr "Augmenter la netteté de l'image par synthèse."
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
 msgid "_Sharpen by synthesis(scm)..."
-msgstr "Augmenter la netteté par synthèse(scm)..."
+msgstr "_Augmenter la netteté par synthèse(scm)..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
 msgid "Sharpening"
@@ -206,7 +206,7 @@ msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:147
 msgid "_Uncrop(scm)..."
-msgstr "Dérogner(scm)..."
+msgstr "_Dérogner(scm)..."
 
 #: PluginScripts/plugin-uncrop.py:152
 msgid "Percent enlargement"
