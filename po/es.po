@@ -32,7 +32,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:162
 msgid "_Heal selection(scm)..."
-msgstr "_Sintetiza seleccion(scm)..."
+msgstr "Sintetiza seleccion(scm)..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82

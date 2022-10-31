@@ -51,9 +51,6 @@ msgstr ""
 #: PluginScripts/plugin-resynth-sharpen.scm:114
 #: PluginScripts/plugin-uncrop.scm:244
 msgid "Requires separate resynthesizer plugin."
-msgstr "Doku kaynağı: "
-
-#: src/resynthesizer-gui/resynth-gui.h:278
 msgstr "Ayrı yeniden sentezleyici eklentisi gerektirir."
 
 #: PluginScripts/plugin-heal-selection.scm:244

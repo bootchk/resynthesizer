@@ -17,7 +17,7 @@ msgstr "修復する範囲を選択してください。"
 
 #: PluginScripts/plugin-heal-selection.scm:228
 msgid "_Heal selection(scm)..."
-msgstr "選択範囲を修復(scm)(_H)..."
+msgstr "選択範囲を修復(scm)..."
 
 #: PluginScripts/plugin-heal-selection.scm:231
 msgid "Heal the selection from surroundings as if using the heal tool."
@@ -81,7 +81,7 @@ msgstr "アクティブレイヤーには修復するためのアルファチャ
 
 #: PluginScripts/plugin-heal-transparency.scm:79
 msgid "_Heal transparency(scm)..."
-msgstr "透過部分を修復(scm)(_T)..."
+msgstr "透過部分を修復(scm)..."
 
 #: PluginScripts/plugin-heal-transparency.scm:82
 msgid ""
@@ -95,7 +95,7 @@ msgstr "スタイル(特徴)ソースの画像モードをINDEXEDには出来ま
 
 #: PluginScripts/plugin-map-style.scm:389
 msgid "_Style(scm)..."
-msgstr "スタイル(scm)(_S)..."
+msgstr "スタイル(scm)..."
 
 #: PluginScripts/plugin-map-style.scm:392
 msgid ""
@@ -131,7 +131,7 @@ msgstr "輝度のみ"
 
 #: PluginScripts/plugin-render-texture.scm:246
 msgid "_Texture(scm)..."
-msgstr "テクスチャー(scm)(_T)..."
+msgstr "テクスチャー(scm)..."
 
 #: PluginScripts/plugin-render-texture.scm:249
 msgid ""
@@ -158,7 +158,7 @@ msgstr "生成画像の端をシームレスに並べられるようにする"
 
 #: PluginScripts/plugin-resynth-enlarge.scm:109
 msgid "_Enlarge & sharpen(scm)..."
-msgstr "拡大して鮮明化(scm)(_E)..."
+msgstr "拡大して鮮明化(scm)..."
 
 #: PluginScripts/plugin-resynth-enlarge.scm:112
 msgid "Enlarge image and synthesize to sharpen."
@@ -170,7 +170,7 @@ msgstr "拡大係数"
 
 #: PluginScripts/plugin-resynth-fill-pattern.scm:107
 msgid "_Fill with pattern seamless(scm)..."
-msgstr "シームレスにパターンで塗り潰す(scm)(_S)...	"
+msgstr "シームレスにパターンで塗り潰す(scm)...	"
 
 #: PluginScripts/plugin-resynth-fill-pattern.scm:110
 msgid "Seamlessly fill with a pattern using synthesis."
@@ -182,7 +182,7 @@ msgstr "パターン"
 
 #: PluginScripts/plugin-resynth-sharpen.scm:110
 msgid "_Sharpen by synthesis(scm)..."
-msgstr "合成して鮮明化(scm)(_S)..."
+msgstr "合成して鮮明化(scm)..."
 
 #: PluginScripts/plugin-resynth-sharpen.scm:113
 msgid "Sharpen image by synthesis."
@@ -198,7 +198,7 @@ msgstr "画像レイヤーがアクティブである必要があります、ま
 
 #: PluginScripts/plugin-uncrop.scm:240
 msgid "_Uncrop(scm)..."
-msgstr "逆切り抜き(scm)(_U)..."
+msgstr "逆切り抜き(scm)..."
 
 #: PluginScripts/plugin-uncrop.scm:243
 msgid ""
@@ -217,7 +217,7 @@ msgstr "タイル化、テーマ適用、テクスチャ下塗り、特徴削除
 
 #: src/resynthesizer-gui/resynth-gui.c:161
 msgid "_Resynthesize..."
-msgstr "_Resynthesize..."
+msgstr "Resynthesize..."
 
 #: src/resynthesizer-gui/resynth-gui.h:115
 msgid "Context: "
