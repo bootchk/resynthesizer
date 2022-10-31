@@ -84,13 +84,19 @@ AC_CHECK_FUNCS(bind_textdomain_codeset)
 dnl Fix for changes in GLib 2.31 
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
 
-dnl lkk 2011 I copied this from the main gimp configure.in
-dnl where $PACKAGE is gimp and gimp_plugin_version is 2.0
-dnl gimpplugindir="$libdir/$PACKAGE/gimp_plugin_version"
-gimpplugindir="$libdir/gimp/2.0"
-AC_SUBST(gimpplugindir)
 
-localedir="$gimpplugindir/plug-ins/resynthesizer-locale"
+gimpplugindir="$libdir/gimp/2.0"
+gimpdatadir='${datadir}/gimp/2.0'
+dnl Path to install scm scripts .
+gimpscriptsdir='$(gimpdatadir)/scripts/resynthesizer-scm'
+dnl Path to install locale data.
+localedir="${gimpplugindir}/plug-ins/resynthesizer-locale"
+
+AC_SUBST(gimpplugindir)
+AC_SUBST(gimpdatadir)
+AC_SUBST(gimpscriptsdir)
+AC_SUBST(localedir)
+
 DATADIR='${datadir}/plugin_name'
 AC_SUBST(DATADIR)
 

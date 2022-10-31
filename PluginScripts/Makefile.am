@@ -1,11 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-## lkk 2011 I hacked this file from gimp../plugins/pygimp/plugins/Makefile.am
-## pluginexecdir tells autotools where to install scripts
-## scripts tells autotools the list of installable Python language scripts
-
-pluginexecdir = $(gimpplugindir)/scripts/resynthesizer/
-
 scripts = \
 	plugin-heal-selection.scm      \
 	plugin-resynth-sharpen.scm     \
@@ -16,6 +10,6 @@ scripts = \
 	plugin-heal-transparency.scm   \
 	plugin-resynth-fill-pattern.scm
 
-pluginexec_SCRIPTS = $(scripts)
+gimpscripts_SCRIPTS = $(scripts)
 
 EXTRA_DIST = $(scripts)
