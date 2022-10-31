@@ -35,7 +35,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:162
 msgid "_Heal selection(scm)..."
-msgstr "Восстановить выделение(scm)…"
+msgstr "_Восстановить выделение(scm)…"
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
@@ -88,7 +88,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-transparency.py:77
 msgid "_Heal transparency(scm)..."
-msgstr "Восстановить прозрачную область(scm)…"
+msgstr "_Восстановить прозрачную область(scm)…"
 
 #: PluginScripts/plugin-map-style.py:281
 msgid "The style source cannot be of mode INDEXED"
@@ -109,7 +109,7 @@ msgstr ""
 
 #: PluginScripts/plugin-map-style.py:381
 msgid "_Style(scm)..."
-msgstr "Стиль(scm)…"
+msgstr "_Стиль(scm)…"
 
 #: PluginScripts/plugin-map-style.py:386
 msgid "Source of style"
@@ -148,7 +148,7 @@ msgstr ""
 
 #: PluginScripts/plugin-render-texture.py:188
 msgid "_Texture(scm)..."
-msgstr "Текстура(scm)…"
+msgstr "_Текстура(scm)…"
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
@@ -164,7 +164,7 @@ msgstr "Увеличить изображения и повысить резко
 
 #: PluginScripts/plugin-resynth-enlarge.py:97
 msgid "_Enlarge & sharpen(scm)..."
-msgstr "Увеличить размер и резкость(scm)…"
+msgstr "_Увеличить размер и резкость(scm)…"
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
 msgid "Scale by"
@@ -176,7 +176,7 @@ msgstr "Залить текстурой без видимых швов с пом
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
 msgid "_Fill with pattern seamless(scm)..."
-msgstr "Залить _бесшовной текстурой(scm)…"
+msgstr "_Залить _бесшовной текстурой(scm)…"
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
 msgid "Pattern"
@@ -188,7 +188,7 @@ msgstr "Увеличить резкость изображения."
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
 msgid "_Sharpen by synthesis(scm)..."
-msgstr "Увеличить резкость синтезом(scm)…"
+msgstr "_Увеличить резкость синтезом(scm)…"
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
 msgid "Sharpening"
@@ -210,7 +210,7 @@ msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:147
 msgid "_Uncrop(scm)..."
-msgstr "Обратное кадрирование(scm)…"
+msgstr "_Обратное кадрирование(scm)…"
 
 #: PluginScripts/plugin-uncrop.py:152
 msgid "Percent enlargement"

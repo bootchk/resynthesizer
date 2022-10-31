@@ -33,7 +33,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:162
 msgid "_Heal selection(scm)..."
-msgstr "Restaurar seleção(scm)..."
+msgstr "_Restaurar seleção(scm)..."
 
 #: PluginScripts/plugin-heal-selection.py:167 PluginScripts/plugin-heal-transparency.py:82
 msgid "Context sampling width (pixels)"
@@ -79,7 +79,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-transparency.py:77
 msgid "_Heal transparency(scm)..."
-msgstr "Restaurar transparência(scm)..."
+msgstr "_Restaurar transparência(scm)..."
 
 #: PluginScripts/plugin-map-style.py:281
 msgid "The style source cannot be of mode INDEXED"
@@ -97,7 +97,7 @@ msgstr ""
 
 #: PluginScripts/plugin-map-style.py:381
 msgid "_Style(scm)..."
-msgstr "Estilo(scm)..."
+msgstr "_Estilo(scm)..."
 
 #: PluginScripts/plugin-map-style.py:386
 msgid "Source of style"
@@ -135,7 +135,7 @@ msgstr ""
 
 #: PluginScripts/plugin-render-texture.py:188
 msgid "_Texture(scm)..."
-msgstr "Textura(scm)..."
+msgstr "_Textura(scm)..."
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
@@ -151,7 +151,7 @@ msgstr "Amplie a imagem e sintetize para torná-la mais nítida."
 
 #: PluginScripts/plugin-resynth-enlarge.py:97
 msgid "_Enlarge & sharpen(scm)..."
-msgstr "Ampliação & nitidez(scm)..."
+msgstr "_Ampliação & nitidez(scm)..."
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
 msgid "Scale by"
@@ -175,7 +175,7 @@ msgstr "Aumentar a nitidez da imagem por síntese."
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
 msgid "_Sharpen by synthesis(scm)..."
-msgstr "Nitidez por síntese(scm)..."
+msgstr "_Nitidez por síntese(scm)..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
 msgid "Sharpening"
@@ -196,7 +196,7 @@ msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:147
 msgid "_Uncrop(scm)..."
-msgstr "Retirar do corte(scm)..."
+msgstr "_Retirar do corte(scm)..."
 
 #: PluginScripts/plugin-uncrop.py:152
 msgid "Percent enlargement"
