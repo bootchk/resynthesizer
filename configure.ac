@@ -91,15 +91,14 @@ dnl Path to install scm scripts .
 gimpscriptsdir='$(gimpdatadir)/scripts/resynthesizer-scm'
 dnl Path to install locale data.
 localedir="${gimpplugindir}/plug-ins/resynthesizer-locale"
+dnl Path to install help data.
+helpbasedir='${datadir}/plugin_name/help'
 
 AC_SUBST(gimpplugindir)
 AC_SUBST(gimpdatadir)
 AC_SUBST(gimpscriptsdir)
 AC_SUBST(localedir)
-
-DATADIR='${datadir}/plugin_name'
-AC_SUBST(DATADIR)
-
+AC_SUBST(helpbasedir)
 
 AC_MSG_CHECKING([if GTK+ is version 2.7.0 or newer])
 if $PKG_CONFIG --atleast-version=2.7.0 gtk+-2.0; then
