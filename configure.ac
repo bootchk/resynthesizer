@@ -85,18 +85,21 @@ dnl Fix for changes in GLib 2.31
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
 
 
-gimpplugindir="$libdir/gimp/2.0"
+gimpconfigdir="$libdir/gimp/2.0"
 gimpdatadir='${datadir}/gimp/2.0'
+dnl Path to install binary plugins.
+gimppluginsdir="${gimpconfigdir}/plug-ins"
 dnl Path to install scm scripts .
 gimpscriptsdir='$(gimpdatadir)/scripts/resynthesizer-scm'
 dnl Path to install locale data.
-localedir="${gimpplugindir}/plug-ins/resynthesizer-locale"
+localedir="${gimppluginsdir}/resynthesizer-locale"
 dnl Path to install help data.
 helpbasedir='${datadir}/plugin_name/help'
 
-AC_SUBST(gimpplugindir)
+AC_SUBST(gimpconfigdir)
 AC_SUBST(gimpdatadir)
 AC_SUBST(gimpscriptsdir)
+AC_SUBST(gimppluginsdir)
 AC_SUBST(localedir)
 AC_SUBST(helpbasedir)
 

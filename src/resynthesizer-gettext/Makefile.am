@@ -2,7 +2,7 @@
 
 bin_PROGRAMS = resynthesizer_gettext
 
-bindir = $(gimpplugindir)/plug-ins
+bindir = @gimppluginsdir@
 
 resynthesizer_gettext_SOURCES = resynthesizer-gettext.c
 
