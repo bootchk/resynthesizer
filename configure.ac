@@ -87,10 +87,11 @@ AC_CHECK_LIB(gthread-2.0, g_thread_init)
 
 gimpconfigdir="$libdir/gimp/2.0"
 gimpdatadir='${datadir}/gimp/2.0'
+gimpscriptsdir='$(gimpdatadir)/scripts'
 dnl Path to install binary plugins.
 gimppluginsdir="${gimpconfigdir}/plug-ins"
-dnl Path to install scm scripts .
-gimpscriptsdir='$(gimpdatadir)/scripts/resynthesizer-scm'
+dnl Path to install scm scripts.
+resynthscriptsdir='$(gimpscriptsdir)/resynthesizer-scm'
 dnl Path to install locale data.
 localedir="${gimppluginsdir}/resynthesizer-locale"
 dnl Path to install help data.
@@ -99,9 +100,11 @@ helpbasedir='${datadir}/plugin_name/help'
 AC_SUBST(gimpconfigdir)
 AC_SUBST(gimpdatadir)
 AC_SUBST(gimpscriptsdir)
+AC_SUBST(resynthscriptsdir)
 AC_SUBST(gimppluginsdir)
 AC_SUBST(localedir)
 AC_SUBST(helpbasedir)
+
 
 AC_MSG_CHECKING([if GTK+ is version 2.7.0 or newer])
 if $PKG_CONFIG --atleast-version=2.7.0 gtk+-2.0; then

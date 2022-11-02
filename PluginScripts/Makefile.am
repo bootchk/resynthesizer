@@ -10,6 +10,6 @@ scripts = \
 	plugin-heal-transparency.scm   \
 	plugin-resynth-fill-pattern.scm
 
-gimpscripts_SCRIPTS = $(scripts)
+resynthscripts_SCRIPTS = $(scripts)
 
 EXTRA_DIST = $(scripts)
