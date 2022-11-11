@@ -266,6 +266,8 @@
                          "<Image>/Filters/Enhance")
 
 (script-fu-menu-register "script-fu-uncrop"
-                         "<Image>/Filters/Resynthesizer(scm)/")
+			 (string-append "<Image>/Filters/"
+					(SG_"Resynthesizer(scm)")))
+
 script-fu-uncrop
 ))

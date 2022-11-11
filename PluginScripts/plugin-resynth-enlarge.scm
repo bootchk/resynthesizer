@@ -136,7 +136,8 @@
 			 "<Image>/Filters/Enhance")
 
 (script-fu-menu-register "script-fu-enlarge-resynthesized"
-                         "<Image>/Filters/Resynthesizer(scm)/")
+			 (string-append "<Image>/Filters/"
+					(SG_"Resynthesizer(scm)")))
 
 script-fu-enlarge-resynthesized
 ))

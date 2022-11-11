@@ -111,7 +111,8 @@
 			 "<Image>/Filters/Enhance")
 
 (script-fu-menu-register "script-fu-heal-transparency"
-                         "<Image>/Filters/Resynthesizer(scm)/")
+			 (string-append "<Image>/Filters/"
+					(SG_"Resynthesizer(scm)")))
 
 script-fu-heal-transparency
 ))

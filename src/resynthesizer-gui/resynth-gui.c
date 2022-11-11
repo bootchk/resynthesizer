@@ -138,16 +138,23 @@ static void run(
 }
 
 /* Register plugin to Procedural DataBase */
-static void 
-query() 
+static void
+query()
 {
   /* resynth_paramdefs defined in resynth-parameters.h */
   GimpParamDef *return_vals = NULL;
   gint nargs = sizeof(resynth_paramdefs)/sizeof(resynth_paramdefs[0]);
   gint nreturn_vals = 0;
 
+  /*  Initialize i18n support  */
+  bindtextdomain (GETTEXT_PACKAGE, get_resynthesizer_locale_dir());
+#ifdef HAVE_BIND_TEXTDOMAIN_CODESET
+  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+#endif
+  textdomain (GETTEXT_PACKAGE);
+
   gimp_plugin_domain_register (RESYNTH_DOMAIN_NAME, get_resynthesizer_locale_dir());
-  
+
   gimp_install_procedure(
     RESYNTH_CONTROLS_PDB_NAME,
     N_("Make tiles, apply themes, render texture, remove features, etc."),
@@ -155,13 +162,19 @@ query()
 		"Paul Francis Harrison, Lloyd Konneker",
 		"2000 Paul Francis Harrison, 2010 Lloyd Konneker",
 		"2010",
-		N_("_Resynthesize..."), 
+		N_("_Resynthesize..."),
 		"RGB*, GRAY*",
 		GIMP_PLUGIN,
 		nargs, nreturn_vals,
 		resynth_paramdefs, return_vals);
-		
-		gimp_plugin_menu_register(RESYNTH_CONTROLS_PDB_NAME, "<Image>/Filters/Map");
+
+  gimp_plugin_menu_register(RESYNTH_CONTROLS_PDB_NAME, "<Image>/Filters/Map");
+  gchar *menupath = g_strconcat("<Image>/Filters/",
+				_("Resynthesizer(scm)"),
+				"​",  // zero width space to suppress translation
+				NULL);
+  gimp_plugin_menu_register(RESYNTH_CONTROLS_PDB_NAME, menupath);
+  g_free(menupath);
 }
 
 

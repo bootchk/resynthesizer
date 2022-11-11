@@ -420,7 +420,8 @@
                          "<Image>/Filters/Map")
 
 (script-fu-menu-register "script-fu-map-style"
-                         "<Image>/Filters/Resynthesizer(scm)/")
+			 (string-append "<Image>/Filters/"
+					(SG_"Resynthesizer(scm)")))
 
 script-fu-map-style
 ))

@@ -127,7 +127,8 @@
                          "<Image>/Edit")
 
 (script-fu-menu-register "script-fu-fill-pattern-resynth"
-                         "<Image>/Filters/Resynthesizer(scm)/")
+			 (string-append "<Image>/Filters/"
+					(SG_"Resynthesizer(scm)")))
 
 script-fu-fill-pattern-resynth
 ))

@@ -276,7 +276,8 @@
                          "<Image>/Filters/Render")
 
 (script-fu-menu-register "script-fu-render-texture"
-                         "<Image>/Filters/Resynthesizer(scm)/")
+			 (string-append "<Image>/Filters/"
+					(SG_"Resynthesizer(scm)")))
 
 script-fu-render-texture
 ))
