@@ -8,6 +8,8 @@ project('resynthesizer',
   ],
 )
 
+prefix = get_option('prefix')
+
 # Define meson var for libresynthesizer headers
 # TODO move to a separate include dir
 resynthesizer_inc = include_directories('lib')
@@ -15,7 +17,7 @@ resynthesizer_inc = include_directories('lib')
 # TODO this is platform specific, for Ubuntu
 # TODO should install to user specific location (customizations) ???
 # define the location to install gimp plugins
-gimpplugindir = '/usr/local/lib/x86_64-linux-gnu/gimp/2.99'
+gimpplugindir = prefix / 'lib/x86_64-linux-gnu/gimp/2.99'
 
 
 # Is the order important to meson?
