@@ -27,7 +27,7 @@ static gint delete_func_quit(GtkWidget *widget, GdkEvent *event, gpointer data)
 Constrain the pop-up list for choosing texture i.e. corpus.
 
 Formerly also required alpha channels to match:
-&& gimp_drawable_bpp(drawable_id) == desired_corpus_bpp
+&& gimp_drawable_get_bpp(drawable_id) == desired_corpus_bpp
 */
 static gint corpus_menu_constrain(
   gint32 image_id,    /* not used. */
@@ -270,7 +270,7 @@ static gboolean get_parameters_by_asking(TGimpAdapterParametersOld *param, int d
   gtk_container_set_border_width(GTK_CONTAINER(input_frame), 6);
   gtk_box_pack_start(GTK_BOX(main_box), input_frame, TRUE, TRUE, 0);
     
-  // OLD desired_corpus_bpp = gimp_drawable_bpp(default_drawable);
+  // OLD desired_corpus_bpp = gimp_drawable_get_bpp(default_drawable);
   corpus = make_image_menu(_("Texture source: "), corpus_menu_constrain,
     &param->corpus_id);
   gtk_container_add(GTK_CONTAINER(input_frame), corpus);
