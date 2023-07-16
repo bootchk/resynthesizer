@@ -60,7 +60,7 @@ TODO a quality setting
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, )
+gettext.install("resynthesizer", Gimp.locale_directory(), )
 
 debug = False
 
@@ -198,7 +198,7 @@ register(
   [(PF_IMAGE,      "new_image",    _("New, synthesized texture."))],
   render_texture,
   menu="<Image>/Filters/Render",
-  domain=("resynthesizer", gimp.locale_directory)
+  domain=("resynthesizer", Gimp.locale_directory())
   )
 
 main()

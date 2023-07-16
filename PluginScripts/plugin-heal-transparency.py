@@ -27,7 +27,7 @@ License:
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory)
+gettext.install("resynthesizer", Gimp.locale_directory())
 
 def heal_transparency(timg, tdrawable, samplingRadiusParam=50, orderParam=2):
 
@@ -87,7 +87,7 @@ register(
   [],
   heal_transparency,
   menu="<Image>/Filters/Enhance",
-  domain=("resynthesizer", gimp.locale_directory)
+  domain=("resynthesizer", Gimp.locale_directory())
   )
 
 main()

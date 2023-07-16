@@ -29,8 +29,8 @@ License:
 
 from gimpfu import *
 
-# Python 2 gettext.install("resynthesizer", gimp.locale_directory, unicode=True)
-gettext.install("resynthesizer", gimp.locale_directory)
+# Python 2 gettext.install("resynthesizer", Gimp.locale_directory(), unicode=True)
+gettext.install("resynthesizer", Gimp.locale_directory())
 
 debug = False
 
@@ -173,7 +173,7 @@ register(
   [],
   heal_selection,
   menu="<Image>/Filters/Enhance",
-  domain=("resynthesizer", gimp.locale_directory)
+  domain=("resynthesizer", Gimp.locale_directory())
   )
 
 main()

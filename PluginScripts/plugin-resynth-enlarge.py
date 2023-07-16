@@ -28,7 +28,7 @@ http://www.gnu.org/copyleft/gpl.html
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, )
+gettext.install("resynthesizer", Gimp.locale_directory(), )
 
 def plugin_main(image, drawable, scale_factor):
   '''
@@ -104,7 +104,7 @@ if __name__ == "__main__" :
     [],
     plugin_main,
     menu="<Image>/Filters/Enhance",
-    domain=("resynthesizer", gimp.locale_directory)
+    domain=("resynthesizer", Gimp.locale_directory())
     )
 
   main()
