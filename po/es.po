@@ -24,20 +24,24 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:157
 msgid "Heal the selection from surroundings as if using the heal tool."
-msgstr "Inventar seleccion como el tool"
+msgstr "Inventar seleccion como el tool."
+
+#: PluginScripts/plugin-heal-transparency.scm:40
+msgid "The active layer has no alpha channel to heal."
+msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:162
-msgid "_Heal selection..."
-msgstr "Sintetiza seleccion..."
+msgid "_Heal selection(scm)..."
+msgstr "Sintetiza seleccion(scm)..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
-msgid "Context sampling width (pixels):"
+msgid "Context sampling width (pixels)"
 msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:168
-msgid "Sample from:"
-msgstr "Invento de:"
+msgid "Sample from"
+msgstr "Invento de"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "All around"
@@ -53,7 +57,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
-msgid "Filling order:"
+msgid "Filling order"
 msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:169
@@ -78,7 +82,7 @@ msgid ""
 msgstr ""
 
 #: PluginScripts/plugin-heal-transparency.py:77
-msgid "Heal transparency..."
+msgid "_Heal transparency(scm)..."
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:281
@@ -90,20 +94,26 @@ msgid ""
 "Transfer style (color and surface) from a chosen source to the active layer. "
 msgstr ""
 
+#: PluginScripts/plugin-map-style.scm:393
+msgid ""
+"Transforms image using art media and style from another image. Maps or "
+"synthesizes texture or theme from one image onto another. "
+msgstr ""
+
 #: PluginScripts/plugin-map-style.py:381
-msgid "Style..."
+msgid "_Style(scm)..."
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:386
-msgid "Source of style:"
+msgid "Source of style"
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:387
-msgid "Percent transfer:"
+msgid "Percent transfer"
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:388
-msgid "Map by:"
+msgid "Map by"
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:388
@@ -120,8 +130,14 @@ msgid ""
 "Optionally, create image edges suited for further, seamless tiling. "
 msgstr ""
 
+#: PluginScripts/plugin-render-texture.scm:250
+msgid ""
+"New image is the same scale but seamless and irregular.  Use 'Map>Tile' for "
+"less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. "
+msgstr ""
+
 #: PluginScripts/plugin-render-texture.py:188
-msgid "_Texture..."
+msgid "_Texture(scm)..."
 msgstr ""
 
 #: PluginScripts/plugin-render-texture.py:194
@@ -137,11 +153,11 @@ msgid "Enlarge image and synthesize to sharpen."
 msgstr ""
 
 #: PluginScripts/plugin-resynth-enlarge.py:97
-msgid "Enlarge & sharpen..."
+msgid "_Enlarge & sharpen(scm)..."
 msgstr ""
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
-msgid "Scale by:"
+msgid "Scale by"
 msgstr ""
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:100
@@ -149,11 +165,11 @@ msgid "Seamlessly fill with a pattern using synthesis."
 msgstr ""
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
-msgid "_Fill with pattern seamless..."
+msgid "_Fill with pattern seamless(scm)..."
 msgstr ""
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
-msgid "Pattern:"
+msgid "Pattern"
 msgstr ""
 
 #: PluginScripts/plugin-resynth-sharpen.py:94
@@ -162,11 +178,11 @@ msgstr ""
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
 #, fuzzy
-msgid "Sharpen by synthesis..."
+msgid "_Sharpen by synthesis(scm)..."
 msgstr "_Resintetiza..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
-msgid "Sharpening:"
+msgid "Sharpening"
 msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:86
@@ -181,7 +197,7 @@ msgid ""
 msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:147
-msgid "Uncrop..."
+msgid "_Uncrop(scm)..."
 msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:152

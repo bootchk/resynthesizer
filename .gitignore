@@ -8,6 +8,7 @@
 
 # Ignore editor backup files
 *~
+.\#*
 
 # Ignore Python byte compiled files
 *.pyc
@@ -17,6 +18,8 @@
 
 # Ignore object files
 *.o
+*.a
+*.exe
 
 # Ignore
 *.Po
@@ -39,6 +42,8 @@
 /compile
 /config.h
 /config.h.in
+/config.guess
+/config.sub
 /config.status
 /configure
 /depcomp
@@ -49,6 +54,14 @@
 
 Makefile.in
 Makefile
+
+/src/resynthesizer/resynthesizer
+/src/resynthesizer-gui/resynthesizer_gui
+/src/resynthesizer-gettext/resynthesizer_gettext
+
+POTFILES
+stamp-it
+stamp-h1
 
 # ignore separate build directory 
 /build

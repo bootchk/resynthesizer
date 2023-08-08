@@ -26,18 +26,22 @@ msgstr ""
 "Corriger la sélection à partir des environs comme si vous utilisiez l'outil "
 "Correcteur."
 
+#: PluginScripts/plugin-heal-transparency.scm:40
+msgid "The active layer has no alpha channel to heal."
+msgstr ""
+
 #: PluginScripts/plugin-heal-selection.py:162
-msgid "_Heal selection..."
-msgstr "_Corriger la sélection..."
+msgid "_Heal selection(scm)..."
+msgstr "Corriger la sélection(scm)..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
-msgid "Context sampling width (pixels):"
-msgstr "Largeur d'échantillonnage du contexte (pixels) :"
+msgid "Context sampling width (pixels)"
+msgstr "Largeur d'échantillonnage du contexte (pixels)"
 
 #: PluginScripts/plugin-heal-selection.py:168
-msgid "Sample from:"
-msgstr "Échantillon :"
+msgid "Sample from"
+msgstr "Échantillon"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "All around"
@@ -53,8 +57,8 @@ msgstr "Au-dessus et au-dessous"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
-msgid "Filling order:"
-msgstr "Ordre de remplissage :"
+msgid "Filling order"
+msgstr "Ordre de remplissage"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
@@ -80,8 +84,8 @@ msgstr ""
 "bords, vers l'intérieur pour les trous."
 
 #: PluginScripts/plugin-heal-transparency.py:77
-msgid "Heal transparency..."
-msgstr "Corriger la transparence..."
+msgid "_Heal transparency(scm)..."
+msgstr "Corriger la transparence(scm)..."
 
 #: PluginScripts/plugin-map-style.py:281
 msgid "The style source cannot be of mode INDEXED"
@@ -94,21 +98,27 @@ msgstr ""
 "Transférer le style (couleur et surface) d'une source choisie vers le calque "
 "actif."
 
+#: PluginScripts/plugin-map-style.scm:393
+msgid ""
+"Transforms image using art media and style from another image. Maps or "
+"synthesizes texture or theme from one image onto another. "
+msgstr ""
+
 #: PluginScripts/plugin-map-style.py:381
-msgid "Style..."
-msgstr "Style..."
+msgid "_Style(scm)..."
+msgstr "Style(scm)..."
 
 #: PluginScripts/plugin-map-style.py:386
-msgid "Source of style:"
-msgstr "Source de style :"
+msgid "Source of style"
+msgstr "Source de style"
 
 #: PluginScripts/plugin-map-style.py:387
-msgid "Percent transfer:"
-msgstr "Pourcentage de transfert :"
+msgid "Percent transfer"
+msgstr "Pourcentage de transfert"
 
 #: PluginScripts/plugin-map-style.py:388
-msgid "Map by:"
-msgstr "Correspondance :"
+msgid "Map by"
+msgstr "Correspondance"
 
 #: PluginScripts/plugin-map-style.py:388
 msgid "Color and brightness"
@@ -126,53 +136,59 @@ msgstr ""
 "Créer une nouvelle image avec une texture à partir de l'image ou de la "
 "sélection actuelle. Vous pouvez aussi créer des bords d’image raccordables."
 
+#: PluginScripts/plugin-render-texture.scm:250
+msgid ""
+"New image is the same scale but seamless and irregular.  Use 'Map>Tile' for "
+"less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. "
+msgstr ""
+
 #: PluginScripts/plugin-render-texture.py:188
-msgid "_Texture..."
-msgstr "_Texture..."
+msgid "_Texture(scm)..."
+msgstr "Texture(scm)..."
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
-msgstr "Rapport de taille de la nouvelle image à la sélection source :"
+msgstr "Rapport de taille de la nouvelle image à la sélection source"
 
 #: PluginScripts/plugin-render-texture.py:195
 msgid "Make new image edges suitable for seamless tiling"
-msgstr "Faire de nouvelles bordures d'image raccordables :"
+msgstr "Faire de nouvelles bordures d'image raccordables"
 
 #: PluginScripts/plugin-resynth-enlarge.py:92
 msgid "Enlarge image and synthesize to sharpen."
 msgstr "Agrandir l'image et synthétiser pour augmenter la netteté."
 
 #: PluginScripts/plugin-resynth-enlarge.py:97
-msgid "Enlarge & sharpen..."
-msgstr "Agrandir et augmenter la netteté..."
+msgid "_Enlarge & sharpen(scm)..."
+msgstr "Agrandir et augmenter la netteté(scm)..."
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
-msgid "Scale by:"
-msgstr "Mise à l'échelle :"
+msgid "Scale by"
+msgstr "Mise à l'échelle"
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:100
 msgid "Seamlessly fill with a pattern using synthesis."
 msgstr "Remplir avec un motif raccordable en utilisant la synthèse."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
-msgid "_Fill with pattern seamless..."
-msgstr "_Remplir avec un motif raccordable..."
+msgid "_Fill with pattern seamless(scm)..."
+msgstr "Remplir avec un motif raccordable(scm)..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
-msgid "Pattern:"
-msgstr "Motif :"
+msgid "Pattern"
+msgstr "Motif"
 
 #: PluginScripts/plugin-resynth-sharpen.py:94
 msgid "Sharpen image by synthesis."
 msgstr "Augmenter la netteté de l'image par synthèse."
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
-msgid "Sharpen by synthesis..."
-msgstr "Augmenter la netteté par synthèse..."
+msgid "_Sharpen by synthesis(scm)..."
+msgstr "Augmenter la netteté par synthèse(scm)..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
-msgid "Sharpening:"
-msgstr "Augmentation de la netteté :"
+msgid "Sharpening"
+msgstr "Augmentation de la netteté"
 
 #: PluginScripts/plugin-uncrop.py:86
 msgid "A layer must be active, not a channel."
@@ -189,12 +205,12 @@ msgstr ""
 "bords naturels.  Annuler le rognage à la place, si possible!"
 
 #: PluginScripts/plugin-uncrop.py:147
-msgid "Uncrop..."
-msgstr "Dérogner..."
+msgid "_Uncrop(scm)..."
+msgstr "Dérogner(scm)..."
 
 #: PluginScripts/plugin-uncrop.py:152
 msgid "Percent enlargement"
-msgstr "Pourcentage d'agrandissement : "
+msgstr "Pourcentage d'agrandissement"
 
 #: src/resynthesizer-gui/resynth-gui.c:156
 msgid "Make tiles, apply themes, render texture, remove features, etc."
