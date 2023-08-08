@@ -29,18 +29,22 @@ msgstr "Необходимо предварительно выбрать вос�
 msgid "Heal the selection from surroundings as if using the heal tool."
 msgstr "Восстановление области замещением пикселами из окружения"
 
+#: PluginScripts/plugin-heal-transparency.scm:40
+msgid "The active layer has no alpha channel to heal."
+msgstr ""
+
 #: PluginScripts/plugin-heal-selection.py:162
-msgid "_Heal selection..."
-msgstr "_Восстановить выделение…"
+msgid "_Heal selection(scm)..."
+msgstr "Восстановить выделение(scm)…"
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
-msgid "Context sampling width (pixels):"
-msgstr "Ширина области заимствования (px):"
+msgid "Context sampling width (pixels)"
+msgstr "Ширина области заимствования (px)"
 
 #: PluginScripts/plugin-heal-selection.py:168
-msgid "Sample from:"
-msgstr "Источник данных:"
+msgid "Sample from"
+msgstr "Источник данных"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "All around"
@@ -56,8 +60,8 @@ msgstr "Верх и низ"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
-msgid "Filling order:"
-msgstr "Порядок заполнения:"
+msgid "Filling order"
+msgstr "Порядок заполнения"
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
@@ -83,8 +87,8 @@ msgstr ""
 "предназначено для краёв, вовнутрь — для дыр."
 
 #: PluginScripts/plugin-heal-transparency.py:77
-msgid "Heal transparency..."
-msgstr "Восстановить прозрачную область…"
+msgid "_Heal transparency(scm)..."
+msgstr "Восстановить прозрачную область(scm)…"
 
 #: PluginScripts/plugin-map-style.py:281
 msgid "The style source cannot be of mode INDEXED"
@@ -97,21 +101,27 @@ msgstr ""
 "Перенести стиль (цвет и поверхность) из выбранного источника на активный "
 "слой."
 
+#: PluginScripts/plugin-map-style.scm:393
+msgid ""
+"Transforms image using art media and style from another image. Maps or "
+"synthesizes texture or theme from one image onto another. "
+msgstr ""
+
 #: PluginScripts/plugin-map-style.py:381
-msgid "Style..."
-msgstr "Стиль…"
+msgid "_Style(scm)..."
+msgstr "Стиль(scm)…"
 
 #: PluginScripts/plugin-map-style.py:386
-msgid "Source of style:"
-msgstr "Источник стиля:"
+msgid "Source of style"
+msgstr "Источник стиля"
 
 #: PluginScripts/plugin-map-style.py:387
-msgid "Percent transfer:"
-msgstr "Процент переноса:"
+msgid "Percent transfer"
+msgstr "Процент переноса"
 
 #: PluginScripts/plugin-map-style.py:388
-msgid "Map by:"
-msgstr "Компоненты переноса:"
+msgid "Map by"
+msgstr "Компоненты переноса"
 
 #: PluginScripts/plugin-map-style.py:388
 msgid "Color and brightness"
@@ -130,9 +140,15 @@ msgstr ""
 "По выбору пользователя содержимое может быть сделано пригодным для создания "
 "бесшовной мозаики."
 
+#: PluginScripts/plugin-render-texture.scm:250
+msgid ""
+"New image is the same scale but seamless and irregular.  Use 'Map>Tile' for "
+"less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. "
+msgstr ""
+
 #: PluginScripts/plugin-render-texture.py:188
-msgid "_Texture..."
-msgstr "_Текстура…"
+msgid "_Texture(scm)..."
+msgstr "Текстура(scm)…"
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
@@ -147,36 +163,36 @@ msgid "Enlarge image and synthesize to sharpen."
 msgstr "Увеличить изображения и повысить резкость синтезом."
 
 #: PluginScripts/plugin-resynth-enlarge.py:97
-msgid "Enlarge & sharpen..."
-msgstr "Увеличить размер и резкость…"
+msgid "_Enlarge & sharpen(scm)..."
+msgstr "Увеличить размер и резкость(scm)…"
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
-msgid "Scale by:"
-msgstr "Множитель:"
+msgid "Scale by"
+msgstr "Множитель"
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:100
 msgid "Seamlessly fill with a pattern using synthesis."
 msgstr "Залить текстурой без видимых швов с помощью синтеза."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
-msgid "_Fill with pattern seamless..."
-msgstr "Залить _бесшовной текстурой…"
+msgid "_Fill with pattern seamless(scm)..."
+msgstr "Залить _бесшовной текстурой(scm)…"
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
-msgid "Pattern:"
-msgstr "Текстура:"
+msgid "Pattern"
+msgstr "Текстура"
 
 #: PluginScripts/plugin-resynth-sharpen.py:94
 msgid "Sharpen image by synthesis."
 msgstr "Увеличить резкость изображения."
 
 #: PluginScripts/plugin-resynth-sharpen.py:99
-msgid "Sharpen by synthesis..."
-msgstr "Увеличить резкость синтезом…"
+msgid "_Sharpen by synthesis(scm)..."
+msgstr "Увеличить резкость синтезом(scm)…"
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
-msgid "Sharpening:"
-msgstr "Увеличение резкости:"
+msgid "Sharpening"
+msgstr "Увеличение резкости"
 
 #: PluginScripts/plugin-uncrop.py:86
 msgid "A layer must be active, not a channel."
@@ -193,8 +209,8 @@ msgstr ""
 "краёв."
 
 #: PluginScripts/plugin-uncrop.py:147
-msgid "Uncrop..."
-msgstr "Обратное кадрирование…"
+msgid "_Uncrop(scm)..."
+msgstr "Обратное кадрирование(scm)…"
 
 #: PluginScripts/plugin-uncrop.py:152
 msgid "Percent enlargement"

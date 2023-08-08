@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl lkk 2011 Hacked from gimp-plugin-template configure.in
 dnl changed name and added PluginScript/Makefile
 
-AC_PREREQ(2.54)
+AC_PREREQ([2.71])
 
 dnl Name your plug-in here
 dnl lkk 2011 Changed name and version digits
@@ -17,7 +17,7 @@ m4_define([plugin_micro_version], [0])
 m4_define([plugin_version],
           [plugin_major_version.plugin_minor_version.plugin_micro_version])
 
-AC_INIT([plugin_name], [plugin_version])
+AC_INIT([plugin_name],[plugin_version])
 
 AC_DEFINE(PLUGIN_NAME, PACKAGE_NAME, [Plug-In name])
 AC_DEFINE(PLUGIN_VERSION, PACKAGE_VERSION, [Plug-In version])
@@ -30,12 +30,11 @@ dnl lkk This macro only confirms that the given file is in configure's notion of
 AC_CONFIG_SRCDIR([src/resynthesizer/resynthesizer.c])
 AM_CONFIG_HEADER(config.h)
 
-AM_INIT_AUTOMAKE(no-define)
+AM_INIT_AUTOMAKE([foreign])
 
-AC_ISC_POSIX
+AC_SEARCH_LIBS([strerror],[cposix])
 AC_PROG_CC
 AM_PROG_CC_STDC
-AC_HEADER_STDC
 
 
 ACLOCAL="$ACLOCAL $ACLOCAL_FLAGS"
@@ -44,14 +43,14 @@ AM_MAINTAINER_MODE
 
 
 dnl Use -Wall if we have gcc.
-changequote(,)dnl
+changequote(,)
 if test "x$GCC" = "xyes"; then
   case " $CFLAGS " in
   *[\ \	]-Wall[\ \	]*) ;;
   *) CFLAGS="$CFLAGS -Wall" ;;
   esac
 fi
-changequote([,])dnl
+changequote([,])
 
 
 GIMP_REQUIRED_VERSION=2.2.0
@@ -63,9 +62,6 @@ PKG_CHECK_MODULES(GIMP,
 AC_SUBST(GIMP_CFLAGS)
 AC_SUBST(GIMP_LIBS)
 
-GIMP_LIBDIR=`$PKG_CONFIG --variable=gimplibdir gimp-2.0`
-AC_SUBST(GIMP_LIBDIR)
-
 
 dnl i18n stuff
 
@@ -74,11 +70,13 @@ GETTEXT_PACKAGE=resynthesizer
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
 				    [The gettext translation domain.])
+xgettext_args="--keyword=SG_ --keyword=G_"
+AC_SUBST(xgettext_args)
 
 dnl Add the languages which your application supports here.
-ALL_LINGUAS="es fr ru"
+ALL_LINGUAS="es fr ru pt_BR ja tr"
 
-AC_PROG_INTLTOOL
+IT_PROG_INTLTOOL
 AM_GLIB_GNU_GETTEXT
 
 AC_CHECK_FUNCS(bind_textdomain_codeset)
@@ -86,17 +84,26 @@ AC_CHECK_FUNCS(bind_textdomain_codeset)
 dnl Fix for changes in GLib 2.31 
 AC_CHECK_LIB(gthread-2.0, g_thread_init)
 
-dnl lkk 2011 I copied this from the main gimp configure.in
-dnl where $PACKAGE is gimp and gimp_plugin_version is 2.0
-dnl gimpplugindir="$libdir/$PACKAGE/gimp_plugin_version"
-gimpplugindir="$libdir/gimp/2.0"
-AC_SUBST(gimpplugindir)
 
-LOCALEDIR='${datadir}/locale'
-DATADIR='${datadir}/plugin_name'
+gimpconfigdir="$libdir/gimp/2.0"
+gimpdatadir='${datadir}/gimp/2.0'
+gimpscriptsdir='$(gimpdatadir)/scripts'
+dnl Path to install binary plugins.
+gimppluginsdir="${gimpconfigdir}/plug-ins"
+dnl Path to install scm scripts.
+resynthscriptsdir='$(gimpscriptsdir)/resynthesizer-scm'
+dnl Path to install locale data.
+localedir="${gimppluginsdir}/resynthesizer-locale"
+dnl Path to install help data.
+helpbasedir='${datadir}/plugin_name/help'
 
-AC_SUBST(LOCALEDIR)
-AC_SUBST(DATADIR)
+AC_SUBST(gimpconfigdir)
+AC_SUBST(gimpdatadir)
+AC_SUBST(gimpscriptsdir)
+AC_SUBST(resynthscriptsdir)
+AC_SUBST(gimppluginsdir)
+AC_SUBST(localedir)
+AC_SUBST(helpbasedir)
 
 
 AC_MSG_CHECKING([if GTK+ is version 2.7.0 or newer])
@@ -126,7 +133,6 @@ fi
 
 dnl lkk July 2011
 AC_PROG_RANLIB
-dnl AC_PROG_LIBTOOL
 
 dnl lkk 2011 Added PluginScripts/Makefile
 dnl lkk 2015 Break src into lib, src/resynthesizer, src/resynthesizer-gui
@@ -136,11 +142,21 @@ lib/Makefile
 src/Makefile
 src/resynthesizer/Makefile
 src/resynthesizer-gui/Makefile
+src/resynthesizer-gettext/Makefile
 po/Makefile.in
 help/Makefile
 help/en/Makefile
 help/images/Makefile
 PluginScripts/Makefile
 ])
+
+
+AC_CANONICAL_HOST
+case $host_os in
+    dnl WindowsOS
+    *cygwin* | *mingw* )
+        LDFLAGS="$LDFLAGS -mwindows"
+esac
+
 
 AC_OUTPUT

@@ -1,2 +1,2 @@
 
-SUBDIRS = resynthesizer resynthesizer-gui
+SUBDIRS = resynthesizer resynthesizer-gui resynthesizer-gettext

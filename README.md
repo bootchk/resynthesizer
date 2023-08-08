@@ -2,9 +2,9 @@
 
 A set of plugins for the GIMP image editing app.
 
-  Copyright 2000 2008  Paul Francis Harrison  
-  Copyright 2002  Laurent Despeyroux  
-  Copyright 2002  David Rodríguez García  
+  Copyright 2000 2008  Paul Francis Harrison
+  Copyright 2002  Laurent Despeyroux
+  Copyright 2002  David Rodríguez García
   Copyright 2010-2021  Lloyd Konneker 
 
 [![Build Status](https://travis-ci.org/bootchk/resynthesizer.svg?branch=master)](https://travis-ci.org/bootchk/resynthesizer)
@@ -34,6 +34,15 @@ More topics are in the [Resynthesizer wiki](https://github.com/bootchk/resynthes
 
 [build from source](https://github.com/bootchk/resynthesizer/wiki/Build-Resynthesizer-from-source)
 
+Build instructions for Ubuntu users with gimp installed with **apt-get install gimp**. This will install the plugins and scripts in the correct folders.
+```
+./autogen.sh
+./configure --prefix='/usr'
+make
+sudo make install
+```
+
+
 ## Acknowledgements
 
 Paul Harrison had the original idea and implementation.  He did the hard work, took the leap of faith and experimented with a new algorithm.  His [website](http://www.logarithmic.net/pfh/) has many examples of using the Resynthesizer, links to an explanation of the algorithm, and other cool ideas.
@@ -41,6 +50,9 @@ Paul Harrison had the original idea and implementation.  He did the hard work, t
 I fixed a few bugs (due to changes in GIMP), rewrote the Scheme plugins into Python, wrote a few plugins, made it better deal with alpha (transparency), threaded it, and made it into a reentrant library in C.
 
 Rob Antonishen contributed the basis for one plugin.  Several people have helped with the build process and with translations.
+
+Heal Selection and other scripts were changed to TinyScheme (aka script-fu) from Python by itr-tert to allow their usage before GIMP 3. [see their wiki/README](https://github.com/itr-tert/gimp-resynthesizer-scm/wiki/README)
+
 
 ## License
 
