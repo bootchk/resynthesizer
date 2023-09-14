@@ -32,7 +32,7 @@ http://www.gnu.org/copyleft/gpl.html
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, );
+gettext.install("resynthesizer", Gimp.locale_directory(), );
 
 debug = False
 
@@ -113,7 +113,7 @@ register(
   [],
   plugin_main,
   menu="<Image>/Edit",
-  domain=("resynthesizer", gimp.locale_directory)
+  domain=("resynthesizer", Gimp.locale_directory())
   )
 
 main()

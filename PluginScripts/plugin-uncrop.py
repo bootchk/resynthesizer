@@ -45,7 +45,7 @@ OUT larger layer and image.  All other layers not enlarged.
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, )
+gettext.install("resynthesizer", Gimp.locale_directory(), )
 
 def resizeImageCentered(image, percentEnlarge):
     # resize and center image by percent (converted to pixel units)
@@ -154,7 +154,7 @@ register(
   [],
   uncrop,
   menu="<Image>/Filters/Enhance",
-  domain=("resynthesizer", gimp.locale_directory)
+  domain=("resynthesizer", Gimp.locale_directory())
   )
 
 main()

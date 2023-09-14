@@ -51,7 +51,7 @@ offsets(
   gint         *x,
   gint         *y )
 {
-  gimp_drawable_offsets( d->drawable_id, x, y );
+  gimp_drawable_get_offsets( d->drawable_id, x, y );
 }
 
 GimpDrawable *
@@ -93,9 +93,9 @@ return gimp_drawable_mask_intersect(d->drawable_id,
 
 
 
-gint          bpp(GimpDrawable *d)       { return gimp_drawable_bpp   (d); }
-gint          width    (GimpDrawable *d) { return gimp_drawable_width (d); }
-gint          height   (GimpDrawable *d) { return gimp_drawable_height(d); }
+gint          bpp(GimpDrawable *d)       { return gimp_drawable_get_bpp   (d); }
+gint          width    (GimpDrawable *d) { return gimp_drawable_get_width (d); }
+gint          height   (GimpDrawable *d) { return gimp_drawable_get_height(d); }
 
 GimpImageType  imageType(GimpDrawable *d) { return gimp_drawable_type     (d); }
 gboolean       is_rgb(GimpDrawable *d)    { return gimp_drawable_is_rgb   (d); }
@@ -133,7 +133,7 @@ offsets(
   gint         *x,
   gint         *y )
 {
-  gimp_drawable_offsets( d, x, y );
+  gimp_drawable_get_offsets( d, x, y );
 }
 
 GimpDrawable *

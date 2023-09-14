@@ -28,7 +28,7 @@ http://www.gnu.org/copyleft/gpl.html
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory, )
+gettext.install("resynthesizer", Gimp.locale_directory(), )
 
 def plugin_main(image, drawable, scale_factor):
   '''
@@ -63,8 +63,8 @@ def plugin_main(image, drawable, scale_factor):
     raise RuntimeError("Failed get active layer")
 
   # scale input map down and back, to blur
-  width = pdb.gimp_drawable_width(drawable)
-  height = pdb.gimp_drawable_height(drawable)
+  width = pdb.gimp_drawable_get_width(drawable)
+  height = pdb.gimp_drawable_get_height(drawable)
   pdb.gimp_image_scale(temp_image1, width/scale_factor, height/scale_factor)
   pdb.gimp_image_scale(temp_image1, width, height)
 
@@ -104,7 +104,7 @@ if __name__ == "__main__" :
     [],
     plugin_main,
     menu="<Image>/Filters/Enhance",
-    domain=("resynthesizer", gimp.locale_directory)
+    domain=("resynthesizer", Gimp.locale_directory())
     )
 
   main()

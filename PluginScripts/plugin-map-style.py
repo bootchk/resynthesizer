@@ -110,7 +110,7 @@ contrast adjustment
 from gimpfu import *
 from math import acos
 
-gettext.install("resynthesizer", gimp.locale_directory)
+gettext.install("resynthesizer", Gimp.locale_directory())
 
 # True if you want to display and retain working, temporary images
 debug = False
@@ -392,7 +392,7 @@ register(
   [],
   transfer_style,
   menu="<Image>/Filters/Map",
-  domain=("resynthesizer", gimp.locale_directory)
+  domain=("resynthesizer", Gimp.locale_directory())
   )
 
 main()

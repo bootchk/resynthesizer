@@ -69,7 +69,7 @@ This calls the engine indirectly, calling pdb.plug_in_resynthesizer().
 
 from gimpfu import *
 
-gettext.install("resynthesizer", gimp.locale_directory)
+gettext.install("resynthesizer", Gimp.locale_directory())
 
 debug = False
 
@@ -219,7 +219,7 @@ register(
   [],   # no return values
   resynthesize,
   menu="<Image>/Filters/Map",
-  domain=("resynthesizer", gimp.locale_directory)
+  domain=("resynthesizer", Gimp.locale_directory())
   )
 
 main()
