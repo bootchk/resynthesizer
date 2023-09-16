@@ -29,9 +29,6 @@ gimpplugindir = prefix / 'lib/x86_64-linux-gnu/gimp/2.99'
 # Is the order important to meson?
 # Anyway, this is the order of dependency
 
-# Headers for engine library
-# subdir('include')
-
 # engine library
 subdir('lib')
 

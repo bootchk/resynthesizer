@@ -1,4 +1,4 @@
-# lkk 2011
+# lkk 2023
 # git configuration: files to ignore for all time in all clones of this repository
 
 # You can also make this user specific:
@@ -27,34 +27,16 @@
 .settings
 .autotools
 
-# http://www.gnu.org/software/automake
-# Track all Makefile.in because users won't have automake to generate them
-
-# http://www.gnu.org/software/autoconf
-# Don't track autoconf generated temporary files.
-# Users don't need them, developers must generate their own
-
-/autom4te.cache
-/aclocal.m4
-/compile
-/config.h
-/config.h.in
-/config.status
-/configure
-/depcomp
-/install-sh
-/missing
+# No automake files to ignore
 
 /po/*.gmo
-
-Makefile.in
-Makefile
 
 # ignore separate build directory
 /gimpBuild
 /resynthBuild
 
 # ignore build artifacts in source tree: libraries and executables
+# These should not exist: meson builds out of tree
 lib/libresynthesizer.a
 po/POTFILES
 po/stamp-it
