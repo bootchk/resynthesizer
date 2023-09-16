@@ -35,8 +35,9 @@ subdir('lib')
 # engine plugin
 subdir('src')
 
-# plugins
 subdir('outerPlugins')
+
+subdir('test')
 
 # TODO translations
 #subdir('po')

@@ -5,19 +5,21 @@ Same as engine parameters to be passed in the SimpleAPI.
 Also error return values of engine.
 */
 
+#pragma once
+
 #ifndef FALSE
   #define FALSE 0
 #endif
 
 
-typedef enum  ImageSynthError 
+typedef enum  ImageSynthError
 {
   IMAGE_SYNTH_SUCCESS,
   // Programmer error
   IMAGE_SYNTH_ERROR_INVALID_IMAGE_FORMAT, // Returned by SimpleAPI adapter
   IMAGE_SYNTH_ERROR_IMAGE_MASK_MISMATCH,  // "
   // Programmer error, parameter errors returned by inner engine
-  IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED,  
+  IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED,
   IMAGE_SYNTH_ERROR_MATCH_CONTEXT_TYPE_RANGE,
   // IN data errors, user error in making selection? returned by inner engine
   IMAGE_SYNTH_ERROR_EMPTY_TARGET,
@@ -29,7 +31,7 @@ typedef enum  ImageSynthError
 
 
 typedef struct ImageSynthParametersStruct {
-  
+
   /*
   Boolean.  Whether to synthesize the target so it is subsequently seamlessly tileable.
   This is only pertinenent if isMatchContext is False (when there is no context of the target.)
@@ -48,7 +50,7 @@ typedef struct ImageSynthParametersStruct {
   2 Match context and synthesize randomly but in bands inward (from surrounding context.)
   3 etc. see ...orderTarget()
   */
-  int matchContextType;   
+  int matchContextType;
 
   /*
   For the advanced API, when maps are passed tothe engine,
@@ -59,13 +61,13 @@ typedef struct ImageSynthParametersStruct {
   in relation to the target/corpus metric funtion.
   */
   double mapWeight;
-  
+
   /*
   A parameter of the statistical function for weighting pixel differences.
   AKA autism
   */
   double sensitivityToOutliers;
-  
+
   /*
   Size of the patch matched, in pixels.
   Formerly called neighbors (but it includes the pixel being synthesized, which is not strictly a neighbor.)
@@ -74,7 +76,7 @@ typedef struct ImageSynthParametersStruct {
   But patches need not be square, indeed are NOT rectangular early in the algorithm.
   */
   unsigned int patchSize;
-  
+
   /*
   The maximum count of probes per pixel per pass.
   Generally, this count of probes is done per pixel per pass,
@@ -92,4 +94,4 @@ extern void
 setDefaultParams(
   TImageSynthParameters* param
   );
-  
+
