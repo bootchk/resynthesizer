@@ -50,7 +50,7 @@ get_engine_specific_parameters(
 
 gboolean
 get_engine_specific_parameters(
-  GimpValueArray   *args,              // IN   // <<<<<
+  const GimpValueArray   *args,              // IN   // <<<<<
   TGimpAdapterParameters *pluginParameters); // OUT
 
 

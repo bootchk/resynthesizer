@@ -62,3 +62,7 @@ src/resynthesizer/resynthesizer
 src/resynthesizer-gui/resynthesizer_gui
 stamp-h1
 src/resynthesizer-gui/.deps
+
+# ignore vagga containers and home in the containers
+.vagga
+.home

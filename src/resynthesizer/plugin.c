@@ -1,5 +1,6 @@
 
-#include "../../config.h" // GNU buildtools local configuration
+//#include "../../config.h" // GNU buildtools local configuration
+
 #include "../plugin-intl.h" // i18n macros
 #include <libgimp/gimp.h>
 
@@ -59,12 +60,12 @@ static void run(
   else
   {
     result = inner_run(
-      name, // nparams, param, 
-      run_mode, 
-      in_drawable, 
+      name, // nparams, param,
+      run_mode,
+      in_drawable,
       &pluginParameters);
   }
-  
+
   // Cram result into the error object
   // return_vals is a pointer to array.
   // Always pass pointer to array of size two, and tell how many elements are valid.

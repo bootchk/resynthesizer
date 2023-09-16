@@ -7,48 +7,43 @@ plugin_name = 'resynthesizer'
 
 
 # !!! Other .h files have compilable code (they are not just headers)
-# but we only need to list the top compiled files
+# but we only need to list the top compiled files.
 
 resynthesizer_sources = [
   'resynthesizer.c',
-  'plugin.c',
   'debug.c',
   'pluginParams.c',
   'drawable.c',
 ]
 
+# different source for plugin main, according to Gimp major version.
+# Source that registers plugin in Gimp PDB.
+if get_option('for-gimp-3')
+  resynthesizer_sources += 'plugin.c'
+else
+  resynthesizer_sources += 'resynthPDB.h'
+endif
+
 
 
 # define dependencies on libraries
 
-# libgimp
+# libgimp, the API to gimp.
+# Need headers i.e. include file libgimp.h
+# If fails, try install a dev package such as "gimp-3.0-dev"
 # version 2.99 is the beta for v3.0
 gimp_dep = dependency('gimp-3.0', version : '>=2.99.0')
 
-# resynthesizer plugin calls the resynthesizer engine (libresynthesizer)
-# which depends on math library libm
-
-# Dependency on libresynthesizer is declared to be a linking dependency
-# TODO
-# resynthesizerEngine_dep = dependency('resynthesizer-3.0', version : '>=2.99.0')
-
-
-
-
-# include_directories: [ rootInclude, ],
-# dependencies: [ plugin_deps, math ],
-
-#link_with : [
-#  libgimp,
-#],
-#dependencies: [ gimp_dep, math_dep],
+# resynthesizer engine plugin calls (depends on)
+# the resynthesizer engine library (libresynthesizer).
+# Which we also first build.
+# That dependency on libresynthesizer is declared below, see links_with
 
 
 # Since 3.0 a plugin must install to a dir named the same as the plugin
 # Hence: install_dir: ...
 
-# This plugin uses libgimp
-# The dependencies: declares that and takes care of includes and linking
+# Summarizing dependency: libgimp and libresynthesizer
 
 executable(plugin_name,
   resynthesizer_sources,

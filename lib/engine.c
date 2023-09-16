@@ -1,6 +1,6 @@
 /*
   A texture synthesizing engine for bitmapped images.
-  
+
   The algorithm is due to Paul Harrison and others.
 
   Copyright (C) 2010, 2011  Lloyd Konneker
@@ -50,7 +50,7 @@ into the target, as good matches for black.
 
 Here, we don't match the alpha channel between target and corpus.
 We don't generate any alpha in the target, instead we leave the target alpha unaltered.
-We use the alpha to determine what pixels are in the target and corpus, 
+We use the alpha to determine what pixels are in the target and corpus,
 (similar to a selection mask.)
 Any totally transparent pixel in the target selection IS synthesized,
 I.E. a color is generated (but since it is totally transparent, you don't see it.)
@@ -76,9 +76,6 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 #include <math.h>
 
 #ifdef SYNTH_USE_GLIB
-  #include "../config.h" // GNU buildtools local configuration
-  // Use glib via gimp.h
-  // #include <libgimp/gimp.h>
   #include <glib.h>
 #endif
 
@@ -107,8 +104,8 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 #include "engineParams.h"
 #include "engine.h"
 
-/* 
-Source not compiled separately. Is separate to reduce file sizes and coupling. 
+/*
+Source not compiled separately. Is separate to reduce file sizes and coupling.
 Also, some functions are inlined.
 */
 
@@ -138,12 +135,12 @@ Value more or less means a color; not an undefined color.
 Pixels in the context: if they are not clipped, not transparent, etc.
 Pixels in the target: if they have been synthesized.
 
-TODO 
+TODO
 Alternate way of computing hasValue from targetMask, alpha channel, and whether synthesized (has_source.)
 Might use less memory and have better locality.
 But hasValue is only called in prepare_neighbors, not as costly as rest of search.
 
-TODO hasValue array is larger than it needs to be? 
+TODO hasValue array is larger than it needs to be?
 It could it be just the size of the target plus a band, since it is only used for neighbors.
 Would require different wrapOrClipTarget().
 Might affect performance of cache or memory swapping
@@ -191,17 +188,17 @@ setSourceOf (
 {
   *coordmap_index(sourceOfMap, target_point) = source_corpus_point;
 }
-  
+
 
 static inline Coordinates
-getSourceOf ( 
+getSourceOf (
   Coordinates target_point,
   Map* sourceOfMap
   )
 {
   return *coordmap_index(sourceOfMap, target_point);
 }
-  
+
 
 /* Initially, no target points have source in corpus, i.e. none synthesized. */
 static void
@@ -212,13 +209,13 @@ prepare_target_sources(
   guint x;
   guint y;
   Coordinates null_coords = {-1, -1};
-  
+
   new_coordmap(sourceOfMap, targetMap->width, targetMap->height);
-  
+
   for(y=0; y<targetMap->height; y++)
-    for(x=0; x<targetMap->width; x++) 
+    for(x=0; x<targetMap->width; x++)
       {
-      Coordinates coords = {x,y}; 
+      Coordinates coords = {x,y};
       setSourceOf(coords, null_coords, sourceOfMap);
       }
 }
@@ -235,8 +232,8 @@ has_source (
 
 
 
-/* 
-Is the pixel selected in the corpus? 
+/*
+Is the pixel selected in the corpus?
 !!! Note dithered, partial selection: only one value is totally unselected or selected.
 Here, only pixels fully selected return True.
 This is because when target/corpus are differentiated by the same selection,
@@ -245,12 +242,12 @@ only fully selected (the inverse) will be the corpus.
 !!! Note this is called from the bottleneck.
 */
 static inline gboolean
-isSelectedCorpus ( 
+isSelectedCorpus (
   const Coordinates coords,
   const Map* const corpusMap
   )
 {
-  /* 
+  /*
   Was:  != MASK_UNSELECTED); i.e. partially selected was included.
   Now: if partially selected, excluded from corpus.
   */
@@ -258,14 +255,14 @@ isSelectedCorpus (
   }
 
 
-/* 
+/*
 Is the pixel selected in the image?
 The selection is the mask, created by user to distinguish.
 In the target map, distinguishes target(what is synthesized) from context.
 In the corpus map, distinguishes undesired corpus from desired corpus.
 */
 static inline gboolean
-isSelectedTarget( 
+isSelectedTarget(
   Coordinates coords,
   Map * imageMap )
 {
@@ -306,7 +303,7 @@ not_transparent_corpus(
 
 
 /*
-Array of index of most recent target point that probed this corpus point 
+Array of index of most recent target point that probed this corpus point
 (recentProberMap[corpus x,y] = target)
 !!! Larger than necessary if the corpus has holes in it.  TODO very minor.
 !!! Note recentProberMap is unsigned, -1 == 0xFFFFFF should not match any target index.
@@ -316,14 +313,14 @@ prepareRecentProber(Map* corpusMap, Map* recentProberMap)
 {
   guint x;
   guint y;
-  
+
   new_intmap(recentProberMap, corpusMap->width, corpusMap->height);
   for(y=0; y< (guint) corpusMap->height; y++)
     for(x=0; x< (guint) corpusMap->width; x++)
     {
       Coordinates coords = {x,y};
       *intmap_index(recentProberMap, coords) = -1;
-    } 
+    }
 }
 
 
@@ -336,7 +333,7 @@ Prepare a vector of target points.
 Initialize hasValueMap for all target points.
 */
 static void
-prepareTargetPoints( 
+prepareTargetPoints(
   gboolean is_use_context,
   TFormatIndices* indices,
   Map* targetMap,
@@ -346,26 +343,26 @@ prepareTargetPoints(
 {
   guint x;
   guint y;
-  
+
   /* Count selected pixels in the image, for sizing a vector */
   guint size = 0;
   for(y=0; y<targetMap->height; y++)
     for(x=0; x<targetMap->width; x++)
       {
       Coordinates coords = {x,y};
-      if (isSelectedTarget(coords, targetMap)) 
+      if (isSelectedTarget(coords, targetMap))
         size++;
       }
-  
+
   *targetPoints = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), size); /* reserve */
-  
+
   prepareHasValue(targetMap, hasValueMap);  /* reserve, initialize to value: unknown */
-  
+
   for(y=0; y<targetMap->height; y++)
-    for(x=0; x<targetMap->width; x++) 
+    for(x=0; x<targetMap->width; x++)
     {
       Coordinates coords = {x,y};
-      
+
       /*
       Remember whether use this image point for matching target neighbors.
       Initially, no target points have value, and some context points will have value.
@@ -379,13 +376,13 @@ prepareTargetPoints(
           && not_transparent_image(coords, indices, targetMap)
         ),
         hasValueMap);
-      
-      /* 
-      Make vector targetPoints 
+
+      /*
+      Make vector targetPoints
       !!! Note we do NOT exclude transparent.  Will synthesize color (but not alpha)
       for all selected pixels in target, regardless of transparency.
       */
-      if (isSelectedTarget(coords, targetMap)) 
+      if (isSelectedTarget(coords, targetMap))
         g_array_append_val(*targetPoints, coords);
     }
 }
@@ -393,7 +390,7 @@ prepareTargetPoints(
 
 
 
-/* 
+/*
 Scan corpus pixmap for selected && nottransparent pixels, create vector of coords.
 Used to sample corpus.
 */
@@ -402,16 +399,16 @@ prepareCorpusPoints (
   TFormatIndices* indices,
   Map* corpusMap,
   pointVector* corpusPoints
-  ) 
+  )
 {
   /* Reserve size of pixmap, but excess, includes unselected. */
   *corpusPoints = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates),
    corpusMap->height*corpusMap->width);
-  
+
   {
   guint x;
   guint y;
-  
+
   for(y=0; y<corpusMap->height; y++)
     for(x=0; x<corpusMap->width; x++)
     {
@@ -421,13 +418,13 @@ prepareCorpusPoints (
       */
       if (isSelectedCorpus(coords, corpusMap)
         && not_transparent_corpus(coords, indices, corpusMap) /* Exclude transparent from corpus */
-        ) 
+        )
       {
         g_array_append_val(*corpusPoints, coords);
       }
     }
   }
-  // Size is checked by caller. 
+  // Size is checked by caller.
 }
 
 
@@ -462,26 +459,26 @@ TODO, for uncropping, where the target surrounds the corpus,
 this might be vastly many more offsets than are needed for good synthesis.
 But at worst, if not used they get paged out from virtual memory.
 */
-static void 
+static void
 prepareSortedOffsets(
   Map* targetMap,
   Map* corpusMap,
   pointVector* sortedOffsets
-  ) 
+  )
 {
   // Minimum().  Use smaller dimension of corpus and target.
   gint width = (corpusMap->width < targetMap->width ? corpusMap->width : targetMap->width);
   gint height = (corpusMap->height < targetMap->height ? corpusMap->height : targetMap->height);
   guint allocatedSize = (2*width-1)*(2*height-1);   // eg for width==3, [-2,-1,0,1,2], size==5
-  
+
   *sortedOffsets = g_array_sized_new (FALSE, TRUE, sizeof(Coordinates), allocatedSize); //Reserve
-  
+
   {
   gint x; // !!! Signed offsets
   gint y;
-  
+
   for(y=-height+1; y<height; y++)
-    for(x=-width+1; x<width; x++) 
+    for(x=-width+1; x<width; x++)
       {
       Coordinates coords = {x,y};
       g_array_append_val(*sortedOffsets, coords);
@@ -489,31 +486,31 @@ prepareSortedOffsets(
   }
   g_assert((*sortedOffsets)->len == allocatedSize);  // Completely filled
   g_array_sort(*sortedOffsets, (gint (*)(const void*, const void*)) lessCartesian);
-  
-  /* lkk An experiment to sort the offsets in row major order for better memory 
-  locality didn't help performance. 
+
+  /* lkk An experiment to sort the offsets in row major order for better memory
+  locality didn't help performance.
   Apparently the cpu cache holds many rows of the corpus.
   */
 }
 
 
-/* 
+/*
 Return True if point is clipped or masked (not selected) in the corpus.
 Point created by coordinate arithmetic, and can be negative or clipped.
 !!! Note this is called in the bottleneck of try_point, crucial to speed.
 */
-static inline gboolean 
+static inline gboolean
 clippedOrMaskedCorpus(
-  const Coordinates point, 
-  const Map * const corpusMap) 
+  const Coordinates point,
+  const Map * const corpusMap)
 {
   return (
-    point.x < 0 
-    || point.y < 0 
-    || point.x >= (gint) corpusMap->width 
+    point.x < 0
+    || point.y < 0
+    || point.x >= (gint) corpusMap->width
     || point.y >= (gint) corpusMap->height /*  Clipped */
     ||  ! isSelectedCorpus(point, corpusMap) /* Masked */
-    ); 
+    );
 }
 
 
@@ -548,61 +545,61 @@ engine(
   )
 {
   // Engine private data. On stack (and heap), not global, so engine is reentrant.
-  
+
   /*
   A map on the corpus yielding indexes of target points.
   For a point in the corpus, which target point (index!) most recently probed the corpus point.
   recentProbe[coords corpus point] -> index of target_point that most recently probed corpus point
   Heuristic#2.
-  
+
   2-D array of int, addressable by Coordinates.
-  */    
+  */
   Map recentProberMap;
-  
+
   /*
   Flags for state of synthesis of image pixels.
-  
+
   Does source pixel have value yet, to match (depends on selection and state of algorithm.)
   Map over entire target image (target selection and context.)
   */
   Map hasValueMap;
-  
-  /* 
-  Does this target pixel have a source yet: yields corpus coords. 
+
+  /*
+  Does this target pixel have a source yet: yields corpus coords.
   (-1,-1) indicates no source.
   */
-  Map sourceOfMap;   
+  Map sourceOfMap;
 
-  /* 
+  /*
   1-D array (vector) of Coordinates.
   Subsets of image and corpus, subsetted by selection and alpha.
   */
   pointVector targetPoints;   // For synthesizing target in an order (ie random)
   pointVector corpusPoints;   // For sampling corpus randomly.
   pointVector sortedOffsets;  // offsets (signed coordinates) for finding neighbors.
-  
+
   GRand *prng;  // pseudo random number generator
-  
+
   // Arrays, lookup tables for quantized functions
   TPixelelMetricFunc corpusTargetMetric;
   TMapPixelelMetricFunc mapMetric;
-  
+
   // check parameters in range
   if ( parameters.patchSize > IMAGE_SYNTH_MAX_NEIGHBORS)
     return IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED;
-  
+
   // target prep
-  prepareTargetPoints(parameters.matchContextType, indices, targetMap, 
-    &hasValueMap, 
+  prepareTargetPoints(parameters.matchContextType, indices, targetMap,
+    &hasValueMap,
     &targetPoints);
   #ifdef ANIMATE
   clear_target_pixels(indices->color_end_bip);  // For debugging, blacken so new colors sparkle
   #endif
-  /* 
+  /*
   Rare user error: no target selected (mask empty.)
   This error NOT occur in GIMP if selection does not intersect, since then we use the whole drawable.
   */
-  if ( !targetPoints->len ) 
+  if ( !targetPoints->len )
   {
     g_array_free(targetPoints, TRUE);
     free_map(&hasValueMap);
@@ -610,10 +607,10 @@ engine(
   }
   prepare_target_sources(targetMap, &sourceOfMap);
 
-  
+
   // source prep
   prepareCorpusPoints(indices, corpusMap, &corpusPoints);
-  /* 
+  /*
   Rare user error: all corpus pixels transparent or not selected (mask empty.) Which means we can't synthesize.
   This error NOT occur in GIMP if selection does not intersect, since then we use the whole drawable.
   */
@@ -625,32 +622,32 @@ engine(
     g_array_free(corpusPoints, TRUE);
     return IMAGE_SYNTH_ERROR_EMPTY_CORPUS;
   }
-  
+
   // prep things not images
   prepareSortedOffsets(targetMap, corpusMap, &sortedOffsets); // Depends on image size
   quantizeMetricFuncs(
-    parameters.sensitivityToOutliers, 
+    parameters.sensitivityToOutliers,
     parameters.mapWeight,
     corpusTargetMetric,
     mapMetric
     );
- 
+
   // Now we need a prng, before order_targetPoints
-  /* Originally: srand(time(0));   But then testing is non-repeatable. 
+  /* Originally: srand(time(0));   But then testing is non-repeatable.
   TODO the seed should be a hash of the input or a user parameter.
   Then it would be repeatable, but changeable by the user.
   */
   prng = g_rand_new_with_seed(1198472);
-  
+
   int error = orderTargetPoints(&parameters, targetPoints, prng);
   // A programming error that we don't clean up.
   if (error) return error;
-  
+
   prepareRecentProber(corpusMap, &recentProberMap);  // Must follow prepare_corpus
-  
+
   // Preparations done, begin actual synthesis
   print_processor_time();
-  
+
   // progress(_("Resynthesizer: synthesizing"));
 
   refiner(
@@ -671,21 +668,21 @@ engine(
     contextInfo,
     cancelFlag
     );
-    
+
   // Free internal mallocs.
   // Caller must free the IN pixmaps since the targetMap holds synthesis results
   free_map(&recentProberMap);
   free_map(&hasValueMap);
   free_map(&sourceOfMap);
-  
+
   g_array_free(targetPoints, TRUE);
   g_array_free(corpusPoints, TRUE);
   g_array_free(sortedOffsets, TRUE);
-  
+
   #ifdef SYNTH_USE_GLIB
   g_rand_free(prng);
   #endif
-  
+
   return 0; // Success, even if canceled
 }
 

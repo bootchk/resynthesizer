@@ -8,6 +8,12 @@ project('resynthesizer',
   ],
 )
 
+#generate config.h
+#conf_data = configuration_data()
+#configure_file(input : 'config.h.in',
+#               output : 'config.h',
+#               configuration : conf_data)
+
 prefix = get_option('prefix')
 
 # Define meson var for libresynthesizer headers
@@ -32,11 +38,8 @@ subdir('lib')
 # engine plugin
 subdir('src')
 
-# Python plugins
-subdir('PluginScripts')
+# plugins
+subdir('outerPlugins')
 
 # TODO translations
 #subdir('po')
-
-# TODO help
-# The help is still for the plugin template, not resynthesizer

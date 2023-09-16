@@ -5,12 +5,9 @@
 #include "buildSwitches.h"
 
 #ifdef SYNTH_USE_GLIB
-  #include "../config.h" // GNU buildtools local configuration
-  // Use glib via gimp.h
-  // #include <libgimp/gimp.h>
   #include <glib.h>
- #else
-	 #include "glibProxy.h"
+#else
+	#include "glibProxy.h"
 #endif
 
 
@@ -19,7 +16,7 @@
 
 
 
-void 
+void
 initializeProgressRecord(
      ProgressRecordT* progressRecord,
      TRepetionParameters repetitionParams,
@@ -42,7 +39,7 @@ initializeProgressRecord(
  * Callback's to invoking process every 1 percent.
 
  * Note synthesis may quit early: then progress makes a large jump.
- * 
+ *
  * An earlier implementation used a nested function (a gcc extension)
  * which many people consider unsafe.
  * Here the same result (the context of the call is known to the progress callback)
@@ -67,7 +64,7 @@ deepProgressCallback(ProgressRecordT * progressRecord)
 
 #ifdef SYNTH_THREADED
 
-void 
+void
 initializeThreadedProgressRecord(
      ProgressRecordT* progressRecord,
      TRepetionParameters repetitionParams,
@@ -90,15 +87,15 @@ initializeThreadedProgressRecord(
 
 /*
   Threaded version.
-   
-  This function has local variables that are threadsafe, 
+
+  This function has local variables that are threadsafe,
   but progressRecord is in the parent thread and must be synchronized.
   */
   void
   deepProgressCallbackThreaded(ProgressRecordT * progressRecord)
   {
     guint percentComplete;
-    
+
     // Thread-safe increment completedPixelCount
     (void)__sync_add_and_fetch(&progressRecord->completedPixelCount, IMAGE_SYNTH_CALLBACK_COUNT);
 
@@ -111,12 +108,12 @@ initializeThreadedProgressRecord(
       // Note threads can still underreport percent complete but it is inconsequential.
 
       // pass pointer to mutex
-      g_mutex_lock(progressRecord->mutexProgress);       
+      g_mutex_lock(progressRecord->mutexProgress);
       // Alternatively, use gdk_thread_enter()
 
       // Forward deep progress callback to calling process
       progressRecord->progressCallback(
-        (int) percentComplete, 
+        (int) percentComplete,
         progressRecord->context);
 
       progressRecord->priorReportedPercentComplete = percentComplete;

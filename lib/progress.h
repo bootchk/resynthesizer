@@ -3,9 +3,12 @@
 Types for GUI progress callbacks.
 */
 
-#ifndef SYNTH_USE_GLIB_THREADS
-	  #include <pthread.h>
+#ifdef SYNTH_USE_GLIB_THREADS
+  #include <glib.h>
+#else
+	#include <pthread.h>
 #endif
+
 #include "passes.h"
 
 
@@ -44,10 +47,10 @@ void initializeThreadedProgressRecord(
      void (*progressCallback)(int, void*),
      void * contextInfo,
 #ifdef SYNTH_USE_GLIB_THREADS
-     GMutex *mutexProgress;
+     GMutex *mutexProgress
 #else
-     pthread_mutex_t *mutexProgress;
+     pthread_mutex_t *mutexProgress
 #endif
 );
-     
+
 

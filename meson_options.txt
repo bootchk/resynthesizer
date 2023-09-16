@@ -1,0 +1,1 @@
+option('for-gimp-3', type : 'boolean', value : true)

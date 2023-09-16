@@ -72,7 +72,8 @@ static GimpProcedure  * resynthesizer_create_procedure (GimpPlugIn           *pl
 static GimpValueArray * resynthesizer_run     (GimpProcedure        *procedure,
                                                GimpRunMode           run_mode,
                                                GimpImage            *image,
-                                               GimpDrawable         *drawable,
+                                               gint                  n_drawables,
+                                               GimpDrawable        **drawables,
                                                const GimpValueArray *args,
                                                gpointer              run_data);
 
@@ -109,7 +110,25 @@ resynthesizer_query_procedures (GimpPlugIn *plug_in)
 
 
 
+/*
+Alternatives for declared class of PDB procedure:
 
+superclass GimpProcedure.
+You must declare all the args.
+You can declare taking a single drawable.
+The run_func signature has run_mode and array of other args.
+
+subclass GimpImageProcedure.
+Hides some "usual" args.
+You only declare the other args.
+Usual args has a container of drawables.
+The run_func signature has run_mode, image, count, drawables array, and array of other args.
+*/
+
+/*
+plugin is an engine, without GUI.
+No need for image_types, menu_label, icon_name, menu_path, sensitivity
+*/
 static GimpProcedure *
 resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                                 const gchar *name)
@@ -122,12 +141,6 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                                             GIMP_PDB_PROC_TYPE_PLUGIN,
                                             resynthesizer_run, NULL, NULL);
 
-      // plugin is an engine, without GUI.
-      // No need for image_types, menu_label, icon_name, menu_path
-      //gimp_procedure_set_image_types (procedure, "RGB GRAY");
-      //gimp_procedure_set_menu_label (procedure, N_("Exercise in _C minor"));
-      //gimp_procedure_set_icon_name (procedure, GIMP_ICON_GEGL);
-      //gimp_procedure_add_menu_path (procedure, "<Image>/Filters/Development/Resynthesizer exercises/");
 
       gimp_procedure_set_documentation (procedure,
                                         N_("Resynthesizer engine"),
@@ -137,6 +150,31 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                                       "Lloyd Konneker",
                                       "Lloyd Konneker",
                                       "2021");
+
+      // Common args
+      #ifdef OLD
+      GIMP_PROC_ARG_ENUM (
+        procedure, "run-mode",
+        "Run mode",
+        "The run mode",
+        GIMP_TYPE_RUN_MODE,
+        GIMP_RUN_NONINTERACTIVE,
+        G_PARAM_READWRITE);
+      GIMP_PROC_ARG_IMAGE (
+        procedure,
+        "image",
+        "Image to heal",
+        "Image",
+        TRUE,
+        G_PARAM_READWRITE);
+      GIMP_PROC_ARG_DRAWABLE (
+        procedure,
+        "drawable",
+        "Layer or channel to heal",
+        "Drawable",
+        TRUE,
+        G_PARAM_READWRITE);
+      #endif
 
       GIMP_PROC_ARG_BOOLEAN (procedure, "h_tile",
                          "Create image tileable horizontally?",
@@ -190,6 +228,9 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                          G_PARAM_READWRITE);
     }
 
+  // sensitive i.e. enabled when user has chosen exactly one drawable
+  // gimp_procedure_set_sensitivity_mask (procedure, GIMP_PROCEDURE_SENSITIVE_DRAWABLE);
+
   return procedure;
 }
 
@@ -204,13 +245,16 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
 static GError *
 new_gerror_for_resynthesizer_and_string(const char * msg)
 {
-  GQuark * domain = g_quark_from_string("Resynthesizer");
+  GQuark domain = g_quark_from_string("Resynthesizer");
   return g_error_new_literal(domain, 0, msg);
 }
 
 /*
 Plugin run func.
 This is what GIMP calls.
+
+Must have signature of GIMP_IMAGE_PROCEDURE_RUN_FUNC (sic)
+
 Adapts to a generic resynthesizer plugin.
 Liable to change as GIMP plugin API changes.
 */
@@ -222,18 +266,28 @@ resynthesizer_run (
   GimpProcedure        *procedure,
   GimpRunMode           run_mode,
   GimpImage            *image,
-  GimpDrawable         *drawable,
+  gint                  n_drawables,
+  GimpDrawable        **drawables,
   const GimpValueArray *args,
   gpointer              run_data)
 {
-  GimpPDBStatusType status = GIMP_PDB_SUCCESS;
-  const char       *result;           // inner result
-  const gchar      *name = gimp_procedure_get_name (procedure);
+  GimpPDBStatusType      status = GIMP_PDB_SUCCESS;
+  const char            *result;           // result of call to inner
   TGimpAdapterParameters pluginParameters;
+  GimpDrawable          *drawable;
+  const gchar           *name = gimp_procedure_get_name (procedure);
 
   // INIT_I18N();
 
-  // if (! strcmp (name, RECOMPOSE_PROC)) return foo
+  // Ignore run_mode: has no dialog.
+
+  // Ignore setting (ProcedureConfig): not callable except by other plugins
+  // with newly devised args.
+
+  // Gimp must only call with one drawable.
+  // See sensitivity.
+  g_assert (n_drawables == 1);
+  drawable = drawables[0];
 
   if ( ! get_engine_specific_parameters(args, &pluginParameters) )
     result = _("Resynthesizer failed to get parameters.");
@@ -255,7 +309,7 @@ resynthesizer_run (
     // print to console
     debug(result);
 
-    // GLibError having result as the message
+    // GError having result as the message
     gerror = new_gerror_for_resynthesizer_and_string(result);
     return gimp_procedure_new_return_values (procedure, GIMP_PDB_EXECUTION_ERROR, gerror);
   }

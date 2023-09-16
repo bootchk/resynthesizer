@@ -72,7 +72,7 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 // TODO temporarily disable build configuration
 // #include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
 
-#include "../../config.h" // GNU buildtools local configuration
+// #include "../../config.h" // GNU buildtools local configuration
 #include "../plugin-intl.h" // i18n macros
 
 #include <libgimp/gimp.h>
@@ -317,10 +317,15 @@ inner_run(
   start_time = clock();
   #endif
 
-  // internationalization i18n
+  // internationalization i18n is done earlier, for Gimp 3
+  // See DEFINE_STD_SET_I18N in gimp repo
+  // Plugin at init time needs
+  // plug_in_class->set_i18n         = STD_SET_I18N;
   // Note these constants are defined in the build environment.
+
   /*  Initialize i18n support  */
 // TODO revise for Gimp 3
+#ifdef GIMP2
 // TODO maybe newer is INIT_I18N ();
 /*
 #if defined(G_OS_WIN32)
@@ -335,6 +340,8 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
   textdomain (GETTEXT_PACKAGE);
+#endif
+
 
 
   /* Check image type (could be called non-interactive) */
@@ -430,7 +437,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
   #else
     g_printerr("Gimp version %d\n", GIMP_MAJOR_VERSION);
     debug("adapt target/context");
-    
+
     fetch_image_mask_map(in_drawable, &targetMap, formatIndices.total_bpp,
       &targetMaskMap,
       MASK_TOTALLY_SELECTED,

@@ -83,15 +83,15 @@ CRUFT
 
 gboolean
 get_engine_specific_parameters(
-  GimpValueArray   *args,              // IN
-  TGimpAdapterParameters *pluginParameters)  // OUT
+  const GimpValueArray    *args,              // IN
+  TGimpAdapterParameters  *pluginParameters)  // OUT
 {
-  // Fails to compile:
-  // g_assert( args->length()  == 10 );
+  //g_assert( args->n_values  == 10 );
+
+  g_debug ("%s", G_STRFUNC);
 
   // args does not have prefix: run mode, image, drawable
   pluginParameters->h_tile     = GIMP_VALUES_GET_BOOLEAN  (args, 0);
-  // debug("here");
   pluginParameters->v_tile     = GIMP_VALUES_GET_BOOLEAN  (args, 1);
   pluginParameters->use_border = GIMP_VALUES_GET_INT      (args, 2);
   pluginParameters->corpus     = GIMP_VALUES_GET_DRAWABLE (args, 3);
