@@ -63,7 +63,7 @@ resynth_lib = library('libresynthesizer-3.0',
   ],
   include_directories: resynthesizer_inc,
   c_args: [ '-DG_LOG_DOMAIN="LibResynthesizer"',  ],
-  install: true,
+  install: false,
 )
 
 # declare to install using pkgconfig

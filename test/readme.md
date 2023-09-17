@@ -3,5 +3,5 @@ It calls them with a known image and compares the result to expected image.
 
 testSynth.c is a C program that tests the engine library.
 It submits little pixmaps to the engine, and examines the result.
+See meson.build and the code.
 
-Makefile.synth is old, needs to be resurrected in meson.

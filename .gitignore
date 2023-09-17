@@ -32,18 +32,14 @@
 /po/*.gmo
 
 # ignore separate build directory
-/gimpBuild
-/resynthBuild
+# But it is usually in parent dir.
+gimpBuild
+resynthBuild
 
-# ignore build artifacts in source tree: libraries and executables
+# ignore build artifacts in source tree:
+# libraries and executables and translation temp files
 # These should not exist: meson builds out of tree
-lib/libresynthesizer.a
-po/POTFILES
-po/stamp-it
-src/resynthesizer/resynthesizer
-src/resynthesizer-gui/resynthesizer_gui
-stamp-h1
-src/resynthesizer-gui/.deps
+
 
 # ignore vagga containers and home in the containers
 .vagga
