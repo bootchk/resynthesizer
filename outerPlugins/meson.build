@@ -13,7 +13,7 @@ plugin_basenames = [
 #  'plugin-resynth-fill-pattern',
 #  'plugin-resynth-sharpen',
 #  'plugin-uncrop',
-#  'plugin-resynth-controls',
+  'plugin-resynth-controls',
 ]
 
 # install_data() takes a list of names

@@ -8,6 +8,19 @@ Why only ScriptFu:
 Python plugins for Gimp v3 uses GIR and is vastly incompatible with v2 GimpFu.
 While ScriptFu plugins for v2 are more (but not completely) compatible with Gimp v3.
 
+
+## Kinds
+
+All but one plugin do specific filter effects.
+The plugins encapsulate or know the parameters to the engine
+to accomplish the effect.
+
+One plugin is the control panel for the engine.
+It lets a user do many effects,
+but the user must have deeper knowledge of the engine.
+
+## Changelog
+
 These scripts originate from itr-tert/gimp-resynthesizer-scm repo.
 Author is itr-tert.
 Who translated from Python to Scheme.

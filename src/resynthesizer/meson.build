@@ -56,5 +56,5 @@ executable(plugin_name,
   ],
   include_directories: resynthesizer_inc,
   install: true,
-  install_dir: gimpplugindir / 'plug-ins' / plugin_name,
+  install_dir: gimpplugindir / plugin_name,
 )

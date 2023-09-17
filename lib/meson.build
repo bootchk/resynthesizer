@@ -55,7 +55,8 @@ glib_dep = dependency('glib-2.0', version : '>=2.54.0')
 
 
 # define meson var resynth_lib to the locally built library
-resynth_lib = library('libresynthesizer-3.0',
+# !!! static and not installed
+resynth_lib = static_library('libresynthesizer-3.0',
   libresynthesizer_sources,
   dependencies: [
     math_dep,
