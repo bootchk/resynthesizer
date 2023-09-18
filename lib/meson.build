@@ -16,9 +16,18 @@
 # TODO
 
 
+# libheal only does healing of a hole
+libheal_sources = [
+  'imageSynth.c', # <- this is the difference
+  'engine.c',
+  'engineParams.c',
+  'imageFormat.c',
+  'progress.c',
+]
 
+# libresynthesizer is much more general,
+# heals and does texture transfer, etc.
 libresynthesizer_sources = [
-  'imageSynth.c',
   'engine.c',
   'engineParams.c',
   'imageFormat.c',
@@ -65,6 +74,25 @@ resynth_lib = static_library('libresynthesizer-3.0',
   c_args: [ '-DG_LOG_DOMAIN="LibResynthesizer"',  ],
   install: false,
 )
+
+# libheal is usually just for testing.
+# Often it is build without GLib.
+# TODO make this more independent of GLib
+# and not static and installed shared.
+# That is the use case for libheal:
+# a shared library on another platform.
+if get_option('build-libheal')
+  heal_lib = static_library('libheal-3.0',
+    libheal_sources,
+    dependencies: [
+      math_dep,
+      glib_dep,
+    ],
+    include_directories: resynthesizer_inc,
+    c_args: [ '-DG_LOG_DOMAIN="LibHeal"',  ],
+    install: false,
+  )
+endif
 
 # declare to install using pkgconfig
 #pkg_mod = import('pkgconfig')

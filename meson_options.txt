@@ -12,8 +12,14 @@
 # And then the source optionally compiles using e.g. "#ifdef SYNTH_THREADED"
 
 
-# TODO option to build the simple API library
-# the one that only heals.
+# Option to build the simple API library
+# It only heals.
+# Not needed for Gimp.
+# Is needed for testResynth test harness.
+option('build-libheal', type : 'boolean', value : false)
+
+
+
 
 
 # Threading

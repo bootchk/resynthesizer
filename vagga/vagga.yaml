@@ -448,7 +448,7 @@ containers:
 
     - !Sh |
         cd /work/gimp
-        CC=clang CXX=clang CC_LD=lld CXX_LD=lld meson setup /work/gimpMesonClangBuild \
+        CC=clang CXX=clang CC_LD=lld CXX_LD=lld meson setup /work/gimpBuild \
          -Djavascript=disabled \
          -Dlua=disabled \
          -Dpython=disabled \
@@ -475,21 +475,26 @@ commands:
 
       # First must build gimp, it is not in the container
       echo "lkk >>>>>>>>>>> build and install GIMP"
-      cd /work/gimpMesonClangBuild
+      cd /work/gimpBuild
       meson compile -j 8
       meson install
 
       meson --version
 
+
+
+
       echo "lkk >>>>>>>>>>>>> setup resynthBuild"
       cd /work/resynthesizer
       CC=clang CXX=clang CC_LD=lld CXX_LD=lld meson setup  --reconfigure /work/resynthBuild
 
-
       echo "lkk >>>>>>>>>>>>> build and install resynth"
+      # Note this was configured earlier
       cd /work/resynthBuild
-      # show build options
+
+      echo "lkk >>>>>>>>>>>>> show build options"
       meson configure
+
       meson compile --verbose -j 8
       meson install
 
@@ -497,8 +502,51 @@ commands:
       export G_MESSAGES_DEBUG=all
 
 
-      echo "lkk running gimp"
+      echo "lkk >>>>>>>>>>> running gimp"
       # valgrind /usr/local/bin/gimp-2.99 --verbose --stack-trace-mode query
-      /usr/local/bin/gimp-2.99 --verbose --stack-trace-mode query
+      #/usr/local/bin/gimp-2.99 --verbose --stack-trace-mode query
       # gdb /usr/local/bin/gimp-2.99
+
+      echo "lkk >>>>>>>>>>>> running test plugin for resynthesizer"
+      # python3 /work/resynthesizer/test/testResynth.py
+      #/usr/local/bin/gimp-2.99 -i --batch-interpreter python --batch - < /work/resynthesizer/test/testResynth.py
+
+
+
+  runHeal: !Command
+    description: Build, install, run libheal test harness in gimpMesonDev container
+    container:  gimpMesonDev
+    write-mode: transient-hard-link-copy
+    run: |
+      # Setup env, the container does not do this
+      export LD_LIBRARY_PATH=/usr/local/lib/x86_64-linux-gnu:/usr/local/lib
+      export HOME=/work/.home
+      export GIMP_PREFIX=/usr/local
+      export XDG_DATA_DIRS=/usr/local/share:/usr/share
+      export GI_TYPELIB_PATH=/usr/local/lib/x86_64-linux-gnu/girepository-1.0:/usr/local/lib/girepository-1.0
+      export NO_AT_BRIDGE=1
+
+
+
+      # First must build gimp, it is not in the container
+      echo "lkk >>>>>>>>>>> build and install GIMP"
+      cd /work/gimpBuild
+      meson compile -j 8
+      meson install
+
+      echo "lkk >>>>>>>>>>>>> setup healBuild"
+      # Note this has one other option
+      cd /work/resynthesizer
+      CC=clang CXX=clang CC_LD=lld CXX_LD=lld meson setup  /work/healBuild -Dbuild-libheal=true
+
+      echo "lkk >>>>>>>>>>>>> build and install heal"
+      cd /work/healBuild
+      meson compile --verbose -j 8
+      meson install
+
+
+      export G_MESSAGES_DEBUG=all
+
+      echo "lkk >>>>>>>>>>>> running test harness for engine library"
+      /usr/local/bin/testHealLib
 

@@ -1,5 +1,5 @@
 
-# test harness for libresynth
+# test harness for libheal
 
 # installs to usual place in the usual path
 
@@ -11,13 +11,14 @@
 # Note latter tests test calling errors, expect an error returned.
 
 
-
-executable('testResynthLib',
-  'testSynth.c',
-  c_args: [ '-DG_LOG_DOMAIN="Resynthesizer"', '-DGIMP_COMPILATION', ],
-  link_with : [
-    resynth_lib,
-  ],
-  include_directories: resynthesizer_inc,
-  install: true,
-)
+if get_option('build-libheal')
+  executable('testHealLib',
+    'testSynth.c',
+    c_args: [ '-DG_LOG_DOMAIN="Resynthesizer"', '-DGIMP_COMPILATION', ],
+    link_with : [
+      heal_lib,
+    ],
+    include_directories: resynthesizer_inc,
+    install: true,
+  )
+endif
