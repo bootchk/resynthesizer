@@ -72,14 +72,12 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 // TODO temporarily disable build configuration
 // #include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
 
-// #include "../../config.h" // GNU buildtools local configuration
-#include "../plugin-intl.h" // i18n macros
+#include "plugin-intl.h" // i18n macros
 
 #include <libgimp/gimp.h>
 #include <glib/gprintf.h>
 
-/* Shared with resynth-gui plugin, resynthesizer engine plugin. */
-#include "../resynth-constants.h"
+#include "resynth-constants.h"
 
 /*
 True header files: types, function prototypes, and in-line functions only.

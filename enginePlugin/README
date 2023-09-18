@@ -1,0 +1,7 @@
+The "engine plugin"
+
+A Gimp plugin.
+
+Adapts Gimp data structures to generic data structures and calls the resynthesizer library.
+
+Called by "outer plugins".

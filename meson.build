@@ -52,11 +52,8 @@ gimpplugindir = prefix / 'lib/x86_64-linux-gnu/gimp/2.99/plug-ins'
 # engine library
 subdir('lib')
 
-# engine plugin
-subdir('src')
-
+subdir('enginePlugin')
 subdir('outerPlugins')
-
 subdir('test')
 
 # translations

@@ -21,15 +21,11 @@ and gimp/plug-ins/common/compose.c
  */
 
 
-
-//#include "config.h"
-
-//#define GIMP_DISABLE_COMPAR_CRUFT
-
 #include <libgimp/gimp.h>
 
 // TODO Need this but can't find
 // #include <libgimp/stdplugins-intl.h>
+#include "plugin-intl.h"
 
 // included later #include "pluginParams.h"
 

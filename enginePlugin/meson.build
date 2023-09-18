@@ -1,29 +1,23 @@
+# version 2 also compiled a C-language plugin: resynthesizer-gui
+# Since 2023 replaced by a ScriptFu plugin.
+# Since 2023 we obsolete the C-language control panel plugin because
+# 1) uses obsolete Gtk-2
+# 2) is non-declarative
 
-# Define meson variables
 
 plugin_name = 'resynthesizer'
-
 # assert defined earlier: gimpplugindir = '/usr/local/lib/x86_64-linux-gnu/gimp/2.99'
-
 
 # !!! Other .h files have compilable code (they are not just headers)
 # but we only need to list the top compiled files.
 
 resynthesizer_sources = [
+  'plugin.c',     # main for a plugin
   'resynthesizer.c',
   'debug.c',
   'pluginParams.c',
   'drawable.c',
 ]
-
-# different source for plugin main, according to Gimp major version.
-# Source that registers plugin in Gimp PDB.
-if get_option('for-gimp-3')
-  resynthesizer_sources += 'plugin.c'
-else
-  resynthesizer_sources += 'resynthPDB.h'
-endif
-
 
 
 # define dependencies on libraries
