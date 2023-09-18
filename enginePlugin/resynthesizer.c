@@ -273,9 +273,9 @@ This adapts the texture synthesis engine to a Gimp plugin.
 
 char *
 inner_run(
-  gchar *                 name,
+  const gchar *                 name,
   gint32                        run_mode,
-  GimpDrawable           *in_drawable,
+  GimpDrawable                 *in_drawable,
   TGimpAdapterParameters       *pluginParameters  // Not const, we further constrain it
 	)
 {

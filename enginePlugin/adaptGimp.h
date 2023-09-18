@@ -149,7 +149,7 @@ pixmap_from_drawable(
   )
 {
   GeglBuffer *buffer;
-  const Babl *format;
+  // const Babl *format;
   guchar *img;
 
   /* !!! Note our pixmap is same width, height as drawable, but depths may differ. */

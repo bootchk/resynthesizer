@@ -1,5 +1,5 @@
 /*
-Resynthesizer plug-in by Lloyd Konneker
+Resynthesizer engine plug-in
 
 Derived from 2.99 gimp/extensions/goat-exercises
 and gimp/plug-ins/common/compose.c
@@ -23,11 +23,11 @@ and gimp/plug-ins/common/compose.c
 
 #include <libgimp/gimp.h>
 
-// TODO Need this but can't find
-// #include <libgimp/stdplugins-intl.h>
+// TODO should this be: #include <libgimp/stdplugins-intl.h>
 #include "plugin-intl.h"
 
-// included later #include "pluginParams.h"
+#include "pluginParams.h"
+#include "resynthesizer.h"  // inner_run
 
 
 #define PLUG_IN_BINARY "resynthesizer"
@@ -224,18 +224,11 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                          G_PARAM_READWRITE);
     }
 
-  // sensitive i.e. enabled when user has chosen exactly one drawable
+  // No need to set sensitivity: an engine without a presence in the Gimp app's GUI
   // gimp_procedure_set_sensitivity_mask (procedure, GIMP_PROCEDURE_SENSITIVE_DRAWABLE);
 
   return procedure;
 }
-
-
-
-
-#include "pluginParams.h"
-#include "resynthesizer.h"  // inner_run
-
 
 
 static GError *
@@ -244,6 +237,7 @@ new_gerror_for_resynthesizer_and_string(const char * msg)
   GQuark domain = g_quark_from_string("Resynthesizer");
   return g_error_new_literal(domain, 0, msg);
 }
+
 
 /*
 Plugin run func.
@@ -267,7 +261,6 @@ resynthesizer_run (
   const GimpValueArray *args,
   gpointer              run_data)
 {
-  GimpPDBStatusType      status = GIMP_PDB_SUCCESS;
   const char            *result;           // result of call to inner
   TGimpAdapterParameters pluginParameters;
   GimpDrawable          *drawable;
@@ -277,10 +270,10 @@ resynthesizer_run (
 
   // Ignore run_mode: has no dialog.
 
-  // Ignore setting (ProcedureConfig): not callable except by other plugins
+  // Ignore settings (ProcedureConfig): not callable except by other plugins
   // with newly devised args.
 
-  // Gimp must only call with one drawable.
+  // Gimp must only pass one drawable.
   // See sensitivity.
   g_assert (n_drawables == 1);
   drawable = drawables[0];
@@ -294,6 +287,7 @@ resynthesizer_run (
       drawable,
       &pluginParameters);
 
+  // inner_run returns string either "success" or an error message
   if (strcmp(result, "success") == 0)
   {
     return gimp_procedure_new_return_values (procedure, GIMP_PDB_SUCCESS, NULL);
@@ -302,8 +296,7 @@ resynthesizer_run (
   {
     GError * gerror;
 
-    // print to console
-    debug(result);
+    g_debug("%s : %s", G_STRFUNC, result);
 
     // GError having result as the message
     gerror = new_gerror_for_resynthesizer_and_string(result);
