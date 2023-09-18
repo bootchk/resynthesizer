@@ -12,13 +12,12 @@
 
 
 # Optional, when independent of GLib
-# See buildswitches. TODO meson_options
 # 'glibProxy.c',
+# TODO
 
 
 
 libresynthesizer_sources = [
-  'buildSwitches.h',
   'imageSynth.c',
   'engine.c',
   'engineParams.c',

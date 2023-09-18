@@ -4,7 +4,7 @@ Engine does repeated passes with a closed feedback loop to quit early if no impr
 
 First pass: target is empty and patches are shotgun patterns, i.e. sparse, mostly from outside the target.
 
-Second pass: target is synthesized but poorly.  Use patches from the poor target to refine the target.  
+Second pass: target is synthesized but poorly.  Use patches from the poor target to refine the target.
 Patches are non-sparse i.e. contiguous, but not necessarily square or symmetric.
 Second pass refines every pixel in the target.
 
@@ -109,11 +109,11 @@ newSynthesisArgs(
 {
   args->parameters = parameters;
   args->threadIndex = threadIndex;
-  args->startTargetIndex = startTargetIndex; 
-  args->endTargetIndex = endTargetIndex; 
-  args->indices = indices; 
-  args->targetMap = targetMap; 
-  args->corpusMap = corpusMap;      
+  args->startTargetIndex = startTargetIndex;
+  args->endTargetIndex = endTargetIndex;
+  args->indices = indices;
+  args->targetMap = targetMap;
+  args->corpusMap = corpusMap;
   args->recentProberMap = recentProberMap;
   args->hasValueMap = hasValueMap;
   args->sourceOfMap = sourceOfMap;
@@ -134,19 +134,19 @@ static void *
 synthesisThread(void * uncastArgs)
 {
   SynthArgs* args = (SynthArgs *) uncastArgs;
-  
+
   // Unpack wrapped args
   TImageSynthParameters * parameters  = args->parameters;
   guint threadIndex                   = args->threadIndex;
   guint startTargetIndex              = args->startTargetIndex;
   guint endTargetIndex                = args->endTargetIndex;
-  TFormatIndices* indices             = args->indices; 
-  Map * targetMap                     = args->targetMap; 
-  Map* corpusMap                      = args->corpusMap;      
+  TFormatIndices* indices             = args->indices;
+  Map * targetMap                     = args->targetMap;
+  Map* corpusMap                      = args->corpusMap;
   Map* recentProberMap                = args->recentProberMap;
   Map* hasValueMap                    = args->hasValueMap;
   Map* sourceOfMap                    = args->sourceOfMap;
-  pointVector targetPoints            = args->targetPoints;      
+  pointVector targetPoints            = args->targetPoints;
   pointVector corpusPoints            = args->corpusPoints;
   pointVector sortedOffsets           = args->sortedOffsets;
   GRand *prng                         = args->prng;
@@ -156,7 +156,7 @@ synthesisThread(void * uncastArgs)
   ProgressRecordT * progressRecord    = args->progressRecord;
   int* cancelFlag                     = args->cancelFlag;
 
-  
+
   gulong betters = synthesize(  // gulong so can be cast to void *
       parameters,
       threadIndex,
@@ -172,7 +172,7 @@ synthesisThread(void * uncastArgs)
       corpusPoints,
       sortedOffsets,
       prng,
-      corpusTargetMetric, 
+      corpusTargetMetric,
       mapsMetric,
       deepProgressCallback,
       progressRecord,	// parameters to progress callback.  progressRecord is in stack frame of refinerThreaded().
@@ -226,7 +226,7 @@ startThread(
     corpusPoints,
     sortedOffsets,
     prng,
-    corpusTargetMetric, 
+    corpusTargetMetric,
     mapsMetric,
     deepProgressCallback,
     progressRecord,
@@ -236,10 +236,12 @@ startThread(
 #ifdef SYNTH_USE_GLIB_THREADS
   GError* error = NULL;
 
-  g_assert(g_thread_supported());
+  // Deprecated and not needed since glib-2.32
+  // g_assert(g_thread_supported());
+
   // old, deprecated: *thread = g_thread_create(synthesisThread, (void * __restrict__) args, TRUE, &error);
   *thread = g_thread_try_new(NULL, synthesisThread, (void * __restrict__) args, &error);
-  if (error != NULL) 
+  if (error != NULL)
   {
     printf("Error creating thread: %s\n", error->message);
     // Only for debugging:  app will likely crash.  Caller does not handle this error sufficiently.
@@ -256,7 +258,7 @@ startThread(
 
 // Alternative 1
 
-static void 
+static void
 refiner(
   TImageSynthParameters parameters,
   TFormatIndices* indices,
@@ -274,7 +276,7 @@ refiner(
   void (*progressCallback)(int, void*),
   void *contextInfo,
   int* cancelFlag
-  ) 
+  )
 {
   guint pass;
   TRepetionParameters repetition_params;
@@ -282,7 +284,7 @@ refiner(
   // Threaded: use atomic add and mutexProgress when updating progress
   // !!! This is owned by parent, updated by child threads executing callback function deepProgressCallback.
   ProgressRecordT progressRecord;
-  
+
 
   // Synthesize in threads.  Note proxies in glibProxy.h for POSIX threads
 #ifdef SYNTH_USE_GLIB_THREADS
@@ -293,7 +295,7 @@ refiner(
   // If not using glib proxied to pthread by glibProxy.h
   g_mutex_init(&mutex);  // defined in synthesize.h
 
-  
+
 #ifdef SYNTH_USE_GLIB_THREADS
   static GMutex mutexProgress;
 #else
@@ -314,9 +316,9 @@ refiner(
     &mutexProgress);
 
   // Assert threading system is init at startup time, after glib 2.32
-  
+
   for (pass=0; pass<MAX_PASSES; pass++)
-  { 
+  {
     guint endTargetIndex = repetition_params[pass][1];
     gulong betters = 0;
 
@@ -357,22 +359,22 @@ refiner(
      betters += temp;
    }
 
-    
+
     // nil unless DEBUG
     print_pass_stats(pass, repetition_params[pass][1], betters);
     // printf("Pass %d betters %ld\n", pass, betters);
-    
+
     /* Break if a small fraction of target is bettered
-    This is a fraction of total target points, 
+    This is a fraction of total target points,
     not the possibly smaller count of target attempts this pass.
     Or break on small integral change: if ( targetPoints_size / integralColorChange < 10 ) {
     */
-    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) ) 
+    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) )
     {
       // printf("Quitting early after %d passes. Betters %ld\n", pass+1, betters);
       break;
     }
-    
+
     // Simple progress: percent of passes complete.
     // This is not ideal, a maximum of MAX_PASSES callbacks, typically six.
     // And the later passes are much shorter than earlier passes.

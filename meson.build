@@ -14,11 +14,30 @@ i18n = import('i18n')
 # gettext_package= 'resynthesizer3')
 
 
-#generate config.h
-#conf_data = configuration_data()
-#configure_file(input : 'config.h.in',
-#               output : 'config.h',
-#               configuration : conf_data)
+###### Configuration
+
+# Configuration statements were copied from gimp/meson.build
+# They are more or less canonical
+
+# create a meson configuration object
+conf = configuration_data()
+
+# Get build options into the configuration
+conf.set('SYNTH_THREADED',          get_option('synth-threaded'))
+conf.set('SYNTH_USE_GLIB_THREADS',  get_option('synth-use-glib-threads'))
+conf.set('SYNTH_USE_GLIB',          get_option('synth-use-glib'))
+
+
+# generate config.h from the conf
+# config.h is only included by the library, only affects it.
+configure_file(
+  output: 'resynth-config.h',
+  configuration: conf
+)
+#compiler_args +='-DHAVE_CONFIG_H'
+
+
+
 
 prefix = get_option('prefix')
 

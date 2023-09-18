@@ -1,8 +1,5 @@
 
-
-
-// Compiling switch #defines
-#include "buildSwitches.h"
+#include "../resynth-config.h"
 
 #ifdef SYNTH_USE_GLIB
   #include <glib.h>

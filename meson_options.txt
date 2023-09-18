@@ -1,1 +1,49 @@
-option('for-gimp-3', type : 'boolean', value : true)
+# Options for building
+
+# Most options affect only the library.
+# No options affect the plugins.
+
+# When using meson build system:
+# Set these options at configuration time using "meson configure -Dfoo"
+#
+# See the top meson.build, it puts these vars, upper-cased,
+# into file resynth-config.h in the top of the build dir.
+# But that file is not in the source.
+# And then the source optionally compiles using e.g. "#ifdef SYNTH_THREADED"
+
+
+# TODO option to build the simple API library
+# the one that only heals.
+
+
+# Threading
+#
+# This is not as important as you might think.
+# Threading speedup seems to be only about 2x.
+#
+# THREAD_LIMIT is hardcoded into engine.c at 12
+
+# Engine library use threads?
+option('synth-threaded', type : 'boolean', value : true)
+
+# Engine use GLib threads versus posix threads
+# This is moot unless option synth-threaded also chosen.
+option('synth-use-glib-threads', type : 'boolean', value : true)
+
+
+# Use GLib for platform independence
+#
+# The goal is a very portable engine,
+# espcially for the simple API library,
+# where you only want to heal.
+#
+# GLib provides platform independence,
+# but some developers might not want to use it.
+# Resynthesizer only uses it for basic things that are easily
+# done some other way (see glibProxy.c)
+#
+# Note you can use GLib generally, but posix threads instead of GLib threads
+
+# Engine library use GLib?
+option('synth-use-glib', type : 'boolean', value : true)
+

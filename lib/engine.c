@@ -70,17 +70,14 @@ to the opposite side.  See wrapOrClipTarget.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
 
-// Compiling switch #defines
-#include "buildSwitches.h"
+#include "../resynth-config.h"
 
 #include <math.h>
 
 #ifdef SYNTH_USE_GLIB
   #include <glib.h>
-#endif
-
-
-#ifdef USE_GLIB_PROXY
+#else
+  /* Use a proxy for GLib. */
   #include <stddef.h>   // size_t
   #include "glibProxy.h"  // Redefines the glib structs and routines used here
   #include <math.h> // atan2(), log()
@@ -92,6 +89,21 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
   #define g_rand_new_with_seed(s) s_rand_new_with_seed(s)
   #define g_rand_int_range(r,u,l) s_rand_int_range(r,u,l)
 #endif
+
+
+
+// Count threads to start.
+#ifdef SYNTH_THREADED
+  // A reasonable guess that most current processors have no more than this.
+  // More threads than cores does not seem to hurt performance.
+  // glib doesn't seem to support knowing the count of threads.
+  #define THREAD_LIMIT    12
+#else
+  // Must be defined to 1 if not threaded, it affects how synthesize() iterates over target
+  #define THREAD_LIMIT 1
+#endif
+
+
 
 /* Shared with resynth-gui, engine plugin, and engine */
 #include "imageSynthConstants.h"
@@ -219,17 +231,6 @@ prepare_target_sources(
       setSourceOf(coords, null_coords, sourceOfMap);
       }
 }
-
-static inline gboolean
-has_source (
-  Coordinates target_point,
-  Map* sourceOfMap
-  )
-{
-  return (getSourceOf(target_point, sourceOfMap).x != -1) ;
-}
-
-
 
 
 /*

@@ -22,8 +22,9 @@ The internal Pixel aggregates color, mask, and map pixelels; for memory locality
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Compiling switch #defines
-#include "buildSwitches.h"
+
+#include "../resynth-config.h"
+
 #ifdef SYNTH_USE_GLIB
   #include <glib.h>
 #else
