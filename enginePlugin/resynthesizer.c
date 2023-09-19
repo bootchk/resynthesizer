@@ -263,25 +263,22 @@ equal_basetypes(
 /*
 Plugin generic main.
 
-Generic: used by both v2 and v3 GIMP plugin API.
-Note some params are GimpDrawable* that formerly were ID's.
-
-This adapts the texture synthesis engine to a Gimp plugin.
+This adapts the resynthesizer engine to a Gimp plugin.
 */
 
 char *
 inner_run(
   const gchar *                 name,
-  gint32                        run_mode,
-  GimpDrawable                 *in_drawable,
   TGimpAdapterParameters       *pluginParameters  // Not const, we further constrain it
 	)
 {
   TImageSynthParameters engineParameters;
 
+  GimpDrawable *target_drawable = pluginParameters->target;
   GimpDrawable *corpus_drawable = pluginParameters->corpus;
+
   // Require target and corpus not NULL
-  g_assert(in_drawable != NULL);
+  g_assert(target_drawable != NULL);
   g_assert(corpus_drawable != NULL);
 
   GimpDrawable *map_in_drawable= NULL;
@@ -337,8 +334,8 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
 
 
   /* Check image type (could be called non-interactive) */
-  if (!is_rgb(in_drawable) &&
-      !is_gray(in_drawable))
+  if (!is_rgb(target_drawable) &&
+      !is_gray(target_drawable))
     return _("Incompatible image mode.");
 
   /* Limit neighbours parameter to size allocated. */
@@ -350,7 +347,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
   In earlier version, they must have the same bpp.
   But now we don't compare the alphas, so they can differ in presence of alpha.
   */
-  if (! equal_basetypes(in_drawable, corpus_drawable) )
+  if (! equal_basetypes(target_drawable, corpus_drawable) )
     return _("The input texture and output image must have the same number of color channels.");
 
   with_map = (pluginParameters->input_map != NULL && pluginParameters->output_map != NULL);
@@ -372,15 +369,15 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
         || height(map_in_drawable) != height(corpus_drawable)
        )
       return _("The input map should be the same size as the input texture image");
-    if (   width(map_out_drawable) != width(in_drawable)
-        || height(map_out_drawable) != height(in_drawable)
+    if (   width(map_out_drawable) != width(target_drawable)
+        || height(map_out_drawable) != height(target_drawable)
        )
       return _("The output map should be the same size as the output image");
   }
 
   #ifdef ANIMATE
   // Copy local pointer vars to globals
-  targetDrawableCopy = in_drawable;
+  targetDrawableCopy = target_drawable;
   targetMapCopy = &targetMap;
   #endif
 
@@ -394,7 +391,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
   - OR standardize the internal pixmap to ALWAYS have an alpha pixelel
   initialized to VISIBLE and set from any alpha pixelel.
   */
-  gboolean is_alpha_image =  has_alpha(in_drawable);
+  gboolean is_alpha_image =  has_alpha(target_drawable);
   gboolean is_alpha_corpus = has_alpha(corpus_drawable);
 
   // Image adaption requires format indices
@@ -405,7 +402,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
 
   prepareImageFormatIndices(
     &formatIndices,
-    count_color_channels(in_drawable),
+    count_color_channels(target_drawable),
     map_count,
     is_alpha_image,
     is_alpha_corpus,
@@ -422,7 +419,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
     ImageBuffer maskBuffer;
 
     // TODO change to new signature
-    adaptGimpToSimple(in_drawable, &imageBuffer, &maskBuffer);  // From Gimp to simple
+    adaptGimpToSimple(target_drawable, &imageBuffer, &maskBuffer);  // From Gimp to simple
     g_printf("Here3\n");
     adaptSimpleAPI(&imageBuffer, &maskBuffer);        // From simple to existing engine API
 
@@ -430,7 +427,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
     g_printerr("Gimp version %d\n", GIMP_MAJOR_VERSION);
     debug("adapt target/context");
 
-    fetch_image_mask_map(in_drawable, &targetMap, formatIndices.total_bpp,
+    fetch_image_mask_map(target_drawable, &targetMap, formatIndices.total_bpp,
       &targetMaskMap,
       MASK_TOTALLY_SELECTED,
       map_out_drawable, formatIndices.map_start_bip);
@@ -494,7 +491,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
   So no compelling need to test it again here.
   */
   debug("post results");
-  post_results_to_gimp(in_drawable, targetMap);
+  post_results_to_gimp(target_drawable, targetMap);
 
   /* Clean up */
   // Adapted
@@ -502,7 +499,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
   free_map(&corpusMap);
   // GIMP
   // Since 2.10, not need to detach.
-  // detach_drawables(in_drawable, corpus_drawable, map_in_drawable, map_out_drawable);
+  // detach_drawables(target_drawable, corpus_drawable, map_in_drawable, map_out_drawable);
   gimp_progress_end();
 
   debug("return success");

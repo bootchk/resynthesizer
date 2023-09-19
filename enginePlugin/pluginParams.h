@@ -1,19 +1,18 @@
 
-
-
-
 /*
 Parameters passed from a Gimp plugin
 to the adapter from Gimp to the innermost engine.
 
 !!!  v3
 Difference from v2 is int ID => GimpDrawable*
+And target drawable now is in the GimpValueArray instead of separate.
 */
 typedef struct GIMPAdapterParametersStruct {
   int                 h_tile;
   int                 v_tile;
   int                 use_border;
 
+  GimpDrawable *target;
   GimpDrawable *corpus;       // <<<< v2 was int ID
   GimpDrawable *input_map;
   GimpDrawable *output_map;
@@ -27,31 +26,7 @@ typedef struct GIMPAdapterParametersStruct {
 
 
 
-
-
-#if GIMP_MINOR_VERSION < 99
-
-
-
 gboolean
 get_engine_specific_parameters(
-  gint32                  run_mode,
-  gint                    nparams,
-	GimpParam        *param,          // <<<<<<
-  GimpDrawable     *in_drawable,
-  TGimpAdapterParameters *pluginParameters
-  );
-
-
-
-#else
-
-
-
-gboolean
-get_engine_specific_parameters(
-  const GimpValueArray   *args,              // IN   // <<<<<
+  const GimpValueArray   *args,              // IN
   TGimpAdapterParameters *pluginParameters); // OUT
-
-
-#endif

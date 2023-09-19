@@ -66,10 +66,12 @@ static GimpProcedure  * resynthesizer_create_procedure (GimpPlugIn           *pl
                                                         const gchar          *name);
 
 static GimpValueArray * resynthesizer_run     (GimpProcedure        *procedure,
+#ifdef IMAGE_PROCEDURE
                                                GimpRunMode           run_mode,
                                                GimpImage            *image,
                                                gint                  n_drawables,
                                                GimpDrawable        **drawables,
+#endif
                                                const GimpValueArray *args,
                                                gpointer              run_data);
 
@@ -112,13 +114,14 @@ Alternatives for declared class of PDB procedure:
 superclass GimpProcedure.
 You must declare all the args.
 You can declare taking a single drawable.
-The run_func signature has run_mode and array of other args.
+The run_func signature has only other args, is type GimpRunFunc.
 
 subclass GimpImageProcedure.
 Hides some "usual" args.
 You only declare the other args.
 Usual args has a container of drawables.
 The run_func signature has run_mode, image, count, drawables array, and array of other args.
+The type of run_func is GimpRunImageFunc ?
 */
 
 /*
@@ -133,10 +136,10 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
 
   if (! strcmp (name, PLUG_IN_PROC))
     {
-      procedure = gimp_image_procedure_new (plug_in, name,
+      // = gimp_image_procedure_new (plug_in, name,
+      procedure = gimp_procedure_new (plug_in, name,
                                             GIMP_PDB_PROC_TYPE_PLUGIN,
                                             resynthesizer_run, NULL, NULL);
-
 
       gimp_procedure_set_documentation (procedure,
                                         N_("Resynthesizer engine"),
@@ -163,14 +166,15 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
         "Image",
         TRUE,
         G_PARAM_READWRITE);
+      #endif
+
       GIMP_PROC_ARG_DRAWABLE (
         procedure,
         "drawable",
-        "Layer or channel to heal",
-        "Drawable",
+        "Layer or channel to synthesize",
+        "Target of algorithm",
         TRUE,
         G_PARAM_READWRITE);
-      #endif
 
       GIMP_PROC_ARG_BOOLEAN (procedure, "h_tile",
                          "Create image tileable horizontally?",
@@ -243,21 +247,15 @@ new_gerror_for_resynthesizer_and_string(const char * msg)
 Plugin run func.
 This is what GIMP calls.
 
-Must have signature of GIMP_IMAGE_PROCEDURE_RUN_FUNC (sic)
+Signature is type GimpRunFunc
 
 Adapts to a generic resynthesizer plugin.
 Liable to change as GIMP plugin API changes.
 */
-// API for Gimp-3.0
-
 
 static GimpValueArray *
 resynthesizer_run (
   GimpProcedure        *procedure,
-  GimpRunMode           run_mode,
-  GimpImage            *image,
-  gint                  n_drawables,
-  GimpDrawable        **drawables,
   const GimpValueArray *args,
   gpointer              run_data)
 {
@@ -273,18 +271,12 @@ resynthesizer_run (
   // Ignore settings (ProcedureConfig): not callable except by other plugins
   // with newly devised args.
 
-  // Gimp must only pass one drawable.
-  // See sensitivity.
-  g_assert (n_drawables == 1);
-  drawable = drawables[0];
-
+  // Adapt args in GimpValueArray to a more generic struct.
   if ( ! get_engine_specific_parameters(args, &pluginParameters) )
     result = _("Resynthesizer failed to get parameters.");
   else
     result = inner_run(
       name,
-      run_mode,
-      drawable,
       &pluginParameters);
 
   // inner_run returns string either "success" or an error message

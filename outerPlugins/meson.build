@@ -7,12 +7,12 @@
 plugin_basenames = [
   'plugin-heal-selection',
   'plugin-heal-transparency',
-#  'plugin-map-style',
-#  'plugin-render-texture',
-#  'plugin-resynth-enlarge',
-#  'plugin-resynth-fill-pattern',
-#  'plugin-resynth-sharpen',
-#  'plugin-uncrop',
+  'plugin-map-style',
+  'plugin-render-texture',
+  'plugin-resynth-enlarge',
+  'plugin-resynth-fill-pattern',
+  'plugin-resynth-sharpen',
+  'plugin-uncrop',
   'plugin-resynth-controls',
 ]
 

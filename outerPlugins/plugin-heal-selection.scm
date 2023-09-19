@@ -206,12 +206,9 @@
     ;; the original image should not have been changed,
     ;; and the resynthesizer should only heal, not change selection.
 
-    ;; Note that the API hasn't changed but use_border param now has more values.
+    ;; v3 API changed
     (plug-in-resynthesizer
-     RUN-NONINTERACTIVE  ; run-mode
-     timg                ; image
-     1                   ; count drawables
-     (make-vector 1 tdrawable)  ; vector of one drawable
+     tdrawable
      0 0                 ; vtile htile
      useBorder           ; use-context
      work_drawable       ; corpus
