@@ -20,6 +20,10 @@ option('build-libheal', type : 'boolean', value : false)
 
 
 
+# debug
+# Prints call tree and various statistics related to the algorithm
+# Currently depends on GLib
+option('synth-debug', type : 'boolean', value : false)
 
 
 # Threading

@@ -4,7 +4,7 @@ Engine does repeated passes with a closed feedback loop to quit early if no impr
 
 First pass: target is empty and patches are shotgun patterns, i.e. sparse, mostly from outside the target.
 
-Second pass: target is synthesized but poorly.  Use patches from the poor target to refine the target.  
+Second pass: target is synthesized but poorly.  Use patches from the poor target to refine the target.
 Patches are non-sparse i.e. contiguous, but not necessarily square or symmetric.
 Second pass refines every pixel in the target.
 
@@ -39,7 +39,7 @@ resynthesizing early synthesized pixels early.
 Non threaded version, but with same signature and calls to synthesize()
 */
 
-static void 
+static void
 refiner(
   TImageSynthParameters parameters,
   TFormatIndices* indices,
@@ -57,12 +57,15 @@ refiner(
   void (*progressCallback)(int, void*),
   void *contextInfo,
   int* cancelFlag
-  ) 
+  )
 {
   guint pass;
   TRepetionParameters repetition_params;
-  
+
   ProgressRecordT progressRecord;
+
+  // g_debug("%s", G_STRFUNC);
+  debug("unthreaded refiner\n");
 
   prepare_repetition_parameters(repetition_params, targetPoints->len);
 
@@ -73,10 +76,10 @@ refiner(
     contextInfo);
 
   for (pass=0; pass<MAX_PASSES; pass++)
-  { 
+  {
     guint endTargetIndex = repetition_params[pass][1];
     gulong betters = 0; // gulong so can be cast to void *
-    
+
     betters = synthesize(
         &parameters,
         0,      // Unthreaded synthesis is threadIndex 0
@@ -102,18 +105,18 @@ refiner(
     // nil unless DEBUG
     print_pass_stats(pass, repetition_params[pass][1], betters);
     // printf("Pass %d betters %ld\n", pass, betters);
-    
+
     /* Break if a small fraction of target is bettered
-    This is a fraction of total target points, 
+    This is a fraction of total target points,
     not the possibly smaller count of target attempts this pass.
     Or break on small integral change: if ( targetPoints_size / integralColorChange < 10 ) {
     */
-    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) ) 
+    if ( (float) betters / targetPoints->len < (IMAGE_SYNTH_TERMINATE_FRACTION) )
     {
       // printf("Quitting early after %d passes. Betters %ld\n", pass+1, betters);
       break;
     }
-    
+
     // Simple progress: percent of passes complete.
     // This is not ideal, a maximum of MAX_PASSES callbacks, typically six.
     // And the later passes are much shorter than earlier passes.

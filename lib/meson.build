@@ -11,9 +11,7 @@
 # The library does not need internationalization.
 
 
-# Optional, when independent of GLib
-# 'glibProxy.c',
-# TODO
+
 
 
 # libheal only does healing of a hole
@@ -55,11 +53,13 @@ cc = meson.get_compiler('c')
 math_dep = cc.find_library('m', required : false)
 
 # glib
-# Might work with earlier versions, choosing 2.54 somewhat arbitrarily
-glib_dep = dependency('glib-2.0', version : '>=2.54.0')
-
-
-
+if get_option('synth-use-glib')
+  # Might work with earlier versions, choosing 2.54 somewhat
+  glib_dep = dependency('glib-2.0', version : '>=2.54.0')
+else
+  glib_dep = dependency('', required: false)
+  libresynthesizer_sources +=  'glibProxy.c'
+endif
 
 
 # define meson var resynth_lib to the locally built library

@@ -23,9 +23,21 @@ i18n = import('i18n')
 conf = configuration_data()
 
 # Get build options into the configuration
+
 conf.set('SYNTH_THREADED',          get_option('synth-threaded'))
-conf.set('SYNTH_USE_GLIB_THREADS',  get_option('synth-use-glib-threads'))
 conf.set('SYNTH_USE_GLIB',          get_option('synth-use-glib'))
+
+# if we are using glib
+if get_option('synth-use-glib')
+  # we can still choose to use posix threads for threading
+  conf.set('SYNTH_USE_GLIB_THREADS',  get_option('synth-use-glib-threads'))
+else
+  # otherwise we MUST use posix threads
+  conf.set('SYNTH_USE_GLIB_THREADS',  false)
+endif
+
+# TODO depends on GLib?
+conf.set('SYNTH_DEBUG',             get_option('synth-debug'))
 
 
 # generate config.h from the conf

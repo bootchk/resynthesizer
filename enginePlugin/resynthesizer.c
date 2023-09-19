@@ -69,14 +69,12 @@ to the opposite side.
 It doesn't make tiles in the target, it makes a target that is suitable as a tile.
 */
 
-// TODO temporarily disable build configuration
-// #include "buildSwitches.h"      // Affects debug, assertions, use of glib, threading, etc.
-
-#include "plugin-intl.h" // i18n macros
 
 #include <libgimp/gimp.h>
 #include <glib/gprintf.h>
 
+#include "../resynth-config.h"
+#include "plugin-intl.h" // i18n macros
 #include "resynth-constants.h"
 
 /*
@@ -304,11 +302,7 @@ inner_run(
 
   debug("inner_run");
 
-  #ifdef SYNTH_THREADED
-  // This is as early as it can be called.  Not sure it needs to be called.  See later call to it.
-  // Call it early since calls to gdk, gtk might require this?
-  g_thread_init(NULL);
-  #endif
+  // No longer required: g_thread_init(NULL);
 
   #ifdef DEBUG
   gimp_message_set_handler(1); // To console instead of GUI

@@ -54,6 +54,8 @@ Sept. 2011.  One experiment shows it is no faster, and produces different, grain
   #include <pthread.h>
 #endif
 
+// TODO this is a hack
+#include "../enginePlugin/debug.h"
 
 // When synthesize() is threaded, it needs a single argument.
 // Wrapper struct for single arg to synthesize
@@ -306,6 +308,8 @@ refiner(
 
   SynthArgs synthArgs[THREAD_LIMIT];
 
+  debug("refinerThreaded\n");
+
   prepare_repetition_parameters(repetition_params, targetPoints->len);
 
   initializeThreadedProgressRecord(
@@ -322,8 +326,8 @@ refiner(
     guint endTargetIndex = repetition_params[pass][1];
     gulong betters = 0;
 
-    guint threadIndex;
-    for (threadIndex=0; threadIndex<THREAD_LIMIT; threadIndex++)
+
+    for (guint threadIndex=0; threadIndex<THREAD_LIMIT; threadIndex++)
     {
       startThread(
         &synthArgs[threadIndex], &threads[threadIndex], threadIndex, // thread specific
@@ -347,7 +351,7 @@ refiner(
    }
 
    // Wait for threads to complete; rejoin them
-   for (threadIndex=0; threadIndex<THREAD_LIMIT; threadIndex++)
+   for (guint threadIndex=0; threadIndex<THREAD_LIMIT; threadIndex++)
    {
      gulong temp;
 

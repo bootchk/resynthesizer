@@ -7,7 +7,7 @@ These use global variables.
 */
 
 
-#ifdef DEBUG
+#ifdef SYNTH_DEBUG
 
 static inline void
 store_betterment_stats(tBettermentKind betterment_kind)
@@ -28,13 +28,13 @@ static inline void
 integrate_color_change(Coordinates position)
 {
   BppType j;
-  
+
   for(j=FIRST_PIXELEL_INDEX; j<color_end_bip; j++)  // For all color pixelels (channels)
     integralColorChange += abs(pixmap_index(&image, position)[j] - pixmap_index(&corpus, best_point)[j]);
 }
-          
 
-static void 
+
+static void
 dump_parameters(const Parameters *parameters)
 {
   g_printf("Parameter: Corpus ID: %d\n", parameters->corpus_id);
@@ -50,7 +50,7 @@ print_pass_stats(
   gint repeat,
   gint target_count,
   gint repeatCountBetters
-  ) 
+  )
 {
   g_printf("Repetition # %d targets %d bettered %d color change %d\n",
     repeat, target_count, repeatCountBetters, integralColorChange);
@@ -65,8 +65,8 @@ print_processor_time()
 }
 
 
-/* 
-Clear target pixels. So see them get resynthesized when animated debugging. 
+/*
+Clear target pixels. So see them get resynthesized when animated debugging.
 Note the initial values of the target are never used, but totally resynthesized.
 */
 static void
@@ -74,12 +74,12 @@ clear_target_pixels(guint bpp)
 {
   guint x;
   guint y;
-  
+
   for(y=0;y<image.height;y++)
     for(x=0;x<image.width;x++)
     {
       Coordinates coords = {x,y};
-      if (is_selected_image(coords)) 
+      if (is_selected_image(coords))
       {
         guint pixelel;
         Pixelel * pixel = pixmap_index(&image, coords);
@@ -104,7 +104,7 @@ print_post_stats()
   // g_printf("Bettered by neighbor itself %d\n", bettermentStats[NEIGHBOR_ITSELF]);
   // g_printf("Bettered by prior source %d\n", bettermentStats[PRIOR_REP_SOURCE]);
   g_printf("Not bettered %d\n", bettermentStats[NO_BETTERMENT]);
-  
+
   g_printf("Perfect matches %d\n", bettermentStats[PERFECT_MATCH]);
   g_printf("Processor seconds %f\n", 1.0 * clock() / CLOCKS_PER_SEC );
 }
@@ -115,8 +115,8 @@ dump_target_points()
 {
   /* dump source for each target, in order in which synthed  */
   guint i;
-  
-  for (i=0; i<target_points_size; i++) 
+
+  for (i=0; i<target_points_size; i++)
   {
     // c++ Coordinates position = target_points[i];
     Coordinates position = g_array_index(target_points, Coordinates, i);

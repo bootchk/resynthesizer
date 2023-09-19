@@ -10,7 +10,8 @@ This is not as robust as Glib: little checking is done.
 
 This is a limited subset: only what is used in imageSynth.
 */
-#include "buildSwitches.h"
+
+#include "../resynth-config.h"
 
 // Certain configurations use glib defines of structs GRand and GArray
 #ifdef SYNTH_USE_GLIB
@@ -41,7 +42,7 @@ s_rand_int_range(
   )
 {
   if (upperBound<1) return 0; // Prevent division by zero when both bounds 0
-  
+
   // return rand() % upperBound;   // POOR not adequate if upperBound > RAND_MAX, and cyclical
   upperBound -= 1; // Make it inclusive
   // Conventional formula for random int in range [lowerBound, upperBound] inclusive
@@ -52,7 +53,7 @@ s_rand_int_range(
 GArray
 */
 
-GArray* 
+GArray*
 s_array_sized_new (
   gboolean zero_terminated, // unused
   gboolean clear, // unused, always cleared
@@ -82,7 +83,7 @@ s_array_free(
 }
 
 
-GArray* 
+GArray*
 s_array_append_vals (
   GArray           *array,
   TConstPointer     data,
@@ -91,10 +92,10 @@ s_array_append_vals (
 {
   // TODO if each array is typed: (((t*) (void *) array->data [array->len] = data
   GRealArray *rarray = (GRealArray*) array;
-  
+
   memcpy (
     array->data + rarray->elt_size * array->len,  // pointer arithmetic
-    data, 
+    data,
 	  rarray->elt_size
 	  );
   array->len += 1;
@@ -107,7 +108,7 @@ s_array_sort (
 	TCompareFunc  compare_func)
 {
   GRealArray *rarray = (GRealArray*) array;
-  
+
   qsort (
     array->data,
 	  array->len,
