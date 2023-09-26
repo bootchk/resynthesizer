@@ -158,7 +158,19 @@
     (set! temp-image (car (gimp-edit-paste-as-new-image)))
     (gimp-image-convert-grayscale temp-image)
     (display-debug-image temp-image)
-    (set! temp-drawable (car (gimp-image-get-active-drawable temp-image)))
+    ; The image could have many drawables.
+    ; One was chosen by the user when this script started.
+    ; But since v3 Gimp supports many active (selected) layers or channels.
+    ; And the active drawable may not be the one the plugin user chose.
+    ; We want the drawable in the copy that corresponds to one chosen.
+    ; Here we punt, assume the user chose a layer (versus channel)
+    ; and it was the first.
+    ; FIXME a better way of doing this
+    (set! temp-drawable
+      (vector-ref
+        ; car is a count, cadr is a vector
+        (cadr (gimp-image-get-layers temp-image))
+        0))
     (return (list temp-image temp-drawable))))
 
 
@@ -207,9 +219,12 @@
   ;; Adjustment depends inversely on percent-transfer.
   ;; Very crude histogram matching.
 
-  ;; histogram upper half: typical mean is 191 (3/4*255). Skew of mean towards 255 means high contrast.
-  (let* ((ref-mean    (car (gimp-histogram ref-drawable    HISTOGRAM-VALUE 128 255)))
-         (source-mean (car (gimp-histogram source-drawable HISTOGRAM-VALUE 128 255)))
+  ; v3 values are floats in range [0,1.0]
+  ; v3 procedure names changed
+
+  ;; histogram upper half: typical mean is 0.75. Mean approaching 1.0 means high contrast.
+  (let* ((ref-mean    (car (gimp-drawable-histogram ref-drawable    HISTOGRAM-VALUE 0.5 1.0)))
+         (source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0)))
          ;; Adjust contrast of source.
          ;; Inversely proportional to percent transfer.
          ;; 2.5 is from experimentation with gimp-brightness-contrast which seems linear in its effect.
@@ -217,14 +232,14 @@
     (when (and debug (> ref-mean source-mean))
       (display "synchronize-contrast: target has more contrast than source\n"))
     ;; clamp to valid range (above formula is lazy, ad hoc)
-    (cond ((> -127 contrast-control) (set! contrast-control -127))
-          ((<  127 contrast-control) (set! contrast-control  127)))
+    (cond ((> -1 contrast-control) (set! contrast-control -1))
+          ((<  1 contrast-control) (set! contrast-control  1)))
 
-    (gimp-brightness-contrast source-drawable 0 contrast-control)
+    (gimp-drawable-brightness-contrast source-drawable 0 contrast-control)
 
     (when debug
       ;; For experimentation, print new values
-      (set! source-mean (car (gimp-histogram source-drawable HISTOGRAM-VALUE 128 255)))
+      (set! source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 128 255)))
       (display (list "Map style: Source contrast changed by " contrast-control))
       (display (list "Map style: Target and source upper half histogram means" ref-mean source-mean))
     )))

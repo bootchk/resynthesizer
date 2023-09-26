@@ -122,10 +122,13 @@ if timg == sourceImage and tdrawable == sourceDrawable:
   ; Order of params different from order in GUI
   ; Since GimpFu v3, pass vector of drawables
   (plug-in-resynthesizer
-    RUN-NONINTERACTIVE  ; run-mode
-    timg                ; image
-    1                   ; count drawables
-    (make-vector 1 tdrawable)  ; vector of one drawable
+    ; OLD API to engine plugin
+    ;RUN-NONINTERACTIVE  ; run-mode
+    ;timg                ; image
+    ;1                   ; count drawables
+    ;(make-vector 1 tdrawable)  ; vector of one drawable
+
+    tdrawable
     horizontalTileableChoice
     verticalTileableChoice
     fillingOrderChoice

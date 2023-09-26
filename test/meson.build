@@ -22,3 +22,15 @@ if get_option('build-libheal')
     install: true,
   )
 endif
+
+
+
+
+# test plugin
+
+# The Gimp usual for interpreted plugins: install in a subdir of the /plug-ins dir
+install_data(
+  'testResynth.py',
+   install_dir: gimpplugindir / 'testResynth',
+   install_mode: 'rwxr-xr-x')
+

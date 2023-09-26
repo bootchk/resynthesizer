@@ -37,40 +37,66 @@
   (script-fu-heal-transparency
    timg tdrawable samplingRadiusParam orderParam)
   (let ((org-selection nil))
-    ;; precondition should be enforced by Gimp according to image modes allowed.
+
+    ; precondition: an alpha channeld exists
+    ; The GUI preflights the precondition and won't allow user to choose
+    ; this plugin when precondition is not met.
+    ; But the plugin can also be called noninteractive by other plugins.
+    ; So check the precondition again.
     (when (= FALSE (car (gimp-drawable-has-alpha tdrawable)))
       (gimp-message (G_"The active layer has no alpha channel to heal."))
       (return))
 
     (gimp-image-undo-group-start timg)
 
-    ;; save selection for later restoration.
-    ;; Saving selection channel makes it active, so we must save and restore the active layer
-    (set! org-selection (gimp-selection-save timg))
+    ; We play with the selection mask but will leave it in original condition.
+    ; Save selection for later restoration.
+    (set! org-selection(car(gimp-selection-save timg)))
+    ; assert org-selection is a new channel named "selection mask copy"
+    ; assert org-selection is the active item i.e. drawable
+
+    ; We want to operate on the drawable, not the selection mask.
+    ; Make the single drawable active, i.e. chosen and the target of operations.
     ; since v3, pass vector of layers, size 1
     ; since v3 wording change "active" => "selected" i.e. chosen by user
     (gimp-image-set-selected-layers timg 1 (make-vector 1 tdrawable))
 
-    ;; alpha to selection
+    ; Make a selection mask from the alpha channel.
+    ; AKA alpha-to-selection, but that procedure does not exist
     (gimp-image-select-item timg CHANNEL-OP-REPLACE tdrawable)
+    ; Assert the selection mask now equals the alpha channel
+    ; Note the selection mask is-a channel, but is not visible in GUI.
+    ; The selection is all pixels that are not transparent.
 
     ;; Want the transparent, not the opaque.
     (gimp-selection-invert timg)
+
     ;; Since transparency was probably anti-aliased (dithered with partial transpancy),
     ;; grow the selection to get past the dithering.
     (gimp-selection-grow timg 1)
-    ;; Remove the alpha from this layer. IE compose with current background color (often white.)
-    ;; Resynthesizer won't heal transparent.
+
+    ;; Remove the alpha from this layer.
+    ;; IE compose with current background color (often white.)
+    ;; Resynthesizer won't heal pixels that are transparent.
     (gimp-layer-flatten tdrawable)
 
     ;; Call heal selection (not the resynthesizer), which will create a proper corpus.
-    ;; 0 = sample from all around
-    (script-fu-heal-selection timg tdrawable samplingRadiusParam 0 orderParam)
+    ;; 0 = sample from all
+    ;; Must pass run-mode, note the name of the constant is not RUNMODE-, i.e. unconventionally named
+    (script-fu-heal-selection RUN-NONINTERACTIVE timg tdrawable samplingRadiusParam 0 orderParam)
 
     ;; Restore image to initial conditions of user, except for later cleanup.
 
-    ;; restore selection
+    ;; restore selection mask
+    ; The operand is a channel
     (gimp-image-select-item timg CHANNEL-OP-REPLACE org-selection)
+    ; Assert the selection mask equals the given channel.
+
+    ; Delete the channel that is selection mask copy, that we created
+    ; TODO this fails because channel is not inserted in image?
+    ; (gimp-channel-delete org-selection)
+    ; but it is visible to user?
+
 
     ;; Clean up (comment out to debug)
     (gimp-image-undo-group-end timg)

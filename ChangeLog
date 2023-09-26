@@ -1,5 +1,33 @@
 ChangeLog for the resynthesizer
 
+2023 Lloyd Konneker bootchk on github, konnekerl on gmail
+
+  version 3.0
+
+    Rearranged structure of repo, renaming file/dirs and moving files around
+
+    Outer plugins are now ScriptFu/Scheme instead of Python/GimpFu v2.
+
+    Meson build instead of automake
+
+    Control panel plugin language ScriptFu/Scheme instead of C/Gtk2
+
+    Engine plugin API changed:
+      not take run-mode, is always non-interactive
+      not take image arg, only a drawable
+
+    Test program is now a plugin instead of a batch program
+
+    Engine library API changed: (FUTURE)
+      arg use-borders now is not encoded with "direction"
+      separate arg for direction
+      add arg for returned false color map
+
+
+
+
+
+
 
 2012 Lloyd Konneker bootch nc.rr.com
 
@@ -8,49 +36,49 @@ ChangeLog for the resynthesizer
                 Include math.h to avoid compiler warnings.
 
   version 2.0.2 Remove deprecated PyGimp functions so users of unstable GIMP do not see warnings, pull request #7
-                Change Map>Resynthesize GUI to include hidden options, pull request #42 
+                Change Map>Resynthesize GUI to include hidden options, pull request #42
 
   version 2.0.1 Fixes build scripts to support distribution builders, issue 31.  Changes structure to build a library.
 
   version 2.0.1 forward:  see also the Github notes for the release
-  
+
   version 2.0  is a major rewrite but with little functional change.
 
-     !!! Doesn't break API but gives different results when built multithreaded. 
+     !!! Doesn't break API but gives different results when built multithreaded.
      Usually users will not notice different results, but the test suite notices.
 
      Multithreading, because of the nature of the algorithm, in my experience does not provide much performance gain.
      For example, the speedup is at best 2x, even with say 8 threads.
-  
+
   * Functional changes:
-  
+
     * If compiled with threading, the algorithm is once again non-deterministic.
     Since threads run in random order depending on system conditions, you can't get repeatable results.
     The results are, in a few odd cases, worse quality.
     Because of nondeterminism, the test suite reports FAILED for all tests: a human must look at the results.
     See buildswitches.h to compile without threading (defaults to 8 threads.)
-    
+
   * Structural changes:
-  
+
     * Threaded using glib threads (or POSIX threads)
-    
-    * The innermost engine is now a static library (libresynthesizer.a), independent of gimp. 
-    
+
+    * The innermost engine is now a static library (libresynthesizer.a), independent of gimp.
+
     It is compiled separately and statically linked into the resynthesizer plugin (an adapter.)
     With a little work, it can be compiled independently of glib.
-    
+
     * The innermost engine is now reentrant (uses no global, static variables.)
-    
+
     With a little work, it could be compiled as a shared library.
     However, the API is poorly documented and needs improvement.
-    
+
   version 1.0.1
-  
+
     * fix off-by-one bug in allocation of sortedOffsets.
     The bug was unreported and not noticeable by most users.
     Only affects a few cases using maps.
     The fix makes the results different in those cases, not necessarily better.
-    
+
 
 
   version 1.0 (Many, major changes.)
@@ -58,80 +86,80 @@ ChangeLog for the resynthesizer
       !!! Changes API from version 0.16 so any old Python and Scheme plugins may not work,
       and users of full control panel Map>Resynthesize will need to adjust.
       The API change is that the engine does not now invert the selection in the corpus.
-      
-	
+
+
 	* Functional changes:
-	
-	  * handling of alpha channels: 
+
+	  * handling of alpha channels:
 	  Don't use transparent corpus, and don't match alpha channels.
 	  Note we synthesize color of target pixels, but don't match alphas,
 	  and don't synthesize an alpha value.
-	
+
 	  * flexible incoming alpha channels: any, some, or no drawables can have alpha
 	  Formerly, they needed the same bpp, but now alpha agnostic.
-	  
-	  * eliminated constraint in resynth-gui.h (in the GUI logic) on texture layer bpp must match target: 
+
+	  * eliminated constraint in resynth-gui.h (in the GUI logic) on texture layer bpp must match target:
 	  (allow alpha mismatch.)
-	 
+
 	  * use the selection channel instead of the inverted selection channel for the corpus: confusing.  Put onus
 	  on calling plugins to arrange new images with their own selections.
-	  
-	  * expand the range of values for use_border parameter: allow directional resynthesizing.  
+
+	  * expand the range of values for use_border parameter: allow directional resynthesizing.
 	  This makes the algorithm slightly 'parametric' in the statistical sense:  it has a model of in and out.
-	  The result is that artifacts sometimes creep into the target from the context.  
+	  The result is that artifacts sometimes creep into the target from the context.
 	  That can be good or bad in the user's view.
 	  TODO Note the control panel is the original and doesn't offer a choice of directionality.
-	
+
 	  * use g_rand_int_range() : equally distributed random numbers, improvement over rand()%MAX
-	
+
 	  * use a fixed random seed instead of time() : repeatable, especially for testing.
 	  TODO make the seed a parameter, for now hard-coded in the code.  Should be a hash of input file?
-	
+
 	* Bugs:
-	
+
 	  * fix bug in handling partial selection (mask e.g. between 0 and 255)
-	
+
 	  * fix bug in determining intersection of selection with layer (the Gimp API changed)
-	
+
 	* Administrative
-	
+
 	  * major restructuring so functions are shorter texts
-	
+
     * Added comments
-	
+
 	  * Gnu/Gimp standards:
 	    * rewrite in C from C++: mainly the Bitmap and Vector classes
 	    * Gnu style
 	    * downgrade from C99
-	    
+
 	  * break into several smaller files, some shared with control gui plugin
-	  
+
 	  * separate engine plugin from control gui plugin
-	  
+
 	  * testResynth.py: testsuite
-	  
+
 	  * moved many magic numbers to resynth-constants.h, altered MAX_WEIGHT and BEST_MAX
 
 	* Performance (never achieved significant gains?)
-	  
+
 	  * interleave the mask channel with the color channels: memory locality for performance sometimes better?
-	
+
 	  * repetitions/passes: feedback to determine how many passes, and parameterize the passes
-	
+
 	  * trypoint() [VECTORIZED] MMX vectorized inner-most loop: performance the same, so optionally compiled
-	
+
 	* rewrote frontend plugins in Python (were Scheme)
 	  * Smart remove object -> Enhance>Heal selection..., fixing a bug in passing corpus layer
 	  * Smart enlarge -> Enhance>Enlarge & sharpen...
 	  * Smart sharpen -> Enhance>Sharpen by resynthesis...
 	  * TODO Fill with Pattern resynth
-	  
+
 	* wrote frontend plugins in Python
 	  * Uncrop
 	  * Map>Style
 	  * Render>Texture
 	  * Heal transparency
-	  
+
 2008 Paul Harrison et al
   * version 0.16
 

@@ -250,7 +250,7 @@
  ;; date created
  "2009"
  ;; image type that the script works on
- "RGB*, GRAY*"
+ "RGB* GRAY*"
  ;; parameters
  SF-IMAGE    "Image"    0
  SF-DRAWABLE "Drawable" 0
