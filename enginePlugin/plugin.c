@@ -168,7 +168,7 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
         G_PARAM_READWRITE);
       #endif
 
-      GIMP_PROC_ARG_DRAWABLE (
+      gimp_procedure_add_drawable_argument (
         procedure,
         "drawable",
         "Layer or channel to synthesize",
@@ -176,52 +176,52 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
         TRUE,
         G_PARAM_READWRITE);
 
-      GIMP_PROC_ARG_BOOLEAN (procedure, "h_tile",
+      gimp_procedure_add_boolean_argument (procedure, "h_tile",
                          "Create image tileable horizontally?",
                          "Boolean",
                          FALSE,
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_BOOLEAN (procedure, "v_tile",
+      gimp_procedure_add_boolean_argument (procedure, "v_tile",
                          "Create image tileable vertically?",
                          "Boolean",
                          FALSE,
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_INT (procedure, "use_border",
+      gimp_procedure_add_int_argument (procedure, "use_border",
                          "Enumerated order/directions of synthesis",
                          "See documents.",
                          0, 100, 1, // TODO what is the real range
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DRAWABLE (procedure, "corpus_drawable",
+      gimp_procedure_add_drawable_argument (procedure, "corpus_drawable",
                               "Image to search",
                               "Usually the surroundings of target.",
                               TRUE,
                               G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DRAWABLE (procedure, "input_map",
+      gimp_procedure_add_drawable_argument (procedure, "input_map",
                               "Map of weightings for target.",
                               "Same size as target.",
                               TRUE,
                               G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DRAWABLE (procedure, "output_map",
+      gimp_procedure_add_drawable_argument (procedure, "output_map",
                               "Map of weightings for corpus.",
                               "Same size as corpus.",
                               TRUE,
                               G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DOUBLE (procedure, "map_weight",
+      gimp_procedure_add_double_argument (procedure, "map_weight",
                             "Weighting for any in and out maps",
                             "How much to use maps while matching.",
                             0.0, 1.0, 0.5,
                             G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DOUBLE (procedure, "autism",
+      gimp_procedure_add_double_argument (procedure, "autism",
                             "Sensitivity to outliers of distance measure",
                             "Parameter of distance measure",
                             0.0, 1.0, 0.117,
                             G_PARAM_READWRITE);
-      GIMP_PROC_ARG_INT (procedure, "neighbours",
+      gimp_procedure_add_int_argument (procedure, "neighbours",
                          "Count of pixels in a patch",
                          "More is high quality but slow",
                          1, 100, 9,
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_INT (procedure, "trys",
+      gimp_procedure_add_int_argument (procedure, "trys",
                          "Max search probes per pass",
                          "More is high quality but slow",
                          1, 10000, 200,
