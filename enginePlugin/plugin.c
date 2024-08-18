@@ -72,7 +72,7 @@ static GimpValueArray * resynthesizer_run     (GimpProcedure        *procedure,
                                                gint                  n_drawables,
                                                GimpDrawable        **drawables,
 #endif
-                                               const GimpValueArray *args,
+                                               GimpProcedureConfig  *config,
                                                gpointer              run_data);
 
 
@@ -256,7 +256,7 @@ Liable to change as GIMP plugin API changes.
 static GimpValueArray *
 resynthesizer_run (
   GimpProcedure        *procedure,
-  const GimpValueArray *args,
+  GimpProcedureConfig  *config,
   gpointer              run_data)
 {
   const char            *result;           // result of call to inner
@@ -272,7 +272,7 @@ resynthesizer_run (
   // with newly devised args.
 
   // Adapt args in GimpValueArray to a more generic struct.
-  if ( ! get_engine_specific_parameters(args, &pluginParameters) )
+  if ( ! get_engine_specific_parameters(config, &pluginParameters) )
     result = _("Resynthesizer failed to get parameters.");
   else
     result = inner_run(
