@@ -176,7 +176,7 @@ def openTestFilepath(filepath, select=None, invert=False):
   # require each test image have exactly one image, need not be chosen
   # TODO get_selected_layers and get_layers are not in the GI, marked in image.pdb to $skip-GI ?
   # count, layers = image.get_layers()
-  layers = image.list_layers()
+  layers = image.get_layers()
   assert len(layers) == 1
   drawable = layers[0]
   assert drawable is not None
@@ -405,7 +405,7 @@ def exportImage (image, outfilepath):
   # file_save requires a GFile
   outfile = Gio.file_new_for_path(outfilepath)
 
-  layers = image.list_layers()
+  layers = image.get_layers()
   # require flattened
   assert len(layers) == 1
   drawable = layers[0]
