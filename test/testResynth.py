@@ -204,90 +204,63 @@ Now the test harness calls the wrapper instead of directly.
 '''
 
 def callHealSelection(targetImage, targetDrawable, corpusWidth, sampleFrom, synthDirection):
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-heal-selection",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-      # corpus-width
-      GObject.Value(GObject.TYPE_INT,     corpusWidth),
-      # sample from areas
-      GObject.Value(GObject.TYPE_INT,     sampleFrom),
-      # synthesize in direction
-      GObject.Value(GObject.TYPE_INT,     synthDirection),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-heal-selection')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('adjustment', corpusWidth)
+  pdb_config.set_property('option', sampleFrom)
+  pdb_config.set_property('option-2', synthDirection)
+  result = pdb_proc.run(pdb_config)
   # TODO result returned?
 
 def callHealTransparency(targetImage, targetDrawable, corpusWidth, synthDirection):
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-heal-transparency",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-      # corpus-width
-      GObject.Value(GObject.TYPE_INT,     corpusWidth),
-
-      # No sampleFrom, the target and corpus are not compact
-      # but usually spread over the entire image.
-
-      # synthesize in direction
-      GObject.Value(GObject.TYPE_INT,     synthDirection),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-heal-transparency')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('adjustment', corpusWidth)
+  # No sampleFrom, the target and corpus are not compact
+  # but usually spread over the entire image.
+  pdb_config.set_property('option', synthDirection)
+  result = pdb_proc.run(pdb_config)
 
 def callUncrop(targetImage, targetDrawable, percentSizeIncrease):
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-uncrop",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-
-      # No sampleFrom, corpus is always just inside the image edge
-      # No corpusWidth corpus is always just tens of pixels deep
-      # No direction, always outward
-
-      GObject.Value(GObject.TYPE_INT,     percentSizeIncrease),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-uncrop')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  # No sampleFrom, corpus is always just inside the image edge
+  # No corpusWidth corpus is always just tens of pixels deep
+  # No direction, always outward
+  pdb_config.set_property('adjustment', percentSizeIncrease)
+  result = pdb_proc.run(pdb_config)
 
 
 def callFillPatternResynth(targetImage, targetDrawable, pattern):
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-fill-pattern-resynth",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-
-      #GObject.Value(Gimp.Pattern,    pattern),
-      GObject.Value(Gimp.Resource,    pattern),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-fill-pattern-resynth')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('pattern', pattern)
+  result = pdb_proc.run(pdb_config)
 
 
 def callRenderTexture(targetImage, targetDrawable, sizeRatio, isTileable):
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-render-texture",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-
-      GObject.Value(GObject.TYPE_DOUBLE,  sizeRatio),
-      GObject.Value(GObject.TYPE_BOOLEAN, isTileable),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-render-texture')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('adjustment', sizeRatio)
+  pdb_config.set_property('toggle', isTileable)
   # TODO, a script returns no values
   # Get the newest image and return it as value or assign to global
+  result = pdb_proc.run(pdb_config)
 
 
 def callMapStyle(targetImage, targetDrawable, corpusFilename, percentTransfer=50, mapBy=0):
@@ -296,51 +269,37 @@ def callMapStyle(targetImage, targetDrawable, corpusFilename, percentTransfer=50
   # open with no selection and no inversion of selection
   unusedImage, corpusDrawable = openTestFilename (corpusFilename)
 
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-map-style",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-
-      GObject.Value(Gimp.Drawable,    corpusDrawable),
-
-      GObject.Value(GObject.TYPE_INT,  percentTransfer),
-      # an enum: 0-2
-      GObject.Value(GObject.TYPE_INT,  mapBy),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-map-style')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('drawable-2', corpusDrawable)
+  pdb_config.set_property('adjustment', percentTransfer)
+  pdb_config.set_property('option', mapBy)
+  result = pdb_proc.run(pdb_config)
   # TODO, a script returns no values
   # Get the newest image and return it as value or assign to global
 
 
 def callSharpen(targetImage, targetDrawable, factor=1.0):
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-sharpen-resynthesized",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-
-      GObject.Value(GObject.TYPE_DOUBLE,  factor),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-sharpen-resynthesized')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('adjustment', factor)
+  result = pdb_proc.run(pdb_config)
 
 
 def callEnlarge(targetImage, targetDrawable, factor=1.0):
-  result = Gimp.get_pdb().run_procedure(
-    "script-fu-enlarge-resynthesized",
-    [
-      # takes run_mode and image
-      GObject.Value(Gimp.RunMode,     Gimp.RunMode.NONINTERACTIVE),
-      GObject.Value(Gimp.Image,       targetImage),
-
-      GObject.Value(Gimp.Drawable,    targetDrawable),
-
-      GObject.Value(GObject.TYPE_DOUBLE,  factor),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-enlarge-resynthesized')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  pdb_config.set_property('otherImage', targetImage)
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('adjustment', factor)
+  result = pdb_proc.run(pdb_config)
 
 
 
@@ -379,23 +338,20 @@ def callResynthesizer(
   # drawable_of_file_with_anti_selection('"+ zappath + "', select1)
 
 
-  result = Gimp.get_pdb().run_procedure(
-    'plug-in-resynthesizer',
-    [
-      # not taking run_mode or image
-
-      GObject.Value(Gimp.Drawable,        targetDrawable),
-      GObject.Value(GObject.TYPE_BOOLEAN, hTile),
-      GObject.Value(GObject.TYPE_BOOLEAN, vTile),
-      GObject.Value(GObject.TYPE_INT,     useBorder),
-      GObject.Value(Gimp.Drawable,        corpusDrawable),
-      GObject.Value(Gimp.Drawable,        input_map),
-      GObject.Value(Gimp.Drawable,        output_map),
-      GObject.Value(GObject.TYPE_DOUBLE,  map_weight),
-      GObject.Value(GObject.TYPE_DOUBLE,  autism),
-      GObject.Value(GObject.TYPE_INT,     neighbours),
-      GObject.Value(GObject.TYPE_INT,     trys),
-    ])
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-resynthesizer')
+  pdb_config = pdb_proc.create_config()
+  pdb_config.set_property('drawable', targetDrawable)
+  pdb_config.set_property('h-tile', hTile)
+  pdb_config.set_property('v-tile', vTile),
+  pdb_config.set_property('use-border', useBorder),
+  pdb_config.set_property('corpus-drawable', corpusDrawable),
+  pdb_config.set_property('input-map', input_map),
+  pdb_config.set_property('output-map', output_map),
+  pdb_config.set_property('map-weight', map_weight),
+  pdb_config.set_property('autism', autism),
+  pdb_config.set_property('neighbours', neighbours),
+  pdb_config.set_property('trys', trys),
+  result = pdb_proc.run(pdb_config)
 
 
 
