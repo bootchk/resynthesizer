@@ -920,7 +920,10 @@ class TestResynthPlugin (Gimp.PlugIn):
                                   "Lloyd Konneker",
                                   "2023")
 
-        procedure.add_argument_from_property(self, "run-mode")
+        procedure.add_enum_argument ("run-mode", "Run mode",
+                                         "The run mode", Gimp.RunMode,
+                                         Gimp.RunMode.INTERACTIVE,
+                                         GObject.ParamFlags.READWRITE)
 
         procedure.set_menu_label("Test Resynthesizer...")
         # Top level menu "Test"
