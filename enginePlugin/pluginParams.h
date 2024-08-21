@@ -28,5 +28,5 @@ typedef struct GIMPAdapterParametersStruct {
 
 gboolean
 get_engine_specific_parameters(
-  const GimpValueArray   *args,              // IN
+  GimpProcedureConfig    *config,            // IN
   TGimpAdapterParameters *pluginParameters); // OUT

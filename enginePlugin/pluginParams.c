@@ -13,24 +13,27 @@
 
 gboolean
 get_engine_specific_parameters(
-  const GimpValueArray    *args,              // IN
+  GimpProcedureConfig     *config,          // IN
   TGimpAdapterParameters  *pluginParameters)  // OUT
 {
-  //g_assert( args->n_values  == 10 );
-
   g_debug ("%s", G_STRFUNC);
 
-  pluginParameters->target     = GIMP_VALUES_GET_DRAWABLE (args, 0);
-  pluginParameters->h_tile     = GIMP_VALUES_GET_BOOLEAN  (args, 1);
-  pluginParameters->v_tile     = GIMP_VALUES_GET_BOOLEAN  (args, 2);
-  pluginParameters->use_border = GIMP_VALUES_GET_INT      (args, 3);
-  pluginParameters->corpus     = GIMP_VALUES_GET_DRAWABLE (args, 4);
-  pluginParameters->input_map  = GIMP_VALUES_GET_DRAWABLE (args, 5);
-  pluginParameters->output_map = GIMP_VALUES_GET_DRAWABLE (args, 6);
-  pluginParameters->map_weight = GIMP_VALUES_GET_DOUBLE   (args, 7);
-  pluginParameters->autism     = GIMP_VALUES_GET_DOUBLE   (args, 8);
-  pluginParameters->neighbours = GIMP_VALUES_GET_INT      (args, 9);
-  pluginParameters->trys       = GIMP_VALUES_GET_INT      (args, 10);
+  // Param names see gimp_procedure_add_*_argument in plugin.c
+  g_object_get(config,
+    "drawable", &pluginParameters->target,
+    "h_tile", &pluginParameters->h_tile,
+    "v_tile", &pluginParameters->v_tile,
+    "use_border", &pluginParameters->use_border,
+    "corpus_drawable", &pluginParameters->corpus,
+    "input_map", &pluginParameters->input_map,
+    "output_map", &pluginParameters->output_map,
+    "map_weight", &pluginParameters->map_weight,
+    "autism", &pluginParameters->autism,
+    "neighbours", &pluginParameters->neighbours,
+    "trys", &pluginParameters->trys,
+    NULL
+  );
+
   return TRUE;
 }
 
