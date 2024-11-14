@@ -314,7 +314,6 @@ inner_run(
 
   #ifdef DEBUG
   gimp_message_set_handler(1); // To console instead of GUI
-  start_time = clock();
   #endif
 
   // internationalization i18n

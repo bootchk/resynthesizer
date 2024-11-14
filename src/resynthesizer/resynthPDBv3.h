@@ -72,8 +72,9 @@ static GimpProcedure  * resynthesizer_create_procedure (GimpPlugIn           *pl
 static GimpValueArray * resynthesizer_run     (GimpProcedure        *procedure,
                                                GimpRunMode           run_mode,
                                                GimpImage            *image,
-                                               GimpDrawable         *drawable,
-                                               const GimpValueArray *args,
+                                               gint                  n_drawables,
+                                               GimpDrawable        **drawables,
+                                               GimpProcedureConfig     *args,
                                                gpointer              run_data);
 
 
@@ -222,10 +223,12 @@ resynthesizer_run (
   GimpProcedure        *procedure,
   GimpRunMode           run_mode,
   GimpImage            *image,
-  GimpDrawable         *drawable,
-  const GimpValueArray *args,
+  gint                  n_drawables,
+  GimpDrawable        **drawables,
+  GimpProcedureConfig     *args,
   gpointer              run_data)
 {
+  GimpDrawable *drawable = drawables[0];
   GimpPDBStatusType status = GIMP_PDB_SUCCESS;
   const char       *result;           // inner result
   const gchar      *name = gimp_procedure_get_name (procedure);
@@ -235,7 +238,9 @@ resynthesizer_run (
 
   // if (! strcmp (name, RECOMPOSE_PROC)) return foo
 
-  if ( ! get_engine_specific_parameters(args, &pluginParameters) )
+  if (drawable == NULL) {
+    result = _("Resynthesizer didn't get an image.");
+  } else if ( ! get_engine_specific_parameters(args, &pluginParameters) )
     result = _("Resynthesizer failed to get parameters.");
   else
     result = inner_run(
