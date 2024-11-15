@@ -27,6 +27,9 @@ to the adapter from Gimp to the innermost engine.
 
 !!!  v2
 */
+#if GIMP_MAJOR_VERSION == 2 && GIMP_MINOR_VERSION < 99
+
+
 typedef struct GIMPAdapterParametersStructOld {
   
   int h_tile;
@@ -281,6 +284,6 @@ set_parameters_to_list(
   }
 }
 
-
+#endif
 
 

@@ -10,7 +10,7 @@
 
 
 // hacky test that version is less than 2.99.xx
-#if GIMP_MINOR_VERSION < 99
+#if GIMP_MAJOR_VERSION == 2 && GIMP_MINOR_VERSION < 99
 
 
 // in v2 gimp API, params are array of GimpParam
@@ -79,28 +79,27 @@ CRUFT
 
 
 
-// in v3 gimp API, params are a GimpValueArray
+// in v3 gimp API, params are passed through a ProcedureConfig
 
 gboolean
 get_engine_specific_parameters(
-  GimpValueArray   *args,              // IN
+  GimpProcedureConfig   *args,              // IN
   TGimpAdapterParameters *pluginParameters)  // OUT
 {
-  // Fails to compile:
-  // g_assert( args->length()  == 10 );
+  g_object_get(args,
+    "h_tile", &pluginParameters->h_tile,
+    "v_tile", &pluginParameters->v_tile,
+    "use_border", &pluginParameters->use_border,
+    "corpus_drawable", &pluginParameters->corpus,
+    "input_map", &pluginParameters->input_map,
+    "output_map", &pluginParameters->output_map,
+    "map_weight", &pluginParameters->map_weight,
+    "autism", &pluginParameters->autism,
+    "neighbours", &pluginParameters->neighbours,
+    "trys", &pluginParameters->trys,
+    NULL
+  );
 
-  // args does not have prefix: run mode, image, drawable
-  pluginParameters->h_tile     = GIMP_VALUES_GET_BOOLEAN  (args, 0);
-  // debug("here");
-  pluginParameters->v_tile     = GIMP_VALUES_GET_BOOLEAN  (args, 1);
-  pluginParameters->use_border = GIMP_VALUES_GET_INT      (args, 2);
-  pluginParameters->corpus     = GIMP_VALUES_GET_DRAWABLE (args, 3);
-  pluginParameters->input_map  = GIMP_VALUES_GET_DRAWABLE (args, 4);
-  pluginParameters->output_map = GIMP_VALUES_GET_DRAWABLE (args, 5);
-  pluginParameters->map_weight = GIMP_VALUES_GET_DOUBLE   (args, 6);
-  pluginParameters->autism     = GIMP_VALUES_GET_DOUBLE   (args, 7);
-  pluginParameters->neighbours = GIMP_VALUES_GET_INT      (args, 8);
-  pluginParameters->trys       = GIMP_VALUES_GET_INT      (args, 9);
   return TRUE;
 }
 

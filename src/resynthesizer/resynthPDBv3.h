@@ -72,8 +72,8 @@ static GimpProcedure  * resynthesizer_create_procedure (GimpPlugIn           *pl
 static GimpValueArray * resynthesizer_run     (GimpProcedure        *procedure,
                                                GimpRunMode           run_mode,
                                                GimpImage            *image,
-                                               GimpDrawable         *drawable,
-                                               const GimpValueArray *args,
+                                               GimpDrawable        **drawables,
+                                               GimpProcedureConfig     *args,
                                                gpointer              run_data);
 
 
@@ -124,10 +124,6 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
 
       // plugin is an engine, without GUI.
       // No need for image_types, menu_label, icon_name, menu_path
-      //gimp_procedure_set_image_types (procedure, "RGB GRAY");
-      //gimp_procedure_set_menu_label (procedure, N_("Exercise in _C minor"));
-      //gimp_procedure_set_icon_name (procedure, GIMP_ICON_GEGL);
-      //gimp_procedure_add_menu_path (procedure, "<Image>/Filters/Development/Resynthesizer exercises/");
 
       gimp_procedure_set_documentation (procedure,
                                         N_("Resynthesizer engine"),
@@ -138,52 +134,52 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
                                       "Lloyd Konneker",
                                       "2021");
 
-      GIMP_PROC_ARG_BOOLEAN (procedure, "h_tile",
+      gimp_procedure_add_boolean_argument (procedure, "h_tile",
                          "Create image tileable horizontally?",
                          "Boolean",
                          FALSE,
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_BOOLEAN (procedure, "v_tile",
+      gimp_procedure_add_boolean_argument (procedure, "v_tile",
                          "Create image tileable vertically?",
                          "Boolean",
                          FALSE,
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_INT (procedure, "use_border",
+      gimp_procedure_add_int_argument (procedure, "use_border",
                          "Enumerated order/directions of synthesis",
                          "See documents.",
                          0, 100, 1, // TODO what is the real range
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DRAWABLE (procedure, "corpus_drawable",
+      gimp_procedure_add_drawable_argument (procedure, "corpus_drawable",
                               "Image to search",
                               "Usually the surroundings of target.",
                               TRUE,
                               G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DRAWABLE (procedure, "input_map",
+      gimp_procedure_add_drawable_argument (procedure, "input_map",
                               "Map of weightings for target.",
                               "Same size as target.",
                               TRUE,
                               G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DRAWABLE (procedure, "output_map",
+      gimp_procedure_add_drawable_argument (procedure, "output_map",
                               "Map of weightings for corpus.",
                               "Same size as corpus.",
                               TRUE,
                               G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DOUBLE (procedure, "map_weight",
+      gimp_procedure_add_double_argument (procedure, "map_weight",
                             "Weighting for any in and out maps",
                             "How much to use maps while matching.",
                             0.0, 1.0, 0.5,
                             G_PARAM_READWRITE);
-      GIMP_PROC_ARG_DOUBLE (procedure, "autism",
+      gimp_procedure_add_double_argument (procedure, "autism",
                             "Sensitivity to outliers of distance measure",
                             "Parameter of distance measure",
                             0.0, 1.0, 0.117,
                             G_PARAM_READWRITE);
-      GIMP_PROC_ARG_INT (procedure, "neighbours",
+      gimp_procedure_add_int_argument (procedure, "neighbours",
                          "Count of pixels in a patch",
                          "More is high quality but slow",
                          1, 100, 9,
                          G_PARAM_READWRITE);
-      GIMP_PROC_ARG_INT (procedure, "trys",
+      gimp_procedure_add_int_argument (procedure, "trys",
                          "Max search probes per pass",
                          "More is high quality but slow",
                          1, 10000, 200,
@@ -204,7 +200,7 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
 static GError *
 new_gerror_for_resynthesizer_and_string(const char * msg)
 {
-  GQuark * domain = g_quark_from_string("Resynthesizer");
+  GQuark domain = g_quark_from_string("Resynthesizer");
   return g_error_new_literal(domain, 0, msg);
 }
 
@@ -215,27 +211,24 @@ Adapts to a generic resynthesizer plugin.
 Liable to change as GIMP plugin API changes.
 */
 // API for Gimp-3.0
-
-
 static GimpValueArray *
 resynthesizer_run (
   GimpProcedure        *procedure,
   GimpRunMode           run_mode,
   GimpImage            *image,
-  GimpDrawable         *drawable,
-  const GimpValueArray *args,
+  GimpDrawable        **drawables,
+  GimpProcedureConfig  *args,
   gpointer              run_data)
 {
+  GimpDrawable *drawable = drawables[0];
   GimpPDBStatusType status = GIMP_PDB_SUCCESS;
   const char       *result;           // inner result
   const gchar      *name = gimp_procedure_get_name (procedure);
   TGimpAdapterParameters pluginParameters;
 
-  // INIT_I18N();
-
-  // if (! strcmp (name, RECOMPOSE_PROC)) return foo
-
-  if ( ! get_engine_specific_parameters(args, &pluginParameters) )
+  if (drawable == NULL) {
+    result = _("Resynthesizer didn't get an image.");
+  } else if ( ! get_engine_specific_parameters(args, &pluginParameters) )
     result = _("Resynthesizer failed to get parameters.");
   else
     result = inner_run(

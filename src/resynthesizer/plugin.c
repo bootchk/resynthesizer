@@ -7,10 +7,8 @@
 #include "debug.h"
 
 
-
-
 // hacky test that version is less than 2.99.xx
-#if GIMP_MINOR_VERSION < 99
+#if GIMP_MAJOR_VERSION == 2 && GIMP_MINOR_VERSION < 99
 
 #include "pluginParams.h"
 

@@ -8,6 +8,6 @@
 void
 debug(const char * message)
 {
-  g_printerr(message);
-  g_printerr("\n");
+  g_warning(message);
+  g_warning("\n");
 }

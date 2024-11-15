@@ -29,7 +29,7 @@ typedef struct GIMPAdapterParametersStruct {
 
 
 
-#if GIMP_MINOR_VERSION < 99
+#if GIMP_MAJOR_VERSION == 2 && GIMP_MINOR_VERSION < 99
 
 
 
@@ -50,7 +50,7 @@ get_engine_specific_parameters(
 
 gboolean
 get_engine_specific_parameters(
-  GimpValueArray   *args,              // IN   // <<<<<
+  GimpProcedureConfig   *args,              // IN   // <<<<<
   TGimpAdapterParameters *pluginParameters); // OUT
 
 
