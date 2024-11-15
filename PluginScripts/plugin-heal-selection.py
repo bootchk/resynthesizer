@@ -138,10 +138,11 @@ class HealSel (Gimp.PlugIn):
       from time import sleep
       sleep(2)
 
-    # We merge all visible layers together to make things easier for us.
-    # FIXME: This behaviour deviates from the original behaviour.
-    work_drawable: Gimp.Layer = temp.merge_visible_layers(
-      Gimp.MergeType.CLIP_TO_IMAGE)
+    selected_drawables = temp.get_selected_drawables()
+    if len(selected_drawables) == 0:
+      raise RuntimeError("No drawables selected.")
+
+    work_drawable: Gimp.Layer = selected_drawables[0]
     if not work_drawable:
       raise RuntimeError("Failed get active drawable")
 
