@@ -44,25 +44,6 @@ debug = False
 
 class HealSel (Gimp.PlugIn):
         ## Parameters ##
-    __gproperties__ = {
-        "samplingRadiusParam" : (int,
-                        _("the sampling radius (in pixels)"),
-                        _("How far to sample. Min 1, Max 1000, Default 50"),
-                        1, # min 
-                        1000, # max
-                        50, # default
-                        GObject.ParamFlags.READWRITE),
-        "directionParam": (int,
-                  _("Sample from:"),
-                  _("Where to sample from. 0 = all around, 1 = sides only, 2 = above and below only."),
-                  0, 2, 0, # 0 = all around, 1 = sides, 2 = above and below.
-                  GObject.ParamFlags.READWRITE),
-        "orderParam": (int,
-                  _("Filling order"),
-                  _("How to go about healing the selection. 0 = randomly, 1 = inwards toward center, 2 = outward from center."),
-                  0, 2, 0, # 0 = random, 1 = inwards toward center, 2 = outward from center.
-                  GObject.ParamFlags.READWRITE),
-    }
 
 
     ## GimpPlugIn virtual methods ##
@@ -104,14 +85,14 @@ class HealSel (Gimp.PlugIn):
             direction_choice.add("sides_only", 1, _("Sides only"), "")
             direction_choice.add("above_and_below", 2, _("Above and below only"), "")
 
-            procedure.add_choice_argument ("directionParam", _("Direct_ion"), _("Sampling direction"),
+            procedure.add_choice_argument ("directionParam", _("Direct_ion"), _("Where to sample pixels from"),
                                            direction_choice, "all_around", GObject.ParamFlags.READWRITE)
             order_choice = Gimp.Choice.new()
             order_choice.add("random", 0, _("Random"), "")
             order_choice.add("inwards", 1, _("Inwards"), "")
             order_choice.add("outwards", 2, _("Outwards"), "")
 
-            procedure.add_choice_argument ("orderParam", _("Order"), _("Fill order"),
+            procedure.add_choice_argument ("orderParam", _("Order"), _("The order to fill the selection in"),
                                            order_choice, "random", GObject.ParamFlags.READWRITE)
             return procedure
         return None
