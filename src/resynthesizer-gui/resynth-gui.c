@@ -46,9 +46,10 @@
 #include "../resynthesizer/pluginParams.h"
 #include "../resynth-parameters.h"
 
+#if GIMP_MAJOR_VERSION == 2 && GIMP_MINOR_VERSION < 99
+
 /* Resynthesizer GUI gtk code: ask user for parameters. */
 #include "resynth-gui.h"  
-
 
 static void run(
   const gchar *     name,
@@ -182,3 +183,4 @@ static GimpPlugInInfo PLUG_IN_INFO = {
 /* Macro to define the usual plugin main function */
 MAIN()
 
+#endif

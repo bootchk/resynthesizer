@@ -29,7 +29,7 @@ typedef struct GIMPAdapterParametersStruct {
 
 
 
-#if GIMP_MINOR_VERSION < 99
+#if GIMP_MAJOR_VERSION == 2 && GIMP_MINOR_VERSION < 99
 
 
 

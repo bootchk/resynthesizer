@@ -87,14 +87,36 @@ class HealSel (Gimp.PlugIn):
                                       "James Henstridge",
                                       "1999,2007")
             procedure.add_menu_path ("<Image>/Filters/Enhance")
-            procedure.add_argument_from_property(self, "samplingRadiusParam")
-            procedure.add_argument_from_property(self, "directionParam")
-            procedure.add_argument_from_property(self, "orderParam")
             
+            procedure.add_int_argument(
+              name="samplingRadiusParam",
+              nick=_("Sampling radius"),
+              blurb=_("The sampling radius (in pixels)"),
+              min=1,
+              max=1000,
+              value=50,
+              flags=GObject.ParamFlags.READWRITE
+            )
+            
+            direction_choice = Gimp.Choice.new()
+
+            direction_choice.add("all_around", 0, _("All around"), "")
+            direction_choice.add("sides_only", 1, _("Sides only"), "")
+            direction_choice.add("above_and_below", 2, _("Above and below only"), "")
+
+            procedure.add_choice_argument ("directionParam", _("Direct_ion"), _("Sampling direction"),
+                                           direction_choice, "all_around", GObject.ParamFlags.READWRITE)
+            order_choice = Gimp.Choice.new()
+            order_choice.add("random", 0, _("Random"), "")
+            order_choice.add("inwards", 1, _("Inwards"), "")
+            order_choice.add("outwards", 2, _("Outwards"), "")
+
+            procedure.add_choice_argument ("orderParam", _("Order"), _("Fill order"),
+                                           order_choice, "random", GObject.ParamFlags.READWRITE)
             return procedure
         return None
     
-    def run(self, procedure: Gimp.Procedure, run_mode: Gimp.RunMode, image: Gimp.Image, n_layers, layers, config, data):
+    def run(self, procedure: Gimp.Procedure, run_mode: Gimp.RunMode, image: Gimp.Image, layers, config, data):
 
       if Gimp.Selection.is_empty(image):
          Gimp.message("You must first select a region to heal.")
@@ -111,8 +133,8 @@ class HealSel (Gimp.PlugIn):
            dialog.destroy()
 
       samplingRadius: int = config.get_property('samplingRadiusParam')
-      direction: int = config.get_property('directionParam')
-      order: int = config.get_property('orderParam')
+      direction: str = config.get_property('directionParam')
+      order: str = config.get_property('orderParam')
 
       image.undo_group_start()
 
@@ -163,7 +185,7 @@ class HealSel (Gimp.PlugIn):
       newWidth, newHeight, newLLX, newLLY = (0, 0, 0, 0)
 
       # User's choice of direction affects the corpus shape, and is also passed to resynthesizer plugin
-      if direction == 0: # all around
+      if direction == 'all_around': # all around
           # Crop to the entire frisket
           newWidth, newHeight, newLLX, newLLY = (
              frisketWidth,
@@ -171,7 +193,7 @@ class HealSel (Gimp.PlugIn):
              frisketLowerLeftX,
              frisketLowerLeftY
             )
-      elif direction == 1: # sides
+      elif direction == 'sides_only': # sides
           # Crop to target height and frisket width:  XTX
           newWidth, newHeight, newLLX, newLLY =  (
             frisketWidth,
@@ -179,7 +201,7 @@ class HealSel (Gimp.PlugIn):
             frisketLowerLeftX,
             targetLowerLeftY
           )
-      elif direction == 2: # above and below
+      elif direction == 'above_and_below': # above and below
           # X Crop to target width and frisket height
           # T
           # X
@@ -201,9 +223,9 @@ class HealSel (Gimp.PlugIn):
       # Encode two script params into one resynthesizer param.
       # use border 1 means fill target in random order
       # use border 0 is for texture mapping operations, not used by this script
-      if order == 0:
+      if order == 'random':
           useBorder = 1   # User wants NO order, ie random filling
-      elif order == 1 :  # Inward to corpus.  2,3,4
+      elif order == 'inwards' :  # Inward to corpus.  2,3,4
           useBorder = direction + 2   # !!! Offset by 2 to get past the original two boolean values
       else:
           # Outward from image center.  
@@ -213,9 +235,6 @@ class HealSel (Gimp.PlugIn):
           useBorder = direction + 5
       
       # Note that the old resynthesizer required an inverted selection !!
-  
-      # we need to convert the layers python array into a gobject one.
-      layer_gobj_array: Gimp.ObjectArray = Gimp.ObjectArray.new(Gimp.Drawable, layers, False)
   
       # Not necessary to restore image to initial condition of selection, activity,
       # the original image should not have been changed,
@@ -227,8 +246,9 @@ class HealSel (Gimp.PlugIn):
       pdb_config: Gimp.ProcedureConfig = pdb_proc.create_config()
       pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
       pdb_config.set_property('image', image)
-      pdb_config.set_property('num-drawables', layer_gobj_array.length)
-      pdb_config.set_property('drawables', layer_gobj_array)
+      # A hacky way to pass in python arrays directly, 
+      # see: https://gitlab.gnome.org/GNOME/gobject-introspection/-/issues/492
+      pdb_config.set_core_object_array('drawables', layers)
       pdb_config.set_property('h-tile', 0)
       pdb_config.set_property('v-tile', 0)
       pdb_config.set_property('use-border', useBorder)
@@ -243,7 +263,6 @@ class HealSel (Gimp.PlugIn):
 
       # Clean up (comment out to debug)
       temp.delete()
-      layer_gobj_array.free()
 
       image.undo_group_end()
       return procedure.new_return_values(Gimp.PDBStatusType.SUCCESS, GLib.Error())
