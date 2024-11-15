@@ -26,16 +26,16 @@ License:
   http://www.gnu.org/copyleft/gpl.html
 
 '''
-
-from gi.repository import GLib
-from gi.repository import GObject
-from gi.repository import GimpUi
-from gi.repository import Gimp
-import sys
 import gi
+import sys
 
 gi.require_version('Gimp', '3.0')
 gi.require_version('GimpUi', '3.0')
+
+from gi.repository import GLib
+from gi.repository import GObject
+from gi.repository import Gimp
+from gi.repository import GimpUi
 
 PLUGIN_NAME = 'resynthesizer-heal-selection'
 def N_(message): return message
