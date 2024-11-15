@@ -86,9 +86,6 @@ get_engine_specific_parameters(
   GimpProcedureConfig   *args,              // IN
   TGimpAdapterParameters *pluginParameters)  // OUT
 {
-  // Fails to compile:
-  // g_assert( args->length()  == 10 );
-
   g_object_get(args,
     "h_tile", &pluginParameters->h_tile,
     "v_tile", &pluginParameters->v_tile,
@@ -102,65 +99,6 @@ get_engine_specific_parameters(
     "trys", &pluginParameters->trys,
     NULL
   );
-
-  // // args does not have prefix: run mode, image, drawable
-  // g_object_get(
-  //   args, 
-  //   "h-tile", &pluginParameters->h_tile
-  //   );
-  
-  // g_object_get(
-  //   args, 
-
-  //   "v-tile", &pluginParameters->v_tile
-  //   );
-
-
-  // g_object_get(
-  //   args, 
-
-  //   "use-border", &pluginParameters->use_border
-  //   );
-
-  // printf("get corpus-drawable\n");
-  // g_object_get(
-  //   args, 
-
-  //   "corpus-drawable", &pluginParameters->corpus);
-  
-  // printf("get input-map\n");
-  // g_object_get(
-  //   args, 
-
-
-  //   "input-map", &pluginParameters->input_map);
-  
-  // printf("get output-map\n");
-  // g_object_get(
-  //   args, 
-
-  //   "output-map", &pluginParameters->output_map);
-
-  // printf("get map-weight\n");
-  // g_object_get(
-  //   args, 
-  //   "map-weight", &pluginParameters->map_weight);
-
-  // printf("get autism\n");
-  // g_object_get(
-  //   args, 
-  //   "autism", &pluginParameters->autism);
-
-  // printf("get neighbours\n");
-  // g_object_get(
-  //   args, 
-
-  //   "neighbours", &pluginParameters->neighbours);
-
-  // printf("get trys\n");
-  // g_object_get(
-  //   args, 
-  //   "trys", &pluginParameters->trys);
 
   return TRUE;
 }

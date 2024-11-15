@@ -124,10 +124,6 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
 
       // plugin is an engine, without GUI.
       // No need for image_types, menu_label, icon_name, menu_path
-      //gimp_procedure_set_image_types (procedure, "RGB GRAY");
-      //gimp_procedure_set_menu_label (procedure, N_("Exercise in _C minor"));
-      //gimp_procedure_set_icon_name (procedure, GIMP_ICON_GEGL);
-      //gimp_procedure_add_menu_path (procedure, "<Image>/Filters/Development/Resynthesizer exercises/");
 
       gimp_procedure_set_documentation (procedure,
                                         N_("Resynthesizer engine"),
@@ -215,15 +211,13 @@ Adapts to a generic resynthesizer plugin.
 Liable to change as GIMP plugin API changes.
 */
 // API for Gimp-3.0
-
-
 static GimpValueArray *
 resynthesizer_run (
   GimpProcedure        *procedure,
   GimpRunMode           run_mode,
   GimpImage            *image,
   GimpDrawable        **drawables,
-  GimpProcedureConfig     *args,
+  GimpProcedureConfig  *args,
   gpointer              run_data)
 {
   GimpDrawable *drawable = drawables[0];
@@ -231,10 +225,6 @@ resynthesizer_run (
   const char       *result;           // inner result
   const gchar      *name = gimp_procedure_get_name (procedure);
   TGimpAdapterParameters pluginParameters;
-
-  // INIT_I18N();
-
-  // if (! strcmp (name, RECOMPOSE_PROC)) return foo
 
   if (drawable == NULL) {
     result = _("Resynthesizer didn't get an image.");
