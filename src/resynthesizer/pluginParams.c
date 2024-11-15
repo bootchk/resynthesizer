@@ -79,7 +79,7 @@ CRUFT
 
 
 
-// in v3 gimp API, params are a GimpValueArray
+// in v3 gimp API, params are passed through a ProcedureConfig
 
 gboolean
 get_engine_specific_parameters(
@@ -89,20 +89,79 @@ get_engine_specific_parameters(
   // Fails to compile:
   // g_assert( args->length()  == 10 );
 
-  // args does not have prefix: run mode, image, drawable
-  g_object_get(
-    args, 
-    "h-tile", &pluginParameters->h_tile,
-    "v-tile", &pluginParameters->v_tile,
-    "use-border", &pluginParameters->use_border,
-    "corpus-drawable", &pluginParameters->corpus,
-    "input-map", &pluginParameters->input_map,
-    "output-map", &pluginParameters->output_map,
-    "map-weight", &pluginParameters->map_weight,
+  g_object_get(args,
+    "h_tile", &pluginParameters->h_tile,
+    "v_tile", &pluginParameters->v_tile,
+    "use_border", &pluginParameters->use_border,
+    "corpus_drawable", &pluginParameters->corpus,
+    "input_map", &pluginParameters->input_map,
+    "output_map", &pluginParameters->output_map,
+    "map_weight", &pluginParameters->map_weight,
     "autism", &pluginParameters->autism,
     "neighbours", &pluginParameters->neighbours,
-    "trys", &pluginParameters->trys);
+    "trys", &pluginParameters->trys,
+    NULL
+  );
+
+  // // args does not have prefix: run mode, image, drawable
+  // g_object_get(
+  //   args, 
+  //   "h-tile", &pluginParameters->h_tile
+  //   );
   
+  // g_object_get(
+  //   args, 
+
+  //   "v-tile", &pluginParameters->v_tile
+  //   );
+
+
+  // g_object_get(
+  //   args, 
+
+  //   "use-border", &pluginParameters->use_border
+  //   );
+
+  // printf("get corpus-drawable\n");
+  // g_object_get(
+  //   args, 
+
+  //   "corpus-drawable", &pluginParameters->corpus);
+  
+  // printf("get input-map\n");
+  // g_object_get(
+  //   args, 
+
+
+  //   "input-map", &pluginParameters->input_map);
+  
+  // printf("get output-map\n");
+  // g_object_get(
+  //   args, 
+
+  //   "output-map", &pluginParameters->output_map);
+
+  // printf("get map-weight\n");
+  // g_object_get(
+  //   args, 
+  //   "map-weight", &pluginParameters->map_weight);
+
+  // printf("get autism\n");
+  // g_object_get(
+  //   args, 
+  //   "autism", &pluginParameters->autism);
+
+  // printf("get neighbours\n");
+  // g_object_get(
+  //   args, 
+
+  //   "neighbours", &pluginParameters->neighbours);
+
+  // printf("get trys\n");
+  // g_object_get(
+  //   args, 
+  //   "trys", &pluginParameters->trys);
+
   return TRUE;
 }
 

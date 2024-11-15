@@ -114,7 +114,7 @@ class HealSel (Gimp.PlugIn):
            dialog.destroy()
 
       samplingRadius: int = config.get_property('samplingRadiusParam')
-      direction: str = config.get_property('directionParam')
+      directionParam: str = config.get_property('directionParam')
       order: str = config.get_property('orderParam')
 
       image.undo_group_start()
@@ -123,6 +123,9 @@ class HealSel (Gimp.PlugIn):
       target_bounds = layers[0].mask_bounds()
 
       temp: Gimp.Image = image.duplicate()
+
+      if not temp:
+        raise RuntimeError("Failed duplicate image")
 
       if debug:
         try:
@@ -134,8 +137,10 @@ class HealSel (Gimp.PlugIn):
         sleep(2)
 
       # We merge all visible layers together to make things easier for us.
-      
+      # FIXME: This behaviour deviates from the original behaviour.
       work_drawable: Gimp.Layer = temp.merge_visible_layers(Gimp.MergeType.CLIP_TO_IMAGE)
+      if not work_drawable:
+        raise RuntimeError("Failed get active drawable")
 
       selection: Gimp.Selection = image.get_selection()
 
@@ -144,29 +149,39 @@ class HealSel (Gimp.PlugIn):
          Gimp.message("Could not grow selection")
          return procedure.new_return_values(Gimp.PDBStatusType.EXECUTION_ERROR, GLib.Error(None, None, "couldn't grow the selection somehow."))
       
+      # !!! Note that if selection is a bordering ring already, growing expanded it inwards.
+      # Which is what we want, to make a corpus inwards.
       grown_selection: Gimp.Channel = selection.save(temp)
+
+      # Cut hole where the original selection was, so we don't sample from it.
       temp.select_item(Gimp.ChannelOps.SUBTRACT, orig_selection)
 
       # crop the temp image to size of selection to save memory and for directional healing!!
       frisketBounds = grown_selection.mask_bounds()
-      frisketLowerLeftX   = frisketBounds[0]
-      frisketLowerLeftY   = frisketBounds[1]
-      frisketUpperRightX  = frisketBounds[2]
-      frisketUpperRightY  = frisketBounds[3]
+      frisketLowerLeftX   = frisketBounds.x1
+      frisketLowerLeftY   = frisketBounds.y1
+      frisketUpperRightX  = frisketBounds.x2
+      frisketUpperRightY  = frisketBounds.y2
 
-      targetLowerLeftX    = target_bounds[0]
-      targetLowerLeftY    = target_bounds[1]
-      targetUpperRightX   = target_bounds[2]
-      targetUpperRightY   = target_bounds[3]
+      print(f"{frisketBounds=}")
 
-      frisketWidth = abs(frisketUpperRightX - frisketLowerLeftX)
-      frisketHeight = abs(frisketUpperRightY - frisketLowerLeftY)
+      targetLowerLeftX    = target_bounds.x1
+      targetLowerLeftY    = target_bounds.y1
+      targetUpperRightX   = target_bounds.x2
+      targetUpperRightY   = target_bounds.y2
 
+      print(f"{target_bounds=}")
+
+      frisketWidth = frisketUpperRightX - frisketLowerLeftX
+      frisketHeight = frisketUpperRightY - frisketLowerLeftY
+
+      print(f"{frisketWidth=}, {frisketHeight=}")
 
       newWidth, newHeight, newLLX, newLLY = (0, 0, 0, 0)
-
+      direction = 0
       # User's choice of direction affects the corpus shape, and is also passed to resynthesizer plugin
-      if direction == 'all_around': # all around
+      if directionParam == 'all_around': # all around
+          direction = 0
           # Crop to the entire frisket
           newWidth, newHeight, newLLX, newLLY = (
              frisketWidth,
@@ -174,7 +189,8 @@ class HealSel (Gimp.PlugIn):
              frisketLowerLeftX,
              frisketLowerLeftY
             )
-      elif direction == 'sides_only': # sides
+      elif directionParam == 'sides_only': # sides
+          direction = 1
           # Crop to target height and frisket width:  XTX
           newWidth, newHeight, newLLX, newLLY =  (
             frisketWidth,
@@ -182,7 +198,8 @@ class HealSel (Gimp.PlugIn):
             frisketLowerLeftX,
             targetLowerLeftY
           )
-      elif direction == 'above_and_below': # above and below
+      elif directionParam == 'above_and_below': # above and below
+          direction = 2
           # X Crop to target width and frisket height
           # T
           # X
@@ -193,9 +210,14 @@ class HealSel (Gimp.PlugIn):
              frisketLowerLeftY
             )
           
+      print(f"{newWidth=} {newHeight=} {newLLX=} {newLLY=}")
+          
       # Restrict crop to image size (condition of gimp_image_crop) eg when off edge of image
       newWidth = min(temp.get_width() - newLLX, newWidth)
       newHeight = min(temp.get_height() - newLLY, newHeight)
+
+      print(f"resized {newWidth=} {newHeight=}")
+
       temp.crop(newWidth, newHeight, newLLX, newLLY)
 
       # default, just to declare the value.
@@ -244,7 +266,6 @@ class HealSel (Gimp.PlugIn):
 
       # Clean up (comment out to debug)
       temp.delete()
-
       image.undo_group_end()
       return procedure.new_return_values(Gimp.PDBStatusType.SUCCESS, GLib.Error())
 
