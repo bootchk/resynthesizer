@@ -25,7 +25,7 @@ plugin_basenames = [
 # !!! Added a shebang to each script (beyond original by author itr-tert)
 # Interpreted by standalone interpreter, not extension-script-fu
 
-# Usual dir is .../GIMP/2.99/plug-ins
+# Usual dir is .../GIMP/3.0/plug-ins
 
 foreach basename : plugin_basenames
   src_file_name = basename + '.scm'
@@ -35,6 +35,3 @@ foreach basename : plugin_basenames
 endforeach
 
 summary('Installed plugin names', plugin_basenames)
-
-
-

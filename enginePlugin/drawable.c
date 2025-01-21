@@ -57,7 +57,7 @@ get_selection(GimpDrawable * d)
   // selection is a new drawable derived from image of a drawable
   // TODO this is not right for v3 ??
   // return gimp_image_get_selection(gimp_item_get_image(d->drawable_id));
-  return gimp_image_get_selection(gimp_item_get_image(d));
+  return (GimpDrawable*)gimp_image_get_selection(gimp_item_get_image((GimpItem*)d));
 }
 
 gboolean

@@ -73,7 +73,7 @@ resynthesizer_inc = include_directories('lib')
 # TODO this is platform specific, for Ubuntu
 # TODO should install to user specific location (customizations) ???
 # define the location to install gimp plugins.
-gimpplugindir = prefix / 'lib/x86_64-linux-gnu/gimp/2.99/plug-ins'
+gimpplugindir = prefix / get_option('libdir') / 'gimp/3.0/plug-ins'
 
 
 
