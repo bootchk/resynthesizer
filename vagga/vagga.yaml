@@ -5,17 +5,31 @@ containers:
   # basic OS with dev (compiling)
   baseOS:
     setup:
-    - !Ubuntu lunar
+
+    # Install OS in the container.
+    #
+    # Note that this command no longer works in vagga:  - !Ubuntu lunar
+    #
+    # Note that the notion of a "cloud image" seems to have changed in Ubuntu,
+    # the image when executed prints messages about the VM, which you can ignore.
+    #
+    # Installs Ubuntu 24.04, a LTS
+    #
+    # This is daily, mirrors don't have proper copies of updates
+    - !UbuntuRelease { codename: noble, url: http://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64-root.tar.xz}
 
     # tools for dev (C compiler)
     - !Install [build-essential]
+    
+    # optional for debugging the built GIMP
     - !Install [gdb]
 
 
 
 
   # with required build tools
-  # Some tools are for optional build: meson, clang
+  # Some tools are optional: clang
+  # meson is not optional, GIMP no longer supports autotools build
   baseWithTools:
     setup:
     - !Container baseOS
@@ -55,8 +69,8 @@ containers:
     # tool to build API docs
     - !Install [gtk-doc-tools]
 
-    # specific to autotools build
-    # - !Install [libtool]
+    # libtool not needed except for autotools build
+    # libtool replaced by intltool
 
     # in8n internationalization
     - !Install [intltool]
@@ -64,15 +78,14 @@ containers:
     # New required tool for Gimp gettext stuff, June 2022
     - !Install [ autopoint ]
 
-    # Packaged valgrind is 3.18, need later for clang14
-    # - !Install [ valgrind ]
-
-    # Install valgrind latest
-    - !TarInstall
-      url: https://sourceware.org/pub/valgrind/valgrind-3.20.0.tar.bz2
+    # optional for testing the built GIMP
+    - !Install [ valgrind ]
 
     # Install libc w debug for valgrind
     - !Install [libc6-dbg]
+
+    # optional for browsing API docs
+    - !Install [ yelp ]
 
 
 
@@ -109,11 +122,6 @@ containers:
     # interpreters
     # Python3 PyGObject.  See earlier, installed Python3
     - !Install [ python3-gi]
-    # lua
-    - !Install [ luajit]
-    - !Install [ lua-lgi ]
-    # javascript
-    - !Install [ gjs]
 
     # plugins, mainly file format plugins?
     # JPEG format
@@ -152,7 +160,7 @@ containers:
     # Prior to Ubuntu 20.04:  - !Install [ gtk-3-examples]
     - !Install [libgtk-3-bin]
 
-    # ?
+    # Needed by GIMP, a basic renderer?
     - !Install [ libgdk-pixbuf2.0-dev]
 
     # renderers
@@ -162,14 +170,23 @@ containers:
     # optional but suppress warnings
     - !Install [ libcanberra-gtk3-module ]
 
-    # optional for browsing API docs
-    - !Install [ yelp ]
+    # image metadata
+    - !Install [ libgexiv2-dev]
+
 
     # Ubuntu requires this else Gimp..Gtk crashes with:  Icon 'image-missing' not present in theme Symbolic
     - !Install [ gnome-icon-theme ]
 
-    # Since 2.99.2, Gimp requires vala compiler
-    - !Install [ valac ]
+    # GIMP plugins in languages [vala, javascript, python, lua] may require 
+    # certain compilers and interpreters.
+    # Required when the option is chosen in the GIMP build
+    # vala
+    #- !Install [ valac ]
+    # lua
+    #- !Install [ luajit]
+    #- !Install [ lua-lgi ]
+    # javascript
+    #- !Install [ gjs]
 
     # avoid dbus error messages from gimp
     - !Install [ dbus-x11 ]
@@ -196,86 +213,27 @@ containers:
 
 
   # with babl, gegl source
-  # gimp requires latest babl, gegl, so we build instead of install
-  # These are relatively stable compared to gimp source
+  #
+  # gimp requires latest babl, gegl, so we build instead of install.
+  # These are relatively stable compared to gimp source.
+  # Usually gegl.org and babl.org tag and release a version
+  # just before gimp.org release a version.
+  # But we build nightly, and don't try to match versions.
   gimpDepsSource:
     setup:
     - !Container gimpDeps
 
-    # This causes build to fail, can't find git_version.h because this gets only the files, not .git
-    #- !Git
-    #  url: https://gitlab.gnome.org/GNOME/babl.git
-    #  path: /home/babl
-
-    # OR use git to clone the repository
     - !Sh |
        git clone https://gitlab.gnome.org/GNOME/babl.git /home/babl
-
-    # OR most most recent GIMP release archive
-    # 1.72=>1.74=>1.78=>1.84=>1.86
-    # When you change this, also change below the cd
-    #- !Tar
-    #  url: https://download.gimp.org/pub/babl/0.1/babl-0.1.86.tar.xz
-    #  path: /home
-
-    # PR get tarball from babl project, the very latest i.e. master
-    # Fail with "unexpected compression"  https://gitlab.gnome.org/GNOME/babl/repository/archive.tar.gz
-    # Get a specific sha i.e. commit sha256: 69e6b09067f2bbca7ac0dfda0131042d7d1f448c
-    #- !Tar
-    #  url: https://gitlab.gnome.org/GNOME/babl/master/archive.tar.gz
-    #  path: /home
-
-    #- !Git
-    #  url: https://gitlab.gnome.org/GNOME/babl
-    #  path: /home/babl
-    #  revision: 69e6b090
-
-
-
-
-    # Gimp depends on latest gegl which might not be released by gegl.org
-    # i.e. get from gimp.org OR get from gegl.org
-    # !!! If you change this, also change below the cd to the gegl dir, named differently
-
-    # Get from gimp.org
-    #- !Tar
-    #  url: https://download.gimp.org/pub/gegl/0.4/gegl-0.4.18.tar.xz
-    #  url: https://download.gimp.org/pub/gegl/0.4/gegl-0.4.24.tar.xz
-    #  path: /home
-
-    # Get latest, bleeding, from shared, bare repository at gegl.org
-
-    # !!! Must specify a revision, else vagga will, the first time get the latest
-    # !!! and subsequently cache it indefinitely.  See vagga docs.
-    # !!! But you can't get the latest revision until it is released.
-    # So delete contents of the cache ~/.cache/vagga/cache when gegl changes
-    # Or delete the directory ...cache/git
-    # Or specify the revision that GIMP wants
-    #  Fail: revision: 4.27
-    # Only a specific commit seems to work, look it up at gitlab gegl
-
-    - !Sh |
-       echo "about to git gegl"
-
-    # Fails on SSL certificate expired
-    # 0.4.34
-    #- !Git
-    #  url: https://gitlab.gnome.org/GNOME/gegl
-    #  path: /home/gegl
-    #  revision: 9aaf6b35
-
-    # 0.4.??   revision: 63b8e5f9
 
     - !Sh |
        git clone https://gitlab.gnome.org/GNOME/gegl.git /home/gegl
 
     # starting about Dec. 2021, require gexiv2 > 12.2 which is not present in Ubuntu
 
-    - !Sh |
-       git clone https://gitlab.gnome.org/GNOME/gexiv2.git /home/gexiv2
 
 
-  # With built babl, gegl, gexiv2
+  # With built babl, gegl
   bablGeglDev:
     setup:
     - !Container gimpDepsSource
@@ -299,20 +257,6 @@ containers:
     #- !Env
     #  PKG_CONFIG_PATH: "/home/lib/x86_64-linux-gnu/pkgconfig:/home/lib/pkgconfig:/home/share/pkgconfig"
     - !Sh echo $PKG_CONFIG_PATH
-
-
-    # Note babl and gegl build the same
-    # WAS: cd /home/babl-0.1.86
-
-
-    # Failed attempt to create missing file
-    #- !GitDescribe
-    #  repo: /home/babl
-    #  output-file: /git-version.h
-
-    # Interferes with gegl build
-    # -Db_sanitize=address,undefined \
-    # -Db_lto=true
 
 
     - !Sh |
@@ -339,22 +283,11 @@ containers:
     # To do so, it must find Babl-0.1.gir
     # was  XDG_DATA_DIRS: "/home/share:/usr/share:$XDG_DATA_DIRS"
     # was  XDG_DATA_DIRS: "/usr/local/shared"
-
     - !Env
       XDG_DATA_DIRS: "/usr/local/share:/usr/share"
-
     - !Sh echo ">>>>>>  XDG_DATA_DIRS" $XDG_DATA_DIRS
 
-    # !!! Not using     --prefix=${GIMP_PREFIX} \
-    # Use cd /home/gegl-0.4.xx for a tar pull
-    # Use cd /home/gegl for a git pull
-
-    # May 2021 add sanitize, release=>debug.  Does not affect AM build
-    # but prevents meson build of GIMP, fails at GIR generation
-    # -Db_sanitize=address,undefined \
-    # -Dintrospection=false \
-    # -Db_lto=true
-    #
+  
     - !Sh |
         cd /home/gegl
         meson _build \
@@ -365,29 +298,14 @@ containers:
         ninja
         ninja install
 
-
-    #
-    - !Sh |
-        cd /home/gexiv2
-        meson _build \
-         --buildtype=debug
-        cd _build
-        ninja
-        ninja install
-
     # remove DNS file that vagga will recreate after build
     - !Sh "rm /etc/resolv.conf"
 
-    # Using !Git, but that does not create a git repository so this doesn't work
-    # cd /home/gegl
-    # git status
 
 
 
-
-
-
-  # Container ready to build GIMP
+  # Container ready to build GIMP, but not building GIMP.
+  # GIMP git clone must be in /work/gimp i.e. directory in 
   # Build directory is not in the container.
   # GIMP is not built or installed in the container
   # Local custom Gimp plugins not in the container.
@@ -396,15 +314,6 @@ containers:
   # But if you change a meson.build file, you need to rebuild this container??
 
   # use --wipe to insure any changes take effect, but you can't use wipe the first time
-
-  # Can use env prefixes
-  # LDFLAGS=--verbose
-
-  # More meson options
-  # -Db_lto=true
-
-  # -Db_sanitize=address,undefined
-  # unrecognized: shared-libasan
 
   gimpMesonDev:
     setup:
@@ -424,40 +333,47 @@ containers:
 
 
     #### Options for GIMP build
-    # -Dpoppler=false => -Dpdf=false is not correct
-    # -Dpoppler=false still fails to build
 
-    # if GEGL is asan, then this needs asan? else "library not first, use PRELOAD"
-    # see later, at compile time -Db_sanitize=address,undefined
-    # LDFLAGS=--verbose
-
-    # !!! If you use clang for setup, use the same env at meson compile, else g-ir-scanner fails
-
-    # Fail: CC=clang CXX=clang CC_LD=lld CXX_LD=lld meson setup /work/mesonClangBuild \
-    # Fail: CC=clang CXX=clang CC_LD=clang CXX_LD=clang meson setup /work/mesonClangBuild \
-
-    # setup build outside the source tree
-
-    # meson and clang
-    #     --buildtype=debug \
-    #     -Db_lundef=false \
-    #  setup --wipe \
-    # -Db_sanitize=address
+    # optional language support for plugins
+    # 
+    # Python not optional since 2.99
+    #
+    # -Djavascript=disabled \
+    # -Dlua=false \
+    # -Dvala=disabled \
 
     - !Sh echo "PKG_CONFIG_PATH:" $PKG_CONFIG_PATH
 
+    # project directory is /work
+
     - !Sh |
+        # gimp repo
         cd /work/gimp
+
+        # git submodule "gimp-data" must be present
+        # Must be before setup build dir
+        git submodule update --init
+
+        # setup build dir (never build in source tree)
         CC=clang CXX=clang CC_LD=lld CXX_LD=lld meson setup /work/gimpBuild \
-         -Djavascript=disabled \
-         -Dlua=disabled \
-         -Dpython=disabled \
-         -Dvala=disabled \
          -Dg-ir-doc=false
+
+        # We setup resynthBuild later, because it requires an installed gimp-3.0
+        # and we have not built and installed it yet
+    
+    # wayland
+
+    # create new filesystem name run in the container
+    # put the wayland display socket in it
+    volumes:
+      # bind external volume named runuser pointing to external /run/user/1000 to /run in container
+      /run: !BindRW /volumes/runuser
+
 
 
 commands:
 
+  # Use "vagga run" in a terminal in the work dir
   run: !Command
     description: Build, install, run gimp AND resynth in gimpMesonDev container
     container:  gimpMesonDev
@@ -470,46 +386,41 @@ commands:
       export XDG_DATA_DIRS=/usr/local/share:/usr/share
       export GI_TYPELIB_PATH=/usr/local/lib/x86_64-linux-gnu/girepository-1.0:/usr/local/lib/girepository-1.0
       export NO_AT_BRIDGE=1
-
-
+      export XDG_RUNTIME_DIR=/run
 
       # First must build gimp, it is not in the container
       echo "lkk >>>>>>>>>>> build and install GIMP"
       cd /work/gimpBuild
-      meson compile -j 8
+      meson compile -j 12
       meson install
 
-      meson --version
-
-
-
-
-      echo "lkk >>>>>>>>>>>>> setup resynthBuild"
+      echo "lkk >>>>>>>>>>> configure resynthBuild"
       cd /work/resynthesizer
+      # only the resynthesizer3 branch is for meson
+      git checkout resynthesizer3
       CC=clang CXX=clang CC_LD=lld CXX_LD=lld meson setup  --reconfigure /work/resynthBuild
 
       echo "lkk >>>>>>>>>>>>> build and install resynth"
       # Note this was configured earlier
       cd /work/resynthBuild
+      
 
-      echo "lkk >>>>>>>>>>>>> show build options"
-      meson configure
-
-      meson compile --verbose -j 8
+      meson compile --verbose -j 12
       meson install
 
-
+      # Turn on debugging using GLib logging
       export G_MESSAGES_DEBUG=all
 
 
-      echo "lkk >>>>>>>>>>> running gimp"
-      # valgrind /usr/local/bin/gimp-2.99 --verbose --stack-trace-mode query
-      #/usr/local/bin/gimp-2.99 --verbose --stack-trace-mode query
-      # gdb /usr/local/bin/gimp-2.99
+      echo "lkk >>>>>>>>>>> running gimp with resynthesizer installed"
+      # Choose one of these by uncommenting one...
+      # valgrind /usr/local/bin/gimp-3 --verbose --stack-trace-mode query
+      /usr/local/bin/gimp-3 --verbose --stack-trace-mode query
+      # gdb /usr/local/bin/gimp-3
 
       echo "lkk >>>>>>>>>>>> running test plugin for resynthesizer"
       # python3 /work/resynthesizer/test/testResynth.py
-      #/usr/local/bin/gimp-2.99 -i --batch-interpreter python --batch - < /work/resynthesizer/test/testResynth.py
+      #/usr/local/bin/gimp-3 -i --batch-interpreter python-fu-eval --batch - < /work/resynthesizer/test/testResynth.py
 
 
 
@@ -550,3 +461,30 @@ commands:
       echo "lkk >>>>>>>>>>>> running test harness for engine library"
       /usr/local/bin/testHealLib
 
+
+  diagnoseBuildDir: !Command
+    description: Print env etc. of gimpMesonDev container
+    container:  gimpMesonDev
+    run: |
+      export HOME=/work/.home
+      export XDG_DATA_DIRS=/usr/local/share:/usr/share
+      export XDG_RUNTIME_DIR=/run/user/1000
+    
+      echo "meson version:" 
+      meson --version
+
+      echo "contents of /run using ls /run:"
+      ls /run
+
+      # These env vars are not automatically in the container, from the host
+      echo "certain env vars"
+      echo "HOME:" $HOME
+      echo "XDG_SESSION_ID:" $XDG_SESSION_ID
+      echo "XDG_SESSION_TYPE:" $XDG_SESSION_TYPE
+      echo "WAYLAND_DISPLAY:" $WAYLAND_DISPLAY
+      echo "XCURSOR_THEME:" $XCURSOR_THEME
+      echo "XDG_RUNTIME_DIR:" $XDG_RUNTIME_DIR
+      echo "DISPLAY:" $DISPLAY
+
+
+      
