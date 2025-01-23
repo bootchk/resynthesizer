@@ -1,5 +1,8 @@
 name: CI Meson
 
+# allow manual run of the flow, from browser on repo
+on: workflow_dispatch
+
 on:
   push:
     branches:
