@@ -1,23 +1,29 @@
 name: CIMesonResynth3
 
+# This is a Github Actions file to build resynthesizer v3.
+# It documents build requirements, for one thing.
+# It might not work, and should not be run "continous" until Ubuntu packages GIMP v3.
+
+# Triggering events
 on:
   # Allow manual run from browser on repo: 
   # click on action, choose "Run workflow" and branch "resynthesizer3"
   # The "master" branch has no meson.build file
   workflow_dispatch:
-  
-  push:
-    branches:
-      - "resynthesizer3"
-    paths:
-      - "**.c"
-      - "**.h"
-  pull_request:
-    branches:
-      - "resynthesizer3"
-    paths:
-      - "**.c"
-      - "**.h"
+
+  # Run when a push of C source, i.e. integrate continuously
+  #push:
+  #  branches:
+  #    - "resynthesizer3"
+  #  paths:
+  #    - "**.c"
+  #    - "**.h"
+  #pull_request:
+  #  branches:
+  #    - "resynthesizer3"
+  #  paths:
+  #    - "**.c"
+  #    - "**.h"
 
 jobs:
   build:
@@ -38,12 +44,19 @@ jobs:
           python-version: '3.x'
       - name: Install tools
         run: python -m pip install meson==${{ matrix.meson_version }} ninja
-      - name: Install dependency glib libraries
+      - name: Install dependency glib library
         # Note is name of Ubuntu package, and is the dev packaging of library, with headers
         run: sudo apt-get install -y libglib2.0-dev
+      - name: Install dependency gimp library
+        # Note is name of Ubuntu package, and is the dev packaging of library, with headers
+        run: sudo apt-get install -y libgimp3.0-dev
+        # The above step fails, until ubuntu-latest is 24.10 AND ubuntu packages GIMP 3.
+        # gimp.org does not distribute the library and its headers.
+        # There is no other place to get it except to build GIMP in this job?
       # also requires math library, and eventually i18n tools???
       - name: Configure build dir
         run: meson setup builddir/
+        # Setting env var CC affects the meson setup.  Can also be clang
         env:
           CC: gcc
       - name: Meson compile
