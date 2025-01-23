@@ -41,7 +41,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Install tools: meson and ninja
+      - name: Install tools meson and ninja
         run: python -m pip install meson==${{ matrix.meson_version }} ninja
       - name: Create a build dir and tell meson configure it from meson.build in source
         # ? Formerly a trailing / , for what reason?
