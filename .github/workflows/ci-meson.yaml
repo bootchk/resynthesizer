@@ -1,9 +1,20 @@
 name: CI Meson
 
-# allow manual run of the flow, from browser on repo
-on: workflow_dispatch
-
-on:
+# triggering events
+on: 
+  # allow manual run of the flow, from browser on repo
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+          
   push:
     branches:
       - "resynthesizer3"
