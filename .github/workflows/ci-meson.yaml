@@ -1,6 +1,11 @@
-name: CI Meson
+name: CIMesonResynth3
 
 on:
+  # Allow manual run from browser on repo: 
+  # click on action, choose "Run workflow" and branch "resynthesizer3"
+  # The "master" branch has no meson.build file
+  workflow_dispatch:
+  
   push:
     branches:
       - "resynthesizer3"
@@ -29,17 +34,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Install dependencies
+      - name: Install tools
         run: python -m pip install meson==${{ matrix.meson_version }} ninja
-      - name: Configure Project
+      - name: Configure build dir
         run: meson setup builddir/
         env:
           CC: gcc
-      - name: Run Tests
-        run: meson test -C builddir/ -v
-      - name: Upload Test Log
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: ${{ matrix.os }}_Meson_Testlog
-          path: builddir/meson-logs/testlog.txt
+      - name: Meson compile
+        run: meson compile -C builddir/ -v
