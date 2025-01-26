@@ -27,21 +27,21 @@ msgid "Heal the selection from surroundings as if using the heal tool."
 msgstr "Inventar seleccion como el tool"
 
 #: PluginScripts/plugin-heal-selection.py:162
-msgid "_Heal selection..."
+msgid "_Heal Selection..."
 msgstr "Sintetiza seleccion..."
 
 #: PluginScripts/plugin-heal-selection.py:167
 #: PluginScripts/plugin-heal-transparency.py:82
-msgid "Context sampling width (pixels):"
+msgid "Context sampling width (pixels)"
 msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:168
-msgid "Sample from:"
-msgstr "Invento de:"
+msgid "Sample from"
+msgstr "Invento de"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "All around"
-msgstr ""
+msgstr "Toto el mundo"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "Sides"
@@ -53,7 +53,7 @@ msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:169
 #: PluginScripts/plugin-heal-transparency.py:83
-msgid "Filling order:"
+msgid "Filling order"
 msgstr ""
 
 #: PluginScripts/plugin-heal-selection.py:169
@@ -78,7 +78,7 @@ msgid ""
 msgstr ""
 
 #: PluginScripts/plugin-heal-transparency.py:77
-msgid "Heal transparency..."
+msgid "Heal Transparency..."
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:281
@@ -95,15 +95,15 @@ msgid "Style..."
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:386
-msgid "Source of style:"
+msgid "Source of style"
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:387
-msgid "Percent transfer:"
+msgid "Percent transfer"
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:388
-msgid "Map by:"
+msgid "Map by"
 msgstr ""
 
 #: PluginScripts/plugin-map-style.py:388
@@ -141,7 +141,7 @@ msgid "Enlarge & sharpen..."
 msgstr ""
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
-msgid "Scale by:"
+msgid "Scale by"
 msgstr ""
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:100
@@ -153,7 +153,7 @@ msgid "_Fill with pattern seamless..."
 msgstr ""
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
-msgid "Pattern:"
+msgid "Pattern"
 msgstr ""
 
 #: PluginScripts/plugin-resynth-sharpen.py:94
@@ -166,7 +166,7 @@ msgid "Sharpen by synthesis..."
 msgstr "_Resintetiza..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
-msgid "Sharpening:"
+msgid "Sharpening"
 msgstr ""
 
 #: PluginScripts/plugin-uncrop.py:86
@@ -301,7 +301,7 @@ msgid "Output map: "
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:322
-msgid "Map importance:"
+msgid "Map importance"
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:329
@@ -313,7 +313,7 @@ msgid ""
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:331
-msgid "Neighbourhood size:"
+msgid "Neighbourhood size"
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:334
@@ -321,7 +321,7 @@ msgid "- How many nearby pixels in the output are to be used?\n"
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:336
-msgid "Search thoroughness:"
+msgid "Search thoroughness"
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:339
@@ -329,7 +329,7 @@ msgid "- How many locations in the input are examined?\n"
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:341
-msgid "Sensitivity to outliers:"
+msgid "Sensitivity to outliers"
 msgstr ""
 
 #: src/resynthesizer-gui/resynth-gui.h:344

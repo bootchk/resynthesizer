@@ -69,7 +69,17 @@
 ; The plugins appear in menus as before, without "(scm)"
 ; to denote they are alternatives to Python plugins.
 ; 
-; Capitalize all words in menu items.
+; Capitalize all words in menu items in the scripts
+; and in their .po (they are case sensitive.)
+;
+; Reduce i18n to use of the Scheme macro "_" defined by ScriptFu.
+; One resynthesizer3.mo file for the set of plugins
+; is renamed to match the name of each plugin
+; and installed alongside the plugin script in a locale subdirectory.
+
+; Remove trailing ":" in GUI strings for arg widgets
+; and in .po files.
+; Styling of widget labels is responsibility of GimpProcedureDialog.
 ; 
 ;
 ; Coding style changes:
@@ -86,37 +96,11 @@
 ; will go out of scope when plugin yields.
 ; No worries about polluting the namespace of extension-script-fu.
 
-
-
 (define debug #f)
 
 
-(define (gettext msgid)
-  (catch msgid
-	 (car (plug-in-resynthesizer-gettext msgid))))
-(define (N_ m) m)  ; like gettext-noop
-(define (G_ m) (gettext m))
-(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
-(define (SG_ m) (S_ (G_ m)))
-
-
-(define (script-fu-heal-selection-test)
-  (let* ((image 1)
-	 (drawable (car (gimp-image-get-active-drawable image))))
-    ; (set! image (car (gimp-image-list)))
-    ; (set! drawable (gimp-image-get-active-drawable image))
-    ; (gimp-image-delete (gimp-image-duplicate image))
-    (script-fu-heal-selection
-     image
-     drawable
-     50
-     0
-     0
-     )))
-
-
 (define
-  (script-fu-heal-selection
+  (plugin-heal-selection
    timg tdrawables samplingRadiusParam directionParam orderParam)
   "Create stencil selection in an image copy to pass as source (corpus) to plugin resynthesizer,
      which does the substantive work."
@@ -152,7 +136,7 @@
     ; (When select the whole image, the result is, in practice, usually nonsensical.)
     ; Not user-friendly: yell at user when no selected region.
     (when (= TRUE (car (gimp-selection-is-empty timg)))
-      (gimp-message (G_ "You must first select a region to heal."))
+      (gimp-message _ "You must first select a region to heal.")
       (quit -1))
 
     (gimp-image-undo-group-start timg)
@@ -259,7 +243,7 @@
        (set! newLLY    frisketLowerLeftY)
        ))
 
-    ; Restrict crop to image size (condition of gimp_image_crop) eg when off edge of image
+    ; Restrict crop to image size (condition of gimp-image-crop) eg when off edge of image
     (set! newWidth  (min newWidth  (- (car (gimp-image-get-width  corpusImage)) newLLX)))
     (set! newHeight (min newHeight (- (car (gimp-image-get-height corpusImage)) newLLY)))
     (gimp-image-crop corpusImage newWidth newHeight newLLX newLLY)
@@ -316,11 +300,12 @@
     ))
 
 (script-fu-register-filter
-  "script-fu-heal-selection"   ; run func name
-  (SG_"_Heal Selection...")    ; menu label
-  (string-append               ; description
-    (SG_"Heal the selection from surroundings as if using the heal tool.")
-    (SG_"Requires separate resynthesizer plugin."))
+  "plugin-heal-selection"      ; run func name
+  _"_Heal Selection..."        ; menu label
+  _"Heal the selection from surroundings as if using the heal tool."  ; tooltip for menu item
+  ; Can't append this to tooltip, it breaks existing translations.
+  ; "Requires separate resynthesizer plugin."
+  ; Beside, the tooltip is not the place for preconditions.
   "Lloyd Konneker"             ; author
   "2009 Lloyd Konneker"        ; copyright notice
   "2025"                       ; date created
@@ -328,23 +313,23 @@
   SF-ONE-OR-MORE-DRAWABLE      ; arity of defined PDB procedure
   ; Formal declaration of parameters and their widget kinds.
   ; Omitting implicit "image" and "drawables"
-  SF-ADJUSTMENT (G_"Context sampling width (pixels)")
+  SF-ADJUSTMENT _"Context sampling width (pixels)"
     (list 50          ; value
           1           ; lower
           10000       ; upper
-          1           ; step_inc
-          10          ; page_inc
+          1           ; step inc
+          10          ; page inc
           0           ; digits
           SF-SPINNER) ; type
-  SF-OPTION (G_"Sample from")
-    (list (G_"All around")
-          (G_"Sides")
-          (G_"Above and below"))
-  SF-OPTION (G_"Filling order")
-    (list (G_"Random")
-          (G_"Inwards towards center")
-          (G_"Outwards from center")))
+  SF-OPTION _"Sample from"
+    (list _"All around"
+          _"Sides"
+          _"Above and below")
+  SF-OPTION _"Filling order"
+    (list _"Random"
+          _"Inwards towards center"
+          _"Outwards from center"))
 
-(script-fu-menu-register "script-fu-heal-selection"
+(script-fu-menu-register "plugin-heal-selection"
 			  "<Image>/Filters/Enhance")
 

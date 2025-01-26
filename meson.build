@@ -11,8 +11,33 @@ project('resynthesizer',
 # Get Meson module for translation
 i18n = import('i18n')
 # unique name of gettext package
-# gettext_package= 'resynthesizer3')
+# gettext_package = 'resynthesizer3'
 
+###### List names
+
+# These are the outer plugin names.
+# Same name for files and names of the plugin's PDB procedure
+# and names of the run funcs in Scheme.
+# Outer plugins appear in GIMP menus.
+resynthesizer_plugin_names = [
+  'plugin-heal-selection',
+  'plugin-heal-transparency',
+  'plugin-resynth-controls',
+]
+
+# There is one other plugin: the engine, in C.
+# It is in the PDB, but not in GIMP menus.
+
+# Not ported yet, so not installed.
+# As ported, move to the list above.
+unported_plugin_basenames = [
+  'plugin-map-style',
+  'plugin-render-texture',
+  'plugin-resynth-enlarge',
+  'plugin-resynth-fill-pattern',
+  'plugin-resynth-sharpen',
+  'plugin-uncrop',
+]
 
 ###### Configuration
 
@@ -66,7 +91,7 @@ resynthesizer_inc = include_directories('lib')
 
 # Since Gimp v3, the plugins that are ScriptFu scripts
 # are NOT installed to a different directory /scripts
-# but are installed to the /plugins dir
+# but are installed to the /plug-ins dir
 # and executed by the standalone SF interpreter
 # (instead of extension-script-fu)
 

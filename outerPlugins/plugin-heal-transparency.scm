@@ -25,14 +25,6 @@
 
 
 
-(define (gettext msgid)
-  (catch msgid
-	 (car (plug-in-resynthesizer-gettext msgid))))
-(define (N_ m) m)  ; like gettext-noop
-(define (G_ m) (gettext m))
-(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
-(define (SG_ m) (S_ (G_ m)))
-
 
 ; How it works
 ; Select the transparent pixels.
@@ -45,7 +37,7 @@
 ; or for thin edges of transparency.
 ; Often unsatisfactory, wierd, for large areas of transparency.
 
-(define (script-fu-heal-transparency
+(define (plugin-heal-transparency
            timg tdrawables samplingRadiusParam orderParam)
   (let 
     ((org-selection '())
@@ -57,7 +49,7 @@
     ; But the plugin can also be called noninteractive by other plugins.
     ; So check the precondition again.
     (when (= FALSE (car (gimp-drawable-has-alpha targetDrawable)))
-      (gimp-message (G_"The active layer has no alpha channel to heal."))
+      (gimp-message _"The active layer has no alpha channel to heal.")
       (quit -1))
 
     ; Handle multi-select layers.
@@ -102,7 +94,7 @@
     (gimp-layer-flatten targetDrawable)
 
     ; Call heal selection (not the resynthesizer engine), which will create a proper corpus.
-    (script-fu-heal-selection
+    (plugin-heal-selection
     ; Must pass run-mode, the name is not RUNMODE-.
       RUN-NONINTERACTIVE 
       timg
@@ -133,18 +125,17 @@
 
 
 (script-fu-register-filter
-  "script-fu-heal-transparency"
-  (SG_"_Heal Transparency...")
-  (string-append
-    (SG_"Removes alpha channel by synthesis.  Fill outward for edges, inward for holes.")
-    (SG_"Requires separate resynthesizer plugin."))
+  "plugin-heal-transparency"
+  ; No key shortcut _H since already taken by Heal Selection
+  _"Heal Transparency..."
+  _"Removes alpha channel by synthesis.  Fill outward for edges, inward for holes."
   "Lloyd Konneker"
   "Copyright 2010 Lloyd Konneker"
   "2010"
   "RGBA, GRAYA"  ; !!! Requires an alpha channel to heal
   SF-ONE-OR-MORE-DRAWABLE      ; arity of defined PDB procedure
   ; declare arguments
-  SF-ADJUSTMENT (G_"Context sampling width (pixels)")
+  SF-ADJUSTMENT _"Context sampling width (pixels)"
     (list 50          ; value
           1           ; lower
           10000       ; upper
@@ -158,12 +149,14 @@
   ; Practically, the user should assess and make a choice,
   ; since Inwards is better for holes,
   ; but Outwards is better for edges of image.
-  SF-OPTION (G_"Filling order")
-    (list (G_"Random")
-          (G_"Inwards towards center")
-          (G_"Outwards from center")))
+  SF-OPTION _"Filling order"
+    (list _"Random"
+          _"Inwards towards center"
+          _"Outwards from center")
+)
 
 
-(script-fu-menu-register "script-fu-heal-transparency"
+; register the procedure as a menu item
+(script-fu-menu-register "plugin-heal-transparency"
 			 "<Image>/Filters/Enhance")
 

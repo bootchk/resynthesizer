@@ -1,19 +1,18 @@
 # List of source files containing translatable strings.
 
-# TODO this becomes a script
-src/resynthesizer-gui/resynth-gui.c
-src/resynthesizer-gui/resynth-gui.h
-
 # engine plugin
-# Mostly error messages
+# Mostly error messages are translated.
 src/resynthesizer/resynthesizer.c
 
+# outer plugins
+# GUI strings for menu item, tooltips, and dialog widgets are translated.
 outerPlugins/plugin-heal-selection.scm
+outerPlugins/plugin-heal-transparency.scm
 outerPlugins/plugin-resynth-sharpen.scm
 outerPlugins/plugin-resynth-enlarge.scm
 outerPlugins/plugin-uncrop.scm
 outerPlugins/plugin-render-texture.scm
 outerPlugins/plugin-map-style.scm
-outerPlugins/plugin-heal-transparency.scm
 outerPlugins/plugin-resynth-fill-pattern.scm
+outerPlugins/plugin-resynth-controls.scm
 

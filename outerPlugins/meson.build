@@ -4,27 +4,13 @@
 # Outer plugin basenames are same whether Python or scriptfu
 # Only the suffix differs
 
-plugin_basenames = [
-  'plugin-heal-selection',
-  'plugin-heal-transparency',
-    'plugin-resynth-controls',
-]
-
-# Not ported yet, so not installed.
-# As ported, move to the list above.
-unported_plugin_basenames = [
-  'plugin-map-style',
-  'plugin-render-texture',
-  'plugin-resynth-enlarge',
-  'plugin-resynth-fill-pattern',
-  'plugin-resynth-sharpen',
-  'plugin-uncrop',
-]
 
 
-# install_data() takes a list of names
-# but we must iterate over plugins because, since Gimp 3.0,
-# each plugin must be installed to a directory of the same name as basename
+# install_data() takes a list of names.
+# resynthesizer_plugin_names is defined in root meson.build
+# Iterate over plugins because, since Gimp 3.0,
+# each plugin must be installed to a directory of the same name as basename,
+# and not in one directory /scripts as for scripts served by extension-script-fu.
 
 # Install source file, with executable permissions.
 
@@ -33,11 +19,11 @@ unported_plugin_basenames = [
 
 # Usual dir is .../GIMP/3.0/plug-ins
 
-foreach basename : plugin_basenames
+foreach basename : resynthesizer_plugin_names
   src_file_name = basename + '.scm'
   install_data(src_file_name,
                install_dir: gimpplugindir / basename,
                install_mode: 'rwxr-xr-x')
 endforeach
 
-summary('Installed plugin names', plugin_basenames)
+summary('Installed plugin names', resynthesizer_plugin_names)
