@@ -2,7 +2,7 @@
 
 # engine plugin
 # Mostly error messages are translated.
-src/resynthesizer/resynthesizer.c
+src/enginePlugin/resynthesizer.c
 
 # outer plugins
 # GUI strings for menu item, tooltips, and dialog widgets are translated.
