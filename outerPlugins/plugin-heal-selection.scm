@@ -136,7 +136,7 @@
     ; (When select the whole image, the result is, in practice, usually nonsensical.)
     ; Not user-friendly: yell at user when no selected region.
     (when (= TRUE (car (gimp-selection-is-empty timg)))
-      (gimp-message _ "You must first select a region to heal.")
+      (gimp-message _"You must first select a region to heal.")
       (quit -1))
 
     (gimp-image-undo-group-start timg)
