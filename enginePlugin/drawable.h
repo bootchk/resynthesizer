@@ -4,7 +4,9 @@
 
 // Many of these gint should be guint, but Gimp declares gint, so to avoid compiler warnings use gint
 
-gint             bpp   (GimpDrawable *d);
+// Obsolete concept: bytes per pixel
+// gint             bpp   (GimpDrawable *d);
+
 gint             width (GimpDrawable *d);
 gint             height(GimpDrawable *d);
 

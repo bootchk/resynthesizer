@@ -17,6 +17,8 @@ resynthesizer_sources = [
   'debug.c',
   'pluginParams.c',
   'drawable.c',
+  'format.c',
+  'byte_sequence.c',
 ]
 
 

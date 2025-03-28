@@ -98,6 +98,8 @@ Types, etc. from resynthesizer (image_synth) library
 #include "imageSynthConstants.h"
 
 #include "drawable.h" // compatibility
+#include "format.h"
+#include "byte_sequence.h"
 #include "debug.h"
 
 /*
@@ -106,7 +108,7 @@ Is separate to reduce file sizes and later, coupling.
 */
 
 #include "mapIndex.h"	// from resynthesizer library
-#include "drawable.h" // compatibility
+
 #include "adaptGimp.h"  // requires mapIndex.h
 //#include "../resynth-parameters.h" // requires engine.h
 #include "pluginParams.h"
@@ -132,9 +134,14 @@ post_results_to_gimp(
   pixmap_to_drawable(targetMap, drawable, FIRST_PIXELEL_INDEX);
 
   debug("flush");
-  // temp buffers merged
+  /*
+  Flush the drawable to the screen
+  This is the only way to see the results of the plugin.
+  This is canonical boilerplate for a Gimp plugin.
+  It is nearly the last thing the plugin does.
+  */
   if ( ! merge_shadow(drawable) )
-      debug("fail merge shadow");
+    debug("fail merge shadow");
   update(drawable, 0, 0, targetMap.width, targetMap.height);
   gimp_displays_flush();
 }

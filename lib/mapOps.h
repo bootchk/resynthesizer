@@ -161,6 +161,8 @@ interleave_mask(
   guint size = pixmap->height * pixmap->width;
   g_assert( size == mask->height * mask->width);  /* Same dimensions. */
 
+  g_debug ("%s: size %d", __func__, size);
+
   for (i=0; i < size; i++)
     /* Copy one byte */
     g_array_index(pixmap->data, Pixelel, i*pixmap->depth + MASK_PIXELEL_INDEX) =

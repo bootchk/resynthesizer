@@ -39,6 +39,9 @@ orderTargetPointsRandom(
   ) 
 {
   guint i;
+
+  g_debug ("%s", G_STRFUNC);
+
   for(i=0; i<targetPoints->len; i++)
   {
     guint j = g_rand_int_range(prng, 0, targetPoints->len);
@@ -63,6 +66,9 @@ static void randomizeBandsTargetPoints(
   gint last = targetPoints->len - 1;
   gint halfBand = targetPoints->len * IMAGE_SYNTH_BAND_FRACTION;
   gint i;
+
+  g_debug ("%s", G_STRFUNC);
+  
   for(i=0; i<=last; i++) 
   {
     // An interval of width halfBand*2 surrounding i, but lying in interval [0,last].
