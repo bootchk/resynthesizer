@@ -14,7 +14,6 @@ void integrate_color_change(Coordinates position, TFormatIndices* indicies, Map 
 // void dump_parameters(const Parameters *parameters);
 void print_pass_stats(gint repeat, gint target_count, gint repeatCountBetters);
 void print_processor_time();
-void clear_target_pixels(guint bpp, Map targetMap);
 void print_final_stats();
 void dump_target_points();
 void dump_max_grad();

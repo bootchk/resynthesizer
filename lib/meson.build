@@ -31,6 +31,7 @@ libresynthesizer_sources = [
   'imageFormat.c',
   'progress.c',
   'stats.c',
+  'targetPixels.c',
 ]
 
 # declare headers for the library, so #include <> works for library users

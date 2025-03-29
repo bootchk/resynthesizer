@@ -261,7 +261,6 @@ resynthesizer_run (
 {
   const char            *result;           // result of call to inner
   TGimpAdapterParameters pluginParameters;
-  GimpDrawable          *drawable;
   const gchar           *name = gimp_procedure_get_name (procedure);
 
   // INIT_I18N();

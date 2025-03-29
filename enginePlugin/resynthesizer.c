@@ -104,6 +104,7 @@ Types, etc. from resynthesizer (image_synth) library
 #include "format.h"
 #include "byte_sequence.h"
 #include "debug.h"
+#include "animate.h"
 
 /*
 Source included, not compiled separately.
@@ -127,10 +128,10 @@ Is separate to reduce file sizes and later, coupling.
 Update Gimp image from local pixmap. Canonical postlude for plugins.
 !!! Called in the postlude but also for debugging: animate results during processing.
 */
-static void
+void
 post_results_to_gimp(
   GimpDrawable *drawable,
-  Map                 targetMap)
+  Map           targetMap)
 {
   // our pixels back to Gimp.  Since 2.10, using GeglBuffers, and this flushes them
   debug("pixmap to drawable");
@@ -148,45 +149,6 @@ post_results_to_gimp(
   update(drawable, 0, 0, targetMap.width, targetMap.height);
   gimp_displays_flush();
 }
-
-
-#ifdef ANIMATE
-/*
-Use in debugging with DEEP_PROGRESS and ANIMATE.
-Blacken target, then animate pixels as they are synthesized.
-*/
-
-GimpDrawable * targetDrawableCopy;
-Map*            targetMapCopy;
-
-
-
-/*
-Clear target pixels. So see them get synthesized when animated debugging.
-Note the initial values of the target are never used, but totally synthesized.
-*/
-static void
-clear_target_pixels(guint bpp)
-{
-  guint x;
-  guint y;
-
-  for(y=0;y<targetMapCopy->height;y++)
-    for(x=0;x<targetMapCopy->width;x++)
-    {
-      Coordinates coords = {x,y};
-      if (pixmap_index(targetMapCopy, coords)[MASK_PIXELEL_INDEX] != MASK_UNSELECTED)
-      // if (isSelectedTarget(coords, targetMapCopy))
-      {
-        guint pixelel;
-        Pixelel * pixel = pixmap_index(targetMapCopy, coords);
-        for (pixelel = FIRST_PIXELEL_INDEX; pixelel < bpp; pixelel++) // Color channels only
-          pixel[pixelel] = PIXELEL_BLACK;
-      }
-    }
-}
-
-#endif
 
 
 /*
@@ -208,16 +170,14 @@ progressStart(gchar * message)
 #endif
 }
 
-// Called repeatedly as progress is made
+// Engine calls this repeatedly as progress is made
 void  // Not static, in test build, called from inside engine
 progressUpdate( int percent, void * contextInfo)
 {
   gimp_progress_update((float)percent/100);
 
-  #ifdef ANIMATE
-  post_results_to_gimp(targetDrawableCopy, *targetMapCopy);
-  #endif
-
+  // For debugging
+  animate_results ();
 }
 
 
@@ -385,11 +345,7 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
       return _("The output map should be the same size as the output image");
   }
 
-  #ifdef ANIMATE
-  // Copy local pointer vars to globals
-  targetDrawableCopy = target_drawable;
-  targetMapCopy = &targetMap;
-  #endif
+  init_animate (target_drawable, &targetMap);
 
   /* Error checks done, initialization work begins.  So start progress callbacks. */
   progressStart("Initializing...");
@@ -442,9 +398,8 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
       MASK_TOTALLY_SELECTED,
       map_out_drawable, formatIndices.map_start_bip);
 
-      #ifdef ANIMATE
-      clear_target_pixels(formatIndices.colorEndBip);  // For debugging, blacken so new colors sparkle
-      #endif
+      // Formerly, we cleared the target pixels for animation.
+      // Now the engine clears the target pixels depending on mode.
 
     debug("adapt corpus");
     fetch_image_mask_map(corpus_drawable, &corpusMap, formatIndices.total_bpp,

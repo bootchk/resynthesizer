@@ -115,6 +115,7 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 #include "map.h"
 #include "engineParams.h"
 #include "engine.h"
+#include "targetPixels.h"
 
 /*
 Source not compiled separately. Is separate to reduce file sizes and coupling.
@@ -545,13 +546,14 @@ engine(
   if ( parameters.patchSize > IMAGE_SYNTH_MAX_NEIGHBORS)
     return IMAGE_SYNTH_ERROR_PATCH_SIZE_EXCEEDED;
 
-  // target prep
+  // Create an ordered list of points in the target
   prepareTargetPoints(parameters.matchContextType, indices, targetMap,
     &hasValueMap,
     &targetPoints);
-  #ifdef ANIMATE
-  clear_target_pixels(indices->color_end_bip);  // For debugging, blacken so new colors sparkle
-  #endif
+  
+  // Initialize the pixels of the target, depending on mode.
+  prepareTargetPixels (indices->colorEndBip, *targetMap);
+  
   /*
   Rare user error: no target selected (mask empty.)
   This error NOT occur in GIMP if selection does not intersect, since then we use the whole drawable.
@@ -562,6 +564,8 @@ engine(
     free_map(&hasValueMap);
     return IMAGE_SYNTH_ERROR_EMPTY_TARGET;
   }
+
+  // Initialize the source of, i.e. coords of, best matches of target points
   prepare_target_sources(targetMap, &sourceOfMap);
 
 

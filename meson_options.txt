@@ -57,3 +57,7 @@ option('synth-use-glib-threads', type : 'boolean', value : true)
 # Engine library use GLib?
 option('synth-use-glib', type : 'boolean', value : true)
 
+
+# For debugging, animate the processing by periodically display in Gimp
+option('synth-animate', type : 'boolean', value : false)
+

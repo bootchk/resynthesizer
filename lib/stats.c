@@ -95,30 +95,6 @@ print_processor_time()
 }
 
 
-/*
-Clear target pixels. So see them get resynthesized when animated debugging.
-Note the initial values of the target are never used, but totally resynthesized.
-*/
-void
-clear_target_pixels(guint bpp, Map target)
-{
-  guint x;
-  guint y;
-
-  for(y=0;y<target.height;y++)
-    for(x=0;x<target.width;x++)
-    {
-      Coordinates coords = {x,y};
-      if (isSelectedTarget(coords, &target))
-      {
-        guint pixelel;
-        Pixelel * pixel = pixmap_index(&target, coords);
-        for (pixelel = FIRST_PIXELEL_INDEX; pixelel < bpp; pixelel++) // Color channels only
-          pixel[pixelel] = PIXELEL_BLACK;
-      }
-    }
-}
-
 
 #ifdef OLD
 Don't know where this was called.
@@ -191,7 +167,6 @@ dump_target_resynthesis(Coordinates position)
 #define dump_parameters(a)
 #define print_pass_stats(a,b,c)
 #define print_processor_time()
-#define clear_target_pixels(a)
 #define print_post_stats()
 #define dump_target_points()
 #define dump_target_resynthesis(a)

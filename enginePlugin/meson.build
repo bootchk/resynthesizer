@@ -19,6 +19,7 @@ resynthesizer_sources = [
   'drawable.c',
   'format.c',
   'byte_sequence.c',
+  'animate.c',
 ]
 
 
