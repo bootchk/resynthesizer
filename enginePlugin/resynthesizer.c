@@ -100,11 +100,11 @@ Types, etc. from resynthesizer (image_synth) library
 #include "engine.h" // requires map.h
 #include "imageSynthConstants.h"
 
-#include "drawable.h" // compatibility
+#include "drawable.h"
 #include "format.h"
-#include "byte_sequence.h"
 #include "debug.h"
 #include "animate.h"
+#include "adaptGimp.h"
 
 /*
 Source included, not compiled separately.
@@ -112,8 +112,6 @@ Is separate to reduce file sizes and later, coupling.
 */
 
 #include "mapIndex.h"	// from resynthesizer library
-
-#include "adaptGimp.h"  // requires mapIndex.h
 //#include "../resynth-parameters.h" // requires engine.h
 #include "pluginParams.h"
 #include "adaptParameters.c"
@@ -121,34 +119,6 @@ Is separate to reduce file sizes and later, coupling.
 #include "resynthesizer.h"
 
 /* See below for more includes. */
-
-
-
-/*
-Update Gimp image from local pixmap. Canonical postlude for plugins.
-!!! Called in the postlude but also for debugging: animate results during processing.
-*/
-void
-post_results_to_gimp(
-  GimpDrawable *drawable,
-  Map           targetMap)
-{
-  // our pixels back to Gimp.  Since 2.10, using GeglBuffers, and this flushes them
-  debug("pixmap to drawable");
-  pixmap_to_drawable(targetMap, drawable, FIRST_PIXELEL_INDEX);
-
-  debug("flush");
-  /*
-  Flush the drawable to the screen
-  This is the only way to see the results of the plugin.
-  This is canonical boilerplate for a Gimp plugin.
-  It is nearly the last thing the plugin does.
-  */
-  if ( ! merge_shadow(drawable) )
-    debug("fail merge shadow");
-  update(drawable, 0, 0, targetMap.width, targetMap.height);
-  gimp_displays_flush();
-}
 
 
 /*

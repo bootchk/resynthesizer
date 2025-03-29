@@ -2,12 +2,9 @@
 
 #include <libgimp/gimp.h>
 
+#include "engineTypes2.h"
 #include "map.h"
-
-// TODO
-// we need post_results_to_gimp
-// but it is in adaptGimp.h
-// Make adaptGimp into .[c,h]
+#include "adaptGimp.h"
 
 #include "animate.h"
 
@@ -37,8 +34,7 @@ init_animate (GimpDrawable *targetDrawable, Map *targetMap)
 void 
 animate_results(void)
 {
-  // TODO not visible yet
-  // post_results_to_gimp(targetDrawableCopy, targetMapCopy);
+  post_results_to_gimp(targetDrawableCopy, *targetMapCopy);
 }
 
 

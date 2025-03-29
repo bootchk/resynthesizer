@@ -20,6 +20,7 @@ resynthesizer_sources = [
   'format.c',
   'byte_sequence.c',
   'animate.c',
+  'adaptGimp.c',
 ]
 
 
