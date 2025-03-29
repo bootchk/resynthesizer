@@ -47,19 +47,6 @@ Innermost routines of image synthesis.
   #define g_mutex_unlock(A)
 #endif
 
-
-// Match result kind
-typedef enum  BettermentKindEnum 
-{
-  PERFECT_MATCH,  // Patches equal
-  NO_BETTERMENT,  // Match worse than previous best
-  GENERIC_BETTERMENT,
-  NEIGHBORS_SOURCE,
-  RANDOM_CORPUS,
-  MAX_BETTERMENT_KIND
-} tBettermentKind;
-
-
 /*
 Is point in the target image or wrapped into it.
 
@@ -603,7 +590,7 @@ synthesize(
       }
     }
     
-    store_betterment_stats(matchResult);
+    store_betterment_stats(latestBettermentKind);
     /* DEBUG dump_target_resynthesis(position); */
     
     /*
@@ -623,7 +610,10 @@ synthesize(
       if ( ! equal_points(getSourceOf(position, sourceOfMap), bestMatchCorpusPoint) ) 
       {
         repeatCountBetters++;   /* feedback for termination. */
-        integrate_color_change(position); // Must be before we store the new color values.
+
+        // For debug
+        // Must be before we store the new color values.
+        integrate_color_change(position, indices, targetMap, corpusMap, bestMatchCorpusPoint); 
 
         g_mutex_lock(&mutex);    // Atomic write to color and sourceOf
         // Save the new color values (!!! not the alpha) for this target point

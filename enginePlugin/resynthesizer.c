@@ -83,6 +83,9 @@ No definitions of non in-line functions or data.
 
 Types, etc. from resynthesizer (image_synth) library
 */
+
+#include "engineTypes2.h"
+
 // FIXME need to include glibProxy.h here so everything else uses glibless Map?
 #ifdef USE_GLIB_PROXY
 	#include "glibProxy.h"

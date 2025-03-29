@@ -32,20 +32,6 @@ typedef struct {
   GArray * data;
   } Map;
 
-typedef guint8 Pixelel;
-
-/*
-Coordinates class
-
-!!! These are signed ints, can represent offsets or positive coordinates 
-Similar to GdkPoint.
-*/
-typedef struct {
-    gint x;
-    gint y;
-} Coordinates;
-
-
 extern void
 free_map (Map *);
 

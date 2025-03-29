@@ -1,5 +1,6 @@
 #include <libgimp/gimp.h>
 
+#include "engineTypes2.h" // Pixelel
 #include "map.h"       // Map
 #include "drawable.h"  // get_buffer etc.
 #include "format.h"    // get_working_format_for_drawable etc.

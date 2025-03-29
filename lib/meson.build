@@ -30,6 +30,7 @@ libresynthesizer_sources = [
   'engineParams.c',
   'imageFormat.c',
   'progress.c',
+  'stats.c',
 ]
 
 # declare headers for the library, so #include <> works for library users

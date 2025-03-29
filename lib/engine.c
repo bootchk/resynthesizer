@@ -90,7 +90,7 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
   #define g_rand_int_range(r,u,l) s_rand_int_range(r,u,l)
 #endif
 
-
+#include "engineTypes2.h"
 
 // Count threads to start.
 #ifdef SYNTH_THREADED
@@ -128,15 +128,7 @@ Also, some functions are inlined.
 #include "orderTarget.h"
 
 
-#ifdef STATS
-/* For development */
-guint countSourceTries = 0;
-guint countTargetTries = 0;
-guint total_targets = 0;  /* Total target attempts over all passes, barring short circuit. */
 
-// remember the most recent kind of corpus point that bettered the previous best
-guint bettermentStats[MAX_BETTERMENT_KIND];
-#endif
 
 
 /*
@@ -233,43 +225,7 @@ prepare_target_sources(
 }
 
 
-/*
-Is the pixel selected in the corpus?
-!!! Note dithered, partial selection: only one value is totally unselected or selected.
-Here, only pixels fully selected return True.
-This is because when target/corpus are differentiated by the same selection,
-partially selected will be in the target,
-only fully selected (the inverse) will be the corpus.
-!!! Note this is called from the bottleneck.
-*/
-static inline gboolean
-isSelectedCorpus (
-  const Coordinates coords,
-  const Map* const corpusMap
-  )
-{
-  /*
-  Was:  != MASK_UNSELECTED); i.e. partially selected was included.
-  Now: if partially selected, excluded from corpus.
-  */
-  return (pixmap_index(corpusMap, coords)[MASK_PIXELEL_INDEX] == MASK_TOTALLY_SELECTED);
-  }
-
-
-/*
-Is the pixel selected in the image?
-The selection is the mask, created by user to distinguish.
-In the target map, distinguishes target(what is synthesized) from context.
-In the corpus map, distinguishes undesired corpus from desired corpus.
-*/
-static inline gboolean
-isSelectedTarget(
-  Coordinates coords,
-  Map * imageMap )
-{
-  return (pixmap_index(imageMap, coords)[MASK_PIXELEL_INDEX] != MASK_UNSELECTED);
-}
-
+#include "selection.h"
 
 /*
 Return whether this pixel has any opacity.
