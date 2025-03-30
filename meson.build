@@ -64,6 +64,7 @@ endif
 # TODO depends on GLib?
 conf.set('SYNTH_DEBUG',             get_option('synth-debug'))
 conf.set('SYNTH_ANIMATE',           get_option('synth-animate'))
+conf.set('SYNTH_DEEP_PROGRESS',     get_option('synth-deep-progress'))
 
 # generate config.h from the conf
 # config.h is only included by the library, only affects it.

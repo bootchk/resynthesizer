@@ -212,6 +212,8 @@ startThread(
   int* cancelFlag
   )
 {
+  g_debug ("%s", G_STRFUNC);
+
   newSynthesisArgs(
     args,
     parameters,
@@ -297,7 +299,7 @@ refiner(
   // If not using glib proxied to pthread by glibProxy.h
   g_mutex_init(&mutex);  // defined in synthesize.h
 
-
+  g_debug ("%s max threads %d", G_STRFUNC, THREAD_LIMIT);
 #ifdef SYNTH_USE_GLIB_THREADS
   static GMutex mutexProgress;
 #else
@@ -331,7 +333,16 @@ refiner(
     {
       startThread(
         &synthArgs[threadIndex], &threads[threadIndex], threadIndex, // thread specific
-        0, endTargetIndex,      // Every thread works on a prefix of targetPoints, splits it modulo threadIndex
+        /*
+        Every thread gets a prefix of targetPoints [0, endTargetIndex],
+        since each repetition i.e. pass has a different endTargetIndex,
+        i.e. works on a shrinking prefix of targetPoints.
+
+        Each thread works on a different subset of the prefix, splits it modulo threadIndex.
+        I.E. starts at the pixel of its thread ordinal and skips every THREAD_LIMIT target points.
+        I.E. combs the prefix, not slices it.
+        */
+        0, endTargetIndex,      
         &parameters,
         indices,
         targetMap,

@@ -26,6 +26,7 @@ option('build-libheal', type : 'boolean', value : false)
 option('synth-debug', type : 'boolean', value : false)
 
 
+
 # Threading
 #
 # This is not as important as you might think.
@@ -39,6 +40,7 @@ option('synth-threaded', type : 'boolean', value : true)
 # Engine use GLib threads versus posix threads
 # This is moot unless option synth-threaded also chosen.
 option('synth-use-glib-threads', type : 'boolean', value : true)
+
 
 
 # Use GLib for platform independence
@@ -58,6 +60,29 @@ option('synth-use-glib-threads', type : 'boolean', value : true)
 option('synth-use-glib', type : 'boolean', value : true)
 
 
-# For debugging, animate the processing by periodically display in Gimp
+
+# Animation of the process
+
+# For debugging, animate the processing by periodically display in Gimp.
+# You may see a brushfire front of pixels being synthesized, on first pass.
+# You may see pixels "sparkle" with new color, on second passes.
+
+# Animation seems to fail when build with option synth-threaded.
+
+# Animation in slow motion requires build with option synth-deep-progress.
+# Otherwise the animation is per pass.
+# The first pass may take only seconds, and the subsequent passes are quicker
+# and may flash past your view quickly.
+
 option('synth-animate', type : 'boolean', value : false)
 
+
+# Deep progress
+
+# Progress may be shallow (every pass, say 1/6) or deep ( percent processed, say 1/100)
+
+# The default is shallow: resynthesizer is so quick that
+# that displaying progress is not useful?
+# But shallow progress is not very useful since the first pass takes most of the time.
+
+option('synth-deep-progress', type : 'boolean', value : false)

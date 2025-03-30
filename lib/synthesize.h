@@ -472,12 +472,15 @@ synthesize(
     countTargetTries += 1;
 #endif
     
-    #ifdef DEEP_PROGRESS
-    // Callback to the level which calculates percent and forwards to the ultimate calling process.
-    // Modulo is the intuitive way to do this.
-    // But here, we are testing for x lower bits all 1, say 4095, 1111111111.
-    // Don't AND with an arbitrary single bit, say 4096, since one bit is often set.
-    if ((target_index&IMAGE_SYNTH_CALLBACK_COUNT) == 0)
+
+    #ifdef SYNTH_DEEP_PROGRESS
+    /*
+    Callback to the level which calculates percent and forwards to the ultimate calling process.
+    Modulo is the intuitive way to do this.
+    But here, we are testing for x lower bits all 1, say 4095, 1111111111.
+    Don't AND with an arbitrary single bit, say 4096, since one bit is often set.
+    */
+    if ((target_index & IMAGE_SYNTH_CALLBACK_COUNT) == 0)
     {
       deepProgressCallback(progressCallbackParams);
       if (*cancelFlag) break; // for each target pixel

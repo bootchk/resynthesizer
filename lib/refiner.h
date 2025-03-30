@@ -64,8 +64,7 @@ refiner(
 
   ProgressRecordT progressRecord;
 
-  // g_debug("%s", G_STRFUNC);
-  debug("unthreaded refiner\n");
+  g_debug("%s not threaded", G_STRFUNC);
 
   prepare_repetition_parameters(repetition_params, targetPoints->len);
 
@@ -117,9 +116,16 @@ refiner(
       break;
     }
 
-    // Simple progress: percent of passes complete.
-    // This is not ideal, a maximum of MAX_PASSES callbacks, typically six.
-    // And the later passes are much shorter than earlier passes.
-    // progressCallback( (int) ((pass+1.0)/(MAX_PASSES+1)*100), contextInfo);
+    /*
+    Simple progress: percent of passes complete.
+    This is not ideal, a maximum of MAX_PASSES callbacks, typically six.
+    The first pass takes the most time, later passes are quick.
+    So the progress seems to advance only twice:
+    once after a long time for the first pass,
+    and the second time quickly thereafter, showing completion.
+
+    Note that this is in addition to any deep progress.
+    */
+    progressCallback( (int) ((pass+1.0)/(MAX_PASSES+1)*100), contextInfo);
   } // end pass
 }

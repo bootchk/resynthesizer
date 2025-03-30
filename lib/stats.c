@@ -84,7 +84,7 @@ print_pass_stats(
 {
   g_printf("Repetition # %d targets %d bettered %d color change %d\n",
     repeat, target_count, repeatCountBetters, integralColorChange);
-  g_printf("Processor seconds %f\n", 1.0 * clock() / CLOCKS_PER_SEC );
+  g_printf("Cumulative processor seconds %f\n", 1.0 * clock() / CLOCKS_PER_SEC );
 }
 
 

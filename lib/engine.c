@@ -609,6 +609,7 @@ engine(
   // Preparations done, begin actual synthesis
   print_processor_time();
 
+  // Commented out, no longer works since progress() is not visible in engine
   // progress(_("Resynthesizer: synthesizing"));
 
   refiner(

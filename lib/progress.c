@@ -51,11 +51,21 @@ deepProgressCallback(ProgressRecordT * progressRecord)
  // this calls back once for each pass with a percentComplete greater than 100.
  progressRecord->completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
  guint percentComplete = ((float)progressRecord->completedPixelCount/progressRecord->estimatedPixelCountToCompletion)*100;
- if ( percentComplete > progressRecord->priorReportedPercentComplete )
- {
-   progressRecord->progressCallback((int) percentComplete, progressRecord->context);  // Forward callback to calling process
-   progressRecord->priorReportedPercentComplete = percentComplete;
- }
+
+#ifdef SYNTH_ANIMATE
+  /*
+  When animating, call back always.
+  synthesize() is calling this every few pixels, to animate in slow motion.
+  */
+  progressRecord->progressCallback((int) percentComplete, progressRecord->context); 
+#else
+  // Call back no more than once each percent, i.e. 100 times.
+  if ( percentComplete > progressRecord->priorReportedPercentComplete )
+  {
+    progressRecord->progressCallback((int) percentComplete, progressRecord->context);  // Forward callback to calling process
+    progressRecord->priorReportedPercentComplete = percentComplete;
+  }
+#endif
 }
 
 
