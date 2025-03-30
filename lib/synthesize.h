@@ -414,8 +414,8 @@ static guint
 synthesize(
   TImageSynthParameters *parameters,  // IN
   guint threadIndex,       // IN Zero if not threaded
-  guint startTargetIndex,  // IN
-  guint endTargetIndex,    // IN
+  guint startIndexTargetsPrefix,  // IN
+  guint endIndexTargetsPrefix,    // IN
   TFormatIndices* indices, // IN
   Map * targetMap,      // IN/OUT
   Map* corpusMap,       // IN
@@ -462,10 +462,26 @@ synthesize(
         target_index += 1)
 #endif
 
-  // Each thread works on a slice of targetPoints.  Starting at the threadIndex, incremented by count of threads.
-  // If there is no threads or only one thread, starts at startTargetIndex, increments by 1
-  for(target_index=startTargetIndex + threadIndex % THREAD_LIMIT;
-      target_index<endTargetIndex;
+  /*
+  Each thread works on a comb of targetPoints.  
+  Starting at the threadIndex, incremented by count of threads.
+
+  When built with threading, THREAD_LIMIT is say 12,
+  passed startTargetIndex is 0, and iteration starts at
+  0,1,...,11 .
+
+  When built without threading THREAD_LIMIT is one and thread_index is zero.
+  (or built with threading but the count of threads THREAD_LIMIT is one)
+  starts at first target point, and increments by 1.
+
+  Target points is randomized.
+  This is not synthesizing in order of coordinates of pixels, but in a random order of pixels.
+
+  Actually don't need modulo THREAD_LIMIT here,
+  caller ensures threadIndex is in range [0, THREAD_LIMIT-1]
+  */
+  for(target_index=startIndexTargetsPrefix + threadIndex % THREAD_LIMIT;
+      target_index<endIndexTargetsPrefix;
       target_index += THREAD_LIMIT)
   {
 #ifdef STATS

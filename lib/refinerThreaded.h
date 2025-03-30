@@ -192,8 +192,8 @@ startThread(
   pthread_t* thread,
 #endif
   guint threadIndex,
-  guint start,
-  guint end,
+  guint startIndexTargetsPrefix,
+  guint endIndexTargetsPrefix,
   TImageSynthParameters* parameters,
   TFormatIndices* indices,
   Map* targetMap,
@@ -217,9 +217,9 @@ startThread(
   newSynthesisArgs(
     args,
     parameters,
-    threadIndex, // thread specific
-    start,      // thread specific
-    end,        // thread specific
+    threadIndex, 
+    startIndexTargetsPrefix,
+    endIndexTargetsPrefix,
     indices,
     targetMap,
     corpusMap,
@@ -332,17 +332,23 @@ refiner(
     for (guint threadIndex=0; threadIndex<THREAD_LIMIT; threadIndex++)
     {
       startThread(
-        &synthArgs[threadIndex], &threads[threadIndex], threadIndex, // thread specific
+        &synthArgs[threadIndex], 
+        &threads[threadIndex],  // Thread instance 
+        threadIndex,            // zero based ordinal of thread
         /*
         Every thread gets a prefix of targetPoints [0, endTargetIndex],
         since each repetition i.e. pass has a different endTargetIndex,
         i.e. works on a shrinking prefix of targetPoints.
 
         Each thread works on a different subset of the prefix, splits it modulo threadIndex.
-        I.E. starts at the pixel of its thread ordinal and skips every THREAD_LIMIT target points.
+        I.E. starts at the target point of its thread ordinal and skips every THREAD_LIMIT target points.
         I.E. combs the prefix, not slices it.
+        
+        !!! 0 and endTargetIndex describe the size of the prefix of target points,
+        not which target points the thread combs over.
         */
-        0, endTargetIndex,      
+        0, 
+        endTargetIndex,      
         &parameters,
         indices,
         targetMap,
