@@ -86,7 +86,7 @@
 ; the source style comes from the inverse of the selection in the source layer.  
 ; Similarly, if the target and source layers are the same layer,
 ; the target is the selection and the style comes from the inverse of the selection, i.e. outside the selection.  
-;In this case, the effect is little if there is no difference in texture between the inside and outside of the selection, 
+; In this case, the effect is little if there is no difference in texture between the inside and outside of the selection, 
 ; or a distort, if there is a difference.
 ;
 ; About the settings:
@@ -107,7 +107,7 @@
 ;
 ; About image modes:
 ;
-; You can transfer style between any combination of RGB and GRAY images.  
+; You can transfer style between any combination of image modes.  
 ; The plugin changes the mode of the target to the mode of the source as necessary.
 ;
 ; Why this plugin:
@@ -138,14 +138,16 @@
 
 
 (define (script-fu-map-style
-          image drawable source-drawable percent-transfer map-mode)
+          image drawable ; target
+          source-drawable 
+          percent-transfer map-mode)
 
 ; Use v3 binding of return values from PDB calls.
 ; !!! Called at run-time, in the script's run function.
 ; This means fewer calls of car to unwrap values from lists.
 (script-fu-use-v3)
 
-(define debug #f)  ; #t if you want to display and retain working, temporary images
+(define debug #t)  ; #t if you want to display and retain working, temporary images
 
 
 (define (display-debug-image image)
@@ -198,26 +200,60 @@
     (return (list temp-image temp-drawable))))
 
 
+; table explaining mode synchronization
+;
+; target    source    target   source
+;   RGB      RGB           no change
+;   RGB      GRAY              =>RGB
+;   RGB      INDEXED           =>RGB
+;   GRAY     RGB      =>RGB
+;   GRAY     GRAY          no change
+;   GRAY     INDEXED           =>GRAY
+;   INDEXED  RGB      =>RGB
+;   INDEXED  GRAY     =>GRAY
+;   INDEXED  INDEXED       no change
+
 (define (synchronize-modes target-image source-image)
   ; User-friendliness:
-  ; If mode of target is not equal to mode of source source, change modes.
+  ; If mode of target is not equal to mode of source source, 
+  ; change modes of target and/or source so they are the same.
   ; Resynthesizer requires target and source to be same mode.
-  ; Assert target is RGB or GRAY (since is precondition of plugin.)
-  ; UI decision: make this quiet, presume user intends mode change.
-  ; But don't permanently change mode of source.
-  ; Always upgrade GRAY to RGB, not downgrade RGB to GRAY.
+  ;
+  ; Target can be any mode, even INDEXED, since v3 of this plugin.
+  ;
+  ; UI decision: quietly make change of mode of target, presume user intends mode change.
+  ;
+  ; Can change mode of source, but only on a copy.
+  ;
+  ; Always upgrade upward INDEXED to GRAY to RGB, not downgrade.
+
   (let ((target-mode (gimp-image-get-base-type target-image))
         (source-mode (gimp-image-get-base-type source-image)))
     (when (<> target-mode source-mode)
       (when debug
-        (display "Map style: converted mode\n."))
-      (if (= target-mode GRAY)
-          (begin (gimp-image-convert-rgb target-image))
-          (begin
-            ; target is RGB and source is GRAY
-            ; Assert only convert a copy of source,
-            ; user NEVER intends original source be altered.
-            (gimp-image-convert-rgb source-image))))))
+        (display "Map style: converted mode of source or target\n."))
+      (cond 
+        ((= target-mode RGB)
+           ; source is GRAY or INDEXED, convert to RGB
+          (gimp-image-convert-rgb source-image))
+        ((= target-mode GRAY)
+          (cond
+            ((= source-mode RGB)
+              ; promote target to RGB
+              (gimp-image-convert-rgb target-image))
+            ((= source-mode INDEXED)
+              ; convert source copy to GRAY
+              (gimp-image-convert-grayscale source-image))))
+            ; target and source both gray
+        ((= target-mode INDEXED)
+          (cond
+            ((= source-mode RGB)
+              ; promote target to RGB
+              (gimp-image-convert-rgb target-image))
+            ((= source-mode GRAY)
+              ; promote target to GRAY
+              (gimp-image-convert-grayscale target-image))))))))
+          
 
 
 (define (copy-selection-to-image drawable)
@@ -248,8 +284,10 @@
   ; v3 procedure names changed
 
   ; histogram upper half: typical mean is 0.75. Mean approaching 1.0 means high contrast.
-  (let* ((ref-mean    (gimp-drawable-histogram ref-drawable    HISTOGRAM-VALUE 0.5 1.0))
-         (source-mean (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0))
+  ;
+  ; histogram() returns a list, the first element is the mean.
+  (let* ((ref-mean    (car (gimp-drawable-histogram ref-drawable    HISTOGRAM-VALUE 0.5 1.0)))
+         (source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0)))
          ; Adjust contrast of source.
          ; Inversely proportional to percent transfer.
          ; 2.5 is from experimentation with gimp-brightness-contrast which seems linear in its effect.
@@ -264,7 +302,7 @@
 
     (when debug
       ; For experimentation, print new values
-      (set! source-mean (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 128 255))
+      (set! source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0)))
       (display (list "Map style: Source contrast changed by " contrast-control))
       (display (list "Map style: Target and source upper half histogram means" ref-mean source-mean))
     )))
@@ -292,13 +330,9 @@
   (gimp-image-undo-group-start image)
   (gimp-message-set-handler MESSAGE-BOX)
 
-  ; Get image of source drawable
-  (let* ((source-image (gimp-item-get-image source-drawable))
-         ;
-         ; User-friendliness.
-         ; Note the drawable chooser widget in Pygimp does not allow us to prefilter INDEXED mode.
-         ; So check here and give a warning.
-         ;
+  
+  (let* (
+         (source-image (gimp-item-get-image source-drawable)) ; Get image of source drawable
          ; These are the originals base types, and this plugin might change the base types
          (original-source-base-type (gimp-image-get-base-type source-image))
          (original-target-base-type (gimp-image-get-base-type image))
@@ -312,21 +346,24 @@
          (source-map-drawable '())
          (map-weight          '())
          )
-    (when (= INDEXED original-source-base-type)
-      (gimp-message _"The style source cannot be of mode INDEXED")
-      ( quit))
+    
+    ; !!! We now allow mode INDEXED, but the results might not be good.
 
+    ; If source drawable is same as target drawable
     (if (and (= image source-image)
              (= drawable source-drawable))
+        ; Source drawable same as target drawable.
+        ; Assert modes and alphas are same (since they are same layer!)
+        ; The original resynthesizer required a selection (engine used inverse selection for corpus).
+        ; Since resynthesizer v1.0, doesn't need a selection.
+        ;
+        ; Usually this is a mistake by user, failing to choose a different source.
+        ; Effect is similar to a blur, and is a meaningless style transfer.
         (set! is-source-copy #f)
-        ;
-        ; If source is same as target,
-        ; then the old resynthesizer required a selection (engine used inverse selection for corpus).
-        ; New resynthesizer doesn't need a selection.
-        ; If source same as target, effect is similar to a blur.
-        ;
-        ; assert modes and alphas are same (since they are same layer!)
-        (begin  ; target layer is not the source layer (source could be a copy of target, but effect is none)
+    
+        ; else source drawable not the same as target drawable.
+        ; (The source COULD be a copy of target, but again, effect would be a blur.)
+        (begin  ; target layer is not the source layer
           ; Copy source always, for performance, and for possible mode change.
           (set! is-source-copy #t)
           (set! temp-result (copy-selection-to-image source-drawable))
@@ -337,21 +374,17 @@
           (synchronize-modes image source-image)
           ))
 
-    ;
     ; TODO For performance, if there is a selection in target, it would be better to copy
     ; selection to a new layer, and later merge it back (since resynthesizer engine reads
     ; entire target into memory.  Low priority since rarely does user make a selection in target.
-    ;
 
-    ;
     ; !!! Note this plugin always sends maps to the resynthesizer,
     ; and the "percent transfer" setting is always effective.
     ; However, maps may not be separate,copied images unless converted to grayscale.
-    ;
 
     ; Copy and reduce maps to grayscale: at the option of the user
     ; !!! Or if the target was GRAY and source is RGB, in which case maps give a better result.
-    ; Note that if the target was GRAY, we already upgraded it to RGB.
+    ; Note that if target was not RGB, we might have already upgraded it to RGB.
     (if (or (= map-mode 1)
             (and (= original-source-base-type RGB)
                  (= original-target-base-type GRAY)))
@@ -383,7 +416,7 @@
 
     (set! map-weight (calculate-map-weight percent-transfer))
 
-    ; !!! This is for version of resynthesizer, with an uninverted selection
+    ; !!! This is for version >1.0 of resynthesizer, with an uninverted selection
     (plug-in-resynthesizer
       drawable           ; drawable
       1 1                ; vtile htile 1 since it reduces artifacts around edge
