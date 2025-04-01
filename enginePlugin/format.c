@@ -241,3 +241,30 @@ get_working_format_for_drawable (GimpDrawable *drawable)
 
   return result;
 }
+
+
+/* Return count of color channels, exclude alpha and any other channels. */
+guint
+count_color_channels (GimpDrawable *drawable)
+{
+  g_assert(drawable); // Not null
+
+  GimpImageType type = imageType(drawable);
+  switch(type)
+  {
+    case GIMP_RGB_IMAGE:
+    case GIMP_RGBA_IMAGE:
+      return 3;
+
+    case GIMP_GRAY_IMAGE:
+    case GIMP_GRAYA_IMAGE:
+
+    case GIMP_INDEXED_IMAGE:
+    case GIMP_INDEXEDA_IMAGE:
+      return 1;
+
+    default:
+      g_assert(FALSE);
+  }
+  return 0;
+}
