@@ -23,6 +23,7 @@ resynthesizer_plugin_names = [
   'plugin-heal-selection',
   'plugin-heal-transparency',
   'plugin-resynth-controls',
+  'plugin-map-style',
 ]
 
 # There is one other plugin: the engine, in C.
@@ -31,7 +32,7 @@ resynthesizer_plugin_names = [
 # Not ported yet, so not installed.
 # As ported, move to the list above.
 unported_plugin_basenames = [
-  'plugin-map-style',
+  
   'plugin-render-texture',
   'plugin-resynth-enlarge',
   'plugin-resynth-fill-pattern',
