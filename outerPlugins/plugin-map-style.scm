@@ -138,7 +138,7 @@
 
 
 (define (script-fu-map-style
-          image drawable ; target
+          image drawables ; target
           source-drawable 
           percent-transfer map-mode)
 
@@ -148,7 +148,6 @@
 (script-fu-use-v3)
 
 (define debug #t)  ; #t if you want to display and retain working, temporary images
-
 
 (define (display-debug-image image)
   (when debug
@@ -332,7 +331,12 @@
 
   
   (let* (
-         (source-image (gimp-item-get-image source-drawable)) ; Get image of source drawable
+         ; A filter is passed a vector of drawables the user has selected.
+         ; Since declared this filter handles only one, vector should have only one element.
+         ; Get the one drawable from the vector.
+         (drawable (vector-ref drawables 0))
+         ; Get image of source drawable
+         (source-image (gimp-item-get-image source-drawable))
          ; These are the originals base types, and this plugin might change the base types
          (original-source-base-type (gimp-image-get-base-type source-image))
          (original-target-base-type (gimp-image-get-base-type image))
@@ -347,7 +351,7 @@
          (map-weight          '())
          )
     
-    ; !!! We now allow mode INDEXED, but the results might not be good.
+    ; !!! We now allow images of mode INDEXED, but the results might not be good.
 
     ; If source drawable is same as target drawable
     (if (and (= image source-image)
@@ -461,22 +465,21 @@
                        10
                        1))
 
-(script-fu-register
- "script-fu-map-style"
- _"Style..."  ; menu label
- ; description
-  _"Transfer style (color and surface) from a chosen source to the selected layer. "
+(script-fu-register-filter
+  "script-fu-map-style"
+  _"Style..."  ; menu label
+  _"Transfer style (color and surface) from a chosen source to the selected layer. "  ; description
   ;_"Transforms image using art media and style from another image. Maps or synthesizes texture or theme from one image onto another. "
   ;_"Requires separate resynthesizer plugin."
  
- "Lloyd Konneker"
- "Copyright 2010 Lloyd Konneker"
- "2010"  ; date created
- ; script works on any image mode and regardless of alpha
- "*"
- ; parameters
- SF-IMAGE    "Image"    0
- SF-DRAWABLE "Drawable" 0
+  "Lloyd Konneker"
+  "Copyright 2010 Lloyd Konneker"
+  "2010"  ; date created
+  ; script works on any image mode and regardless of alpha
+  "*"
+  SF-ONE-DRAWABLE      ; menu item enabled if exactly one drawable selected
+
+ ; parameters, other than target image and drawable: not declared for a filter
  SF-DRAWABLE   _"Source of style" -1
  ; Integer valued percent from 10 to 90
  ; 0 and 100 make no sense
