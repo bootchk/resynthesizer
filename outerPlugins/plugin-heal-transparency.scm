@@ -132,7 +132,7 @@
   "Lloyd Konneker"
   "Copyright 2010 Lloyd Konneker"
   "2010"
-  "RGBA, GRAYA"  ; !!! Requires an alpha channel to heal
+  "RGBA, GRAYA, INDEXEDA"  ; !!! Requires an alpha channel to heal
   SF-ONE-OR-MORE-DRAWABLE      ; arity of defined PDB procedure
   ; declare arguments
   SF-ADJUSTMENT _"Context sampling width (pixels)"

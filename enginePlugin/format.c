@@ -88,10 +88,20 @@ return the count of pixelels
 that the resynthesizer engine will work with.
 (To be copied from the drawable to working pixmap.)
 
-The engine does use any alpha channel.
+The engine reads and works with any alpha channel,
+but does not synthesize it and writes back the original.
 
 This implementation assumes that the layout of the pixelels in the drawable
 starts with the color channels, then the alpha channel.
+
+!!! This works with RGB, GRAY, or INDEXED modes.
+
+RGB   3
+RGBA  4
+GRAY  1
+GRAYA 2
+INDEXED  1
+INDEXEDA 2
 */
 gint
 get_working_pixelels_per_pixel_for_target_or_corpus (GimpDrawable *drawable)
@@ -103,24 +113,6 @@ get_working_pixelels_per_pixel_for_target_or_corpus (GimpDrawable *drawable)
   const Babl *working_format = get_working_format_for_drawable (drawable);
 
   result = babl_format_get_n_components (working_format);
-
-#ifdef OLD
-   if (is_rgb (drawable) )
-    {
-      if (has_alpha(drawable))
-        result = 4;
-      else
-        result = 3;
-    }
-  else
-    {
-      // Greyscale or indexed
-      if (has_alpha(drawable))
-        result = 2;
-      else
-        result = 1;
-    }
-#endif
 
   g_debug ("%s %d", G_STRFUNC, result);
   return result;

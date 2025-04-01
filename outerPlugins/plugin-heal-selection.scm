@@ -309,7 +309,7 @@
   "Lloyd Konneker"             ; author
   "2009 Lloyd Konneker"        ; copyright notice
   "2025"                       ; date created
-  "RGB* GRAY*"                 ; image types handled by script
+  "*"                 ; image types handled by script
   SF-ONE-OR-MORE-DRAWABLE      ; arity of defined PDB procedure
   ; Formal declaration of parameters and their widget kinds.
   ; Omitting implicit "image" and "drawables"

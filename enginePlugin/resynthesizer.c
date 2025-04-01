@@ -163,9 +163,14 @@ count_color_channels(GimpDrawable *drawable)
     case GIMP_RGB_IMAGE:
     case GIMP_RGBA_IMAGE:
       return 3;
+
     case GIMP_GRAY_IMAGE:
     case GIMP_GRAYA_IMAGE:
+
+    case GIMP_INDEXED_IMAGE:
+    case GIMP_INDEXEDA_IMAGE:
       return 1;
+
     default:
       g_assert(FALSE);
   }
@@ -273,11 +278,16 @@ bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
 
 
 
-  /* Check image type (could be called non-interactive) */
-  if (!is_rgb(target_drawable) &&
-      !is_gray(target_drawable))
-    return _("Incompatible image mode.");
-
+  /* 
+  The engine will work with any image mode (RGB, GRAY, INDEXED)
+  Quality of the result is lower for some image types e.g. INDEXED.
+  
+  If we want to disallow images of certain modes, do it here.
+  Remember, a plugin can be called by other plugins non-interactively,
+  so do not rely on the GUI to disallow image modes.
+  Formerly, in v2 of the resynthesizer, we disallow INDEXED mode here.
+  */
+ 
   /* Limit neighbours parameter to size allocated. */
   if (pluginParameters->neighbours > IMAGE_SYNTH_MAX_NEIGHBORS )
     pluginParameters->neighbours = IMAGE_SYNTH_MAX_NEIGHBORS;
