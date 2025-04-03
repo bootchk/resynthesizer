@@ -168,7 +168,7 @@
   (gimp-displays-flush))
 
 
-(define (script-fu-render-texture image drawables resize-ratio make-tile)
+(define (plug-in-render-texture image drawables resize-ratio make-tile)
   
   ; Create a randomized texture image from the selection.
   ; User can choose to make the image be suited for further, seamless tiling.
@@ -273,7 +273,7 @@
 
 
 (script-fu-register-filter
-  "script-fu-render-texture"
+  "plug-in-render-texture"
   _"Texture..." ; menu label
   _"Create a new image with texture from the current image or selection. Optionally, create image edges suited for further, seamless tiling. "
   ; "New image is the same scale but seamless and irregular.  Use 'Map>Tile' for less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. ")
@@ -298,5 +298,5 @@
   SF-TOGGLE _"Make new image edges suitable for seamless tiling" FALSE
  )
 
-(script-fu-menu-register "script-fu-render-texture"
+(script-fu-menu-register "plug-in-render-texture"
                          "<Image>/Filters/Render")

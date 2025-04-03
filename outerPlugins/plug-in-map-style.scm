@@ -137,7 +137,7 @@
 ; contrast adjustment
 
 
-(define (script-fu-map-style
+(define (plug-in-map-style
           image drawables ; target
           source-drawable 
           percent-transfer map-mode)
@@ -459,14 +459,14 @@
       (set! image (get-image)))
     (vector-ref (gimp-image-get-selected-drawables image) 0))
 
-  (script-fu-map-style (get-image)
+  (plug-in-map-style (get-image)
                        (get-drawable  '())
                        (get-drawable (get-second-image))
                        10
                        1))
 
 (script-fu-register-filter
-  "script-fu-map-style"
+  "plug-in-map-style"
   _"Style..."  ; menu label
   _"Transfer style (color and surface) from a chosen source to the selected layer. "  ; description
   ;_"Transforms image using art media and style from another image. Maps or synthesizes texture or theme from one image onto another. "
@@ -495,5 +495,5 @@
  (list _"Color and brightness"
        _"Brightness only"))
 
-(script-fu-menu-register "script-fu-map-style"
+(script-fu-menu-register "plug-in-map-style"
                          "<Image>/Filters/Map")

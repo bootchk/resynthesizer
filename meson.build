@@ -20,11 +20,11 @@ i18n = import('i18n')
 # and names of the run funcs in Scheme.
 # Outer plugins appear in GIMP menus.
 resynthesizer_plugin_names = [
-  'plugin-heal-selection',
-  'plugin-heal-transparency',
-  'plugin-resynth-controls',
-  'plugin-map-style',
-  'plugin-render-texture',
+  'plug-in-heal-selection',
+  'plug-in-heal-transparency',
+  'plug-in-resynth-controls',
+  'plug-in-map-style',
+  'plug-in-render-texture',
 ]
 
 # There is one other plugin: the engine, in C.
@@ -33,10 +33,10 @@ resynthesizer_plugin_names = [
 # Not ported yet, so not installed.
 # As ported, move to the list above.
 unported_plugin_basenames = [
-  'plugin-resynth-enlarge',
-  'plugin-resynth-fill-pattern',
-  'plugin-resynth-sharpen',
-  'plugin-uncrop',
+  'plug-in-resynth-enlarge',
+  'plug-in-resynth-fill-pattern',
+  'plug-in-resynth-sharpen',
+  'plug-in-uncrop',
 ]
 
 ###### Configuration

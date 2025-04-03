@@ -164,7 +164,7 @@ def openTestFilename(filename, select=None, invert=False):
 Opens test image file.
 Optionally selects area in the image.
 Optionally inverts the selection.
-Returns image, drawable.
+Returns image, drawables.
 '''
 def openTestFilepath(filepath, select=None, invert=False):
 
@@ -177,9 +177,10 @@ def openTestFilepath(filepath, select=None, invert=False):
   # TODO get_selected_layers and get_layers are not in the GI, marked in image.pdb to $skip-GI ?
   # count, layers = image.get_layers()
   layers = image.get_layers()
+  # layers is a GimpCoreObjectArray, a list in Python
   assert len(layers) == 1
-  drawable = layers[0]
-  assert drawable is not None
+  drawables = layers
+  assert drawables is not None
 
   # TODO optionally flatten
   # i.e. remove all layers but one
@@ -192,7 +193,7 @@ def openTestFilepath(filepath, select=None, invert=False):
   if invert:
     Gimp.Selection.invert(image)
 
-  return image, drawable
+  return image, drawables
 
 
 '''
@@ -201,108 +202,122 @@ Wrapper functions.
 Since v3 a call to the PDB is more complicated than in v2 GimpFu
 In v2 you could directly call "pdb.plug-in-foo"
 Now the test harness calls the wrapper instead of directly.
+
+Since GIMP v3, a plugin takes an array of drawables,
+binding from a Python list.
+So we wrap a single drawable => [drawable]
 '''
 
-def callHealSelection(targetImage, targetDrawable, corpusWidth, sampleFrom, synthDirection):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-heal-selection')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('adjustment', corpusWidth)
-  pdb_config.set_property('option', sampleFrom)
-  pdb_config.set_property('option-2', synthDirection)
-  result = pdb_proc.run(pdb_config)
+
+'''
+Special
+
+Lists won't bind to the C type GimpCoreObjectArray.
+A deficiency of PyGObject?
+So there is a special function for this in the GIMP API.
+Otherwise, would just use: config.set_property('drawables', targetDrawables)
+
+Assert value is-a Python list
+'''
+def setConfigObjectArrayProperty (config, property_name, value):
+   config.set_core_object_array(property_name, value)
+
+'''
+When config is for a filter plugin, it takes usual arguments.
+'''
+def setStandardArgsToConfig (config, image, drawables):
+  config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
+  config.set_property('image', image)
+  setConfigObjectArrayProperty (config, 'drawables', drawables)
+
+
+
+def callHealSelection(targetImage, targetDrawables, corpusWidth, sampleFrom, synthDirection):
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-heal-selection')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
+  config.set_property('adjustment', corpusWidth)
+  config.set_property('option', sampleFrom)
+  config.set_property('option-2', synthDirection)
+  result = pdb_proc.run(config)
   # TODO result returned?
 
-def callHealTransparency(targetImage, targetDrawable, corpusWidth, synthDirection):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-heal-transparency')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('adjustment', corpusWidth)
+def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirection):
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-heal-transparency')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
+  config.set_property('adjustment', corpusWidth)
   # No sampleFrom, the target and corpus are not compact
   # but usually spread over the entire image.
-  pdb_config.set_property('option', synthDirection)
-  result = pdb_proc.run(pdb_config)
+  config.set_property('option', synthDirection)
+  result = pdb_proc.run(config)
 
-def callUncrop(targetImage, targetDrawable, percentSizeIncrease):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-uncrop')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
+def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-uncrop')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
   # No sampleFrom, corpus is always just inside the image edge
   # No corpusWidth corpus is always just tens of pixels deep
   # No direction, always outward
-  pdb_config.set_property('adjustment', percentSizeIncrease)
-  result = pdb_proc.run(pdb_config)
+  config.set_property('adjustment', percentSizeIncrease)
+  result = pdb_proc.run(config)
 
 
-def callFillPatternResynth(targetImage, targetDrawable, pattern):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-fill-pattern-resynth')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('pattern', pattern)
-  result = pdb_proc.run(pdb_config)
+def callFillPatternResynth(targetImage, targetDrawables, pattern):
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-fill-pattern-resynth')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
+  config.set_property('pattern', pattern)
+  result = pdb_proc.run(config)
 
 
-def callRenderTexture(targetImage, targetDrawable, sizeRatio, isTileable):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-render-texture')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('adjustment', sizeRatio)
-  pdb_config.set_property('toggle', isTileable)
+def callRenderTexture(targetImage, targetDrawables, sizeRatio, isTileable):
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-render-texture')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
+  config.set_property('adjustment', sizeRatio)
+  config.set_property('toggle', isTileable)
   # TODO, a script returns no values
   # Get the newest image and return it as value or assign to global
-  result = pdb_proc.run(pdb_config)
+  result = pdb_proc.run(config)
 
 
-def callMapStyle(targetImage, targetDrawable, corpusFilename, percentTransfer=50, mapBy=0):
+def callMapStyle(targetImage, targetDrawables, corpusFilename, percentTransfer=50, mapBy=0):
 
   # open the corpus
   # open with no selection and no inversion of selection
   unusedImage, corpusDrawable = openTestFilename (corpusFilename)
 
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-map-style')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('drawable-2', corpusDrawable)
-  pdb_config.set_property('adjustment', percentTransfer)
-  pdb_config.set_property('option', mapBy)
-  result = pdb_proc.run(pdb_config)
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-map-style')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
+  config.set_property('drawable-2', corpusDrawable)
+  config.set_property('adjustment', percentTransfer)
+  config.set_property('option', mapBy)
+  result = pdb_proc.run(config)
   # TODO, a script returns no values
   # Get the newest image and return it as value or assign to global
 
 
-def callSharpen(targetImage, targetDrawable, factor=1.0):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-sharpen-resynthesized')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('adjustment', factor)
-  result = pdb_proc.run(pdb_config)
+def callSharpen(targetImage, targetDrawables, factor=1.0):
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-sharpen-resynthesized')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
+  config.set_property('adjustment', factor)
+  result = pdb_proc.run(config)
 
 
-def callEnlarge(targetImage, targetDrawable, factor=1.0):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('script-fu-enlarge-resynthesized')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
-  pdb_config.set_property('otherImage', targetImage)
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('adjustment', factor)
-  result = pdb_proc.run(pdb_config)
+def callEnlarge(targetImage, targetDrawables, factor=1.0):
+  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-enlarge-resynthesized')
+  config = pdb_proc.create_config()
+  setStandardArgsToConfig (config, targetImage, targetDrawables)
+  config.set_property('adjustment', factor)
+  result = pdb_proc.run(config)
 
 
-
+'''
+Note passing a single drawable.
+'''
 def callResynthesizer(
     targetImage, targetDrawable,
     # resynth engine plugin requires corpus drawable
@@ -339,19 +354,20 @@ def callResynthesizer(
 
 
   pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-resynthesizer')
-  pdb_config = pdb_proc.create_config()
-  pdb_config.set_property('drawable', targetDrawable)
-  pdb_config.set_property('h-tile', hTile)
-  pdb_config.set_property('v-tile', vTile),
-  pdb_config.set_property('use-border', useBorder),
-  pdb_config.set_property('corpus-drawable', corpusDrawable),
-  pdb_config.set_property('input-map', input_map),
-  pdb_config.set_property('output-map', output_map),
-  pdb_config.set_property('map-weight', map_weight),
-  pdb_config.set_property('autism', autism),
-  pdb_config.set_property('neighbours', neighbours),
-  pdb_config.set_property('trys', trys),
-  result = pdb_proc.run(pdb_config)
+  config = pdb_proc.create_config()
+  # Takes a single drawable, not many
+  config.set_property('drawable', targetDrawable)
+  config.set_property('h-tile', hTile)
+  config.set_property('v-tile', vTile),
+  config.set_property('use-border', useBorder),
+  config.set_property('corpus-drawable', corpusDrawable),
+  config.set_property('input-map', input_map),
+  config.set_property('output-map', output_map),
+  config.set_property('map-weight', map_weight),
+  config.set_property('autism', autism),
+  config.set_property('neighbours', neighbours),
+  config.set_property('trys', trys),
+  result = pdb_proc.run(config)
 
 
 
@@ -460,15 +476,15 @@ def runtest(filename, testname, wrapperName, testparameters, select=None):
 
   # open test input file
   try:
-    targetImage, targetDrawable = openTestFilename(filename, select)
+    targetImage, targetDrawables = openTestFilename(filename, select)
   except Exception as inst:
     record_test_result(testname, "IMPROPER preprocessing")
     print (inst)
     return
 
   # Build an executable Python string that is call to wrapper of tested plugin
-  # E.G. callHealSelection(targetImage, targetDrawable, 0, 0)
-  teststring = wrapperName + "(" + "targetImage, targetDrawable, " + testparameters + ")"
+  # E.G. callHealSelection(targetImage, targetDrawables, 0, 0)
+  teststring = wrapperName + "(" + "targetImage, targetDrawables, " + testparameters + ")"
   logging.info("Test string:" + teststring)
 
 
@@ -477,7 +493,7 @@ def runtest(filename, testname, wrapperName, testparameters, select=None):
     # Invoke the test
     # Not eval, it only takes expressions, not statements
     # All python vars names in the teststring must be defined in the current scope
-    # i.e. targetImage, targetDrawable, testPattern
+    # i.e. targetImage, targetDrawables, testPattern
     exec (teststring)
   except RuntimeError as inst:
     record_test_result(testname, "EXCEPTION")
@@ -662,7 +678,7 @@ def testMapStyle():
 
 def testHealSelection():
   ''' "Heal selection" outer plugin. '''
-  pluginName = "script-fu-heal-selection"
+  pluginName = "plug-in-heal-selection"
   pluginWrapperName = 'callHealSelection'
 
   # Heal from donut corpus
@@ -704,7 +720,7 @@ def testHealSelection():
 
 def testHealTransparency():
   ''' Heal transparency outer plugin. '''
-  pluginName = "script-fu-heal-transparency"
+  pluginName = "plug-in-heal-transparency"
   pluginWrapperName = 'callHealTransparency'
 
   # Heal transparency outward
@@ -742,7 +758,7 @@ def testFillPattern():
   # TODO Known to fail issue with SF binding for SF-PATTERN
   return
 
-  pluginName = "script-fu-fill-pattern-resynth"
+  pluginName = "plug-in-fill-pattern-resynth"
   pluginWrapperName = "callFillPatternResynth"
 
   # parameter string refer to pattern object in scope of runtest()

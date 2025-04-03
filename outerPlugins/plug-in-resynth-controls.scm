@@ -53,7 +53,7 @@ if timg == sourceImage and tdrawable == sourceDrawable:
 
 ; run func, must match name of plugin
 (define
-  (script-fu-resynth-controls
+  (plug-in-resynth-controls
     timg
     tdrawables
     sourceDrawable
@@ -181,7 +181,7 @@ if timg == sourceImage and tdrawable == sourceDrawable:
 ; Use slider for floats?
 
 (script-fu-register-filter
-  "script-fu-resynth-controls"
+  "plug-in-resynth-controls"
   _"_Resynthesize..."
   (string-append
     _"Use the resynthesizer engine's control panel."
@@ -249,7 +249,7 @@ if timg == sourceImage and tdrawable == sourceDrawable:
       SF-SLIDER)
  )
 
-(script-fu-menu-register "script-fu-resynth-controls"
+(plug-in-menu-register "plug-in-resynth-controls"
 			 "<Image>/Filters/Map")
 
 

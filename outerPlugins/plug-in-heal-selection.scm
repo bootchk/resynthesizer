@@ -1,7 +1,7 @@
 #!/usr/bin/env gimp-script-fu-interpreter-3.0
 ;!# Close comment started on first line. Needed by gettext.
 
-; Gimp plugin "Heal selection"
+; Gimp plug-in "Heal selection"
 
 ; License:
 ;
@@ -20,7 +20,7 @@
 
 ; Copyright 2025 lloyd konneker
 ; Based on the GIMP 2 version Copyright 2022 itr-tert
-;  Based on plugin-heal-selection.py Copyright 2009 lloyd konneker (bootch at nc.rr.com)
+;  Based on plug-in-heal-selection.py Copyright 2009 lloyd konneker (bootch at nc.rr.com)
 ;   Based on smart_remove.scm Copyright 2000 by Paul Harrison.
 
 
@@ -100,9 +100,9 @@
 
 
 (define
-  (plugin-heal-selection
+  (plug-in-heal-selection
    timg tdrawables samplingRadiusParam directionParam orderParam)
-  "Create stencil selection in an image copy to pass as source (corpus) to plugin resynthesizer,
+  "Create stencil selection in an image copy to pass as source (corpus) to plug-in resynthesizer,
      which does the substantive work."
 
   (let ((targetBounds '())
@@ -300,7 +300,7 @@
     ))
 
 (script-fu-register-filter
-  "plugin-heal-selection"      ; run func name
+  "plug-in-heal-selection"      ; run func name
   _"_Heal Selection..."        ; menu label
   _"Heal the selection from surroundings as if using the heal tool."  ; tooltip for menu item
   ; Can't append this to tooltip, it breaks existing translations.
@@ -330,6 +330,6 @@
           _"Inwards towards center"
           _"Outwards from center"))
 
-(script-fu-menu-register "plugin-heal-selection"
+(script-fu-menu-register "plug-in-heal-selection"
 			  "<Image>/Filters/Enhance")
 

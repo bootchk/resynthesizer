@@ -20,8 +20,8 @@
 ;   http://www.gnu.org/copyleft/gpl.html
 
 ; Copyright 2025 l.konneker
-;  Based on plugin-heal-transparency.scm Copyright 2022 itr-tert
-;   Based on plugin-heal-transparency.py Copyright 2010 lloyd konneker
+;  Based on plug-in-heal-transparency.scm Copyright 2022 itr-tert
+;   Based on plug-in-heal-transparency.py Copyright 2010 lloyd konneker
 
 
 
@@ -37,7 +37,7 @@
 ; or for thin edges of transparency.
 ; Often unsatisfactory, wierd, for large areas of transparency.
 
-(define (plugin-heal-transparency
+(define (plug-in-heal-transparency
            timg tdrawables samplingRadiusParam orderParam)
   (let 
     ((org-selection '())
@@ -94,7 +94,7 @@
     (gimp-layer-flatten targetDrawable)
 
     ; Call heal selection (not the resynthesizer engine), which will create a proper corpus.
-    (plugin-heal-selection
+    (plug-in-heal-selection
     ; Must pass run-mode, the name is not RUNMODE-.
       RUN-NONINTERACTIVE 
       timg
@@ -125,7 +125,7 @@
 
 
 (script-fu-register-filter
-  "plugin-heal-transparency"
+  "plug-in-heal-transparency"
   ; No key shortcut _H since already taken by Heal Selection
   _"Heal Transparency..."
   _"Removes alpha channel by synthesis.  Fill outward for edges, inward for holes."
@@ -157,6 +157,6 @@
 
 
 ; register the procedure as a menu item
-(script-fu-menu-register "plugin-heal-transparency"
+(script-fu-menu-register "plug-in-heal-transparency"
 			 "<Image>/Filters/Enhance")
 

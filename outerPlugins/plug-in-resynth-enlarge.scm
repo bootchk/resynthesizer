@@ -46,7 +46,7 @@
 
 
 (define
-  (script-fu-enlarge-resynthesized image drawables scale-factor)
+  (plug-in-enlarge-resynthesized image drawables scale-factor)
 
   ; Use v3 semantics for binding to PDB: car is not necessary
   ; !!! Note this is called in the run function but has execution scope
@@ -115,7 +115,7 @@
 
 
 (script-fu-register-filter
- "script-fu-enlarge-resynthesized"
+ "plug-in-enlarge-resynthesized"
  
  _"Enlarge and Sharpen by Resynthesis..."      ; menu label
  _"Enlarge image and synthesize to sharpen."  ; tooltip
@@ -144,5 +144,5 @@
  )
 
 (script-fu-menu-register
-  "script-fu-enlarge-resynthesized"
+  "plug-in-enlarge-resynthesized"
   "<Image>/Filters/Enhance")
