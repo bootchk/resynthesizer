@@ -1,207 +1,222 @@
 #!/usr/bin/env gimp-script-fu-interpreter-3.0
 
-;; License:
-;;
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2 of the License, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-;;
-;; The GNU Public License is available at
-;; http://www.gnu.org/copyleft/gpl.html
+; License:
+;
+; This program is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 2 of the License, or
+; (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; The GNU Public License is available at
+; http://www.gnu.org/copyleft/gpl.html
 
 
-;; Create new image having texture synthesized from the selection.
-;; Works best if selection is natural (fractal).
-;; Can work with man-made regular texture.
-;; Works worst with man-made, structured but not regular, symbols.
-;; Sometimes called rendering a texture.
-;;
-;; Requires resynthesizer plug-in.
+; Create new image having texture synthesized from the selection.
+; Works best if selection is natural (fractal).
+; Can work with man-made regular texture.
+; Works worst with man-made, structured but not regular, symbols.
+; Sometimes called rendering a texture.
+;
+; Requires resynthesizer plug-in.
 
-;; Author:
-;; lloyd konneker, lkk, bootch at nc.rr.com, itr-tert
+; Authors:
+; lloyd konneker
+; itr-tert
 
-;; Version:
-;; 1.0 lkk 2010-07-15 Initial version
-;; 1.1 lkk 2011-04-10 Fixed a bug with layer types impacting greyscale images.
-;; later versions, see git log
+; Version:
+; 1.0 lkk 2010-07-15 Initial version
+; 1.1 lkk 2011-04-10 Fixed a bug with layer types impacting greyscale images.
+; later versions, see git log
 
-;;
-;; The effect for users:
-;; Similar to "Fill resynthesized pattern" except:
-;;   - here the arguments are reversed: you select a texture and create a new image
-;;     instead of selecting an area and choosing a pattern.
-;;   - here the result is less random (since Fill resynthesized adds noise.)
-;; Different from tiling since:
-;;   - seamless and irregular pattern
-;;
-;; The continuum of randomness versus speed:
-;;   - Filters.Map.Tile is fast but has seams and regular pattern (even if you use "Make Seamless" first.)
-;;   - Filter.Render.Texture a tile followed by tiling is seamless but still has regularity.
-;;   - Filte.Render.Texture an entire image is slower but seamless and moderately irregular.
-;;   - Edit.Fill with resynthesized pattern is slowest but seamless and highly irregular, unpatterned.
-;;
-;; This filter is not tiling (instead resynthesizing) but makes
-;; an image that you can then use to tile with especially if
-;; you choose the option to make the edges suitable for tiling.
-;;
-;; IN: The selection (or the entire active drawable) is the source of texture and is not changed.
-;; OUT New image, possibly resized canvas, same scale and resolution.
-;;
-;; TODO a quality setting
-;;
-
-
-(define script-fu-render-texture (let
-()  ; indent keeper
+;
+; The effect for users:
+; Similar to "Fill resynthesized pattern" except:
+;   - here the arguments are reversed: you select a texture and create a new image
+;     instead of selecting an area and choosing a pattern.
+;   - here the result is less random (since Fill resynthesized adds noise.)
+; Different from tiling since:
+;   - seamless and irregular pattern
+;
+; The continuum of randomness versus speed:
+;   - Filters.Map.Tile is fast but has seams and regular pattern (even if you use "Make Seamless" first.)
+;   - Filter.Render.Texture a tile followed by tiling is seamless but still has regularity.
+;   - Filte.Render.Texture an entire image is slower but seamless and moderately irregular.
+;   - Edit.Fill with resynthesized pattern is slowest but seamless and highly irregular, unpatterned.
+;
+; This filter is not tiling (instead resynthesizing) but makes
+; an image that you can then use to tile with especially if
+; you choose the option to make the edges suitable for tiling.
+;
+; IN: The selection (or the entire active drawable) is the source of texture and is not changed.
+; OUT New image, possibly resized canvas, same scale and resolution.
+;
+; TODO a quality setting
+;
 
 (define debug #f)
 
-
-(define (gettext msgid)
-  (catch msgid
-	 (car (plug-in-resynthesizer-gettext msgid))))
-(define (N_ m) m)  ; like gettext-noop
-(define (G_ m) (gettext m))
-(define (S_ m) (string-append m "​"))  ; Add zero-width spaces to suppress translation.
-(define (SG_ m) (S_ (G_ m)))
-
-
 (define (test)
   (let* ((image (vector-ref (car (cdr (gimp-image-list))) 0))
-         (drawable (car (gimp-image-get-active-drawable image))))
+         (drawable (vector-ref (car (gimp-image-get-selected-drawables image)) 0)))
     (script-fu-render-texture image drawable 2 TRUE)))
 
-
 (define (new-resized-image image resize-ratio)
-  ;; Create new image resized by a ratio from *selection* in the old image
+  ; Create new image resized by a ratio from *selection* in the old image
   (let* ((bounds       (gimp-selection-bounds image))
-         (is-selection (nth 0 bounds))
-         (ulx          (nth 1 bounds))
-         (uly          (nth 2 bounds))
-         (lrx          (nth 3 bounds))
-         (lry          (nth 4 bounds))
-         (new-width nil)
-         (new-height nil)
-         (new-basetype nil)
-         (new-layertype nil)
-         (new-image nil)
-         (new-drawable nil))
+         (is-selection (list-ref bounds 0))
+         (ulx          (list-ref bounds 1))
+         (uly          (list-ref bounds 2))
+         (lrx          (list-ref bounds 3))
+         (lry          (list-ref bounds 4))
+         (new-width     '())
+         (new-height    '())
+         (new-basetype  '())
+         (new-layertype '())
+         (new-image     '())
+         (new-drawable  '()))
+
     (if (<> TRUE is-selection)
         (begin
-          ;; Resynthesizer will use the entire source image as corpus.
-          ;; Resize new image in proportion to entire source image.
+          ; Resynthesizer will use the entire source image as corpus.
+          ; Resize new image in proportion to entire source image.
           (set! new-width  (floor (* (car (gimp-image-get-width  image)) resize-ratio)))
-          (set! new-height (floor (* (car (gimp-image-get-height image)) resize-ratio))))
+          (set! new-height (floor (* (car (gimp-image-get-height image)) resize-ratio)))
+          (display "Render Texture image from entire image")
+          (newline))
         (begin
-          ;; Resize new image in proportion to selection in source
+          ; Resize new image in proportion to selection in source
           (set! new-width  (floor (* (- lrx ulx) resize-ratio)))
-          (set! new-height (floor (* (- lry uly) resize-ratio)))))
+          (set! new-height (floor (* (- lry uly) resize-ratio)))
+          (display "Render Texture image from selection")))
 
     (set! new-basetype (car (gimp-image-get-base-type image)))  ; same as source
-    (set! new-layertype (car (gimp-drawable-type (car (gimp-image-get-active-layer image)))))
+    (set! new-layertype (car (gimp-drawable-type (vector-ref (car (gimp-image-get-selected-layers image)) 0))))
+
     (set! new-image (car (gimp-image-new new-width new-height new-basetype)))
-    ;; !!! Note that gimp-layer-new wants a layer type, not an image basetype
-    (set! new-drawable (car (gimp-layer-new new-image new-width new-height
-                                            new-layertype "Texture" 100
-                                            LAYER-MODE-NORMAL)))
-    ;; The new layer is opaque, but the new image has transparent pixels (for case RGBA)
-    ;; Resynthesizer will not change the transparency, so make pixels opaque.
-    ;; Fill with white will make them opaque.
+
+    ; !!! Note that gimp-layer-new wants a layer type, not an image basetype
+    (set! new-drawable (car (gimp-layer-new 
+      new-image
+      "Texture"  ; name of layer, arg order changed in PDB API v3
+      new-width new-height
+      new-layertype
+      100  ; full opaque
+      LAYER-MODE-NORMAL)))
+      
+    ; The new layer has opaque attribute, 
+    ; but the new image has transparent pixels (for image modes with alpha)
+    ; Resynthesizer will not change the transparency, so make pixels opaque.
+    ; Fill with white will make them opaque.
     (gimp-drawable-fill new-drawable FILL-WHITE)
-    ;; A new layer must be added to the image.
-    ;; parent is zero (not a group) and position is 0 (top)
-    (gimp-image-insert-layer new-image new-drawable 0 0)
+
+    ; A new layer must be added to the image.
+    (gimp-image-insert-layer 
+      new-image new-drawable 
+      0  ; parent is zero (not a group)
+      0) ; position is 0 (top)
+
+    ; FIXME if indexed mode, need set palette also?
+
+    ; yield a tuple of new image and drawable
     (list new-image new-drawable)))
+
+
+; copy an image and crop the copy to the selection in the image
+(define (copy-and-crop-image-to-selection image)
+  (let ((result-image '())
+        (bounds       '())
+        (is-selection '())
+        (ulx        '())
+        (uly        '())
+        (lrx        '())
+        (lry        '()))
+
+    (set! result-image (car (gimp-image-duplicate image)))
+      (when (null? result-image)
+        (throw "Failed duplicate image"))
+
+    ; Get bounds, offset of selection
+    (set! bounds (gimp-selection-bounds result-image))
+    (set! is-selection (list-ref bounds 0))
+    (set! ulx          (list-ref bounds 1))
+    (set! uly          (list-ref bounds 2))
+    (set! lrx          (list-ref bounds 3))
+    (set! lry          (list-ref bounds 4))
+
+    (when (= TRUE is-selection)
+      (gimp-image-crop result-image (- lrx ulx) (- lry uly) ulx uly))
+    ; yield the cropped image
+    result-image))
 
 
 (define (display-image image)
   (catch "do nothing when error"
-         ;; If runmode is NONINTERACTIVE, expect gimp-display-new() to fail
+         ; If runmode is NONINTERACTIVE, expect gimp-display-new() to fail
          (gimp-display-new image))
   (gimp-displays-flush))
 
 
 (define (script-fu-render-texture image drawable resize-ratio make-tile)
-  ;;
-  ;; Create a randomized texture image from the selection.
-  ;; The image can be suited for further, seamless tiling.
-  ;; The image is same scale and resolution but resized from the selection.
-  ;; Not undoable, no changes to the source (you can just delete the new image.)
-  ;;
-  ;; A selection in the source image is optional.
-  ;; If there is no selection, the resynthesizer will use the entire source image.
-  ;;
-
-  ;; Its all or nothing, user must delete new image if not happy.
+  
+  ; Create a randomized texture image from the selection.
+  ; User can choose to make the image be suited for further, seamless tiling.
+  ; The image is same scale and resolution but resized from the selection.
+  ; Not undoable, no changes to the source (you can just delete the new image.)
+  ;
+  ; A selection in the source image is optional.
+  ; If there is no selection, the resynthesizer will use the entire source image.
+  
+  ; Its all or nothing, user must delete new image if not happy.
   (gimp-image-undo-disable image)
 
-  ;;
-  ;; Create new image, optionally resized, and display for it.
-  ;;
-  (let ((new-image-new-drawable nil)
-        (new-image nil)
-        (new-drawable nil)
-        (temp-image nil)
-        (bounds nil)
-        (is-selection nil)
-        (ulx nil)
-        (uly nil)
-        (lrx nil)
-        (lry nil)
-        (work-layer nil)
-        (htile nil)
-        (vtile nil))
+  ; Create new image, optionally resized, and display for it.
+
+  (let* ((new-image-new-drawable '())
+        (result-image     '())
+        (result-drawable '())
+        (corpus-image '())
+        (corpus-layer '())
+        (htile      '())
+        (vtile      '()))
     (set! new-image-new-drawable (new-resized-image image resize-ratio))
-    (set! new-image    (nth 0 new-image-new-drawable))
-    (set! new-drawable (nth 1 new-image-new-drawable))
+    (set! result-image    (list-ref new-image-new-drawable 0))
+    (set! result-drawable (list-ref new-image-new-drawable 1))
 
-    (gimp-image-undo-disable new-image)
-    (when (null? new-drawable)
-      (throw "Failed create layer."))
+    (gimp-image-undo-disable result-image)
+    ; FIXME: when calls to PDB fail, do we really get here with empty list, or with -1?
+    (when (null? result-drawable)
+      (throw "Failed create new result layer."))
 
-    ;; If using new resynthesizer with animation for debugging
+    ; copy original into temp corpus image and crop it to the selection.
+    ; To save memory in resynthesizer.
+    (set! corpus-image (copy-and-crop-image-to-selection image))
+
+    ; If using new resynthesizer with animation for debugging,
+    ; display the result early, and the corpus
     (when debug
-      (display-image new-image))
+      (display-image result-image)
+      (display-image corpus-image)
+      )
 
-    ;;
-    ;; copy original into temp and crop it to the selection to save memory in resynthesizer
-    ;;
-    (set! temp-image (car (gimp-image-duplicate image)))
-    (when (null? temp-image)
-      (throw "Failed duplicate image"))
+    ; Don't flatten corpus because it turns transparency to background (white usually)
 
-    ;; Get bounds, offset of selection
-    (set! bounds (gimp-selection-bounds image))
-    (set! is-selection (nth 0 bounds))
-    (set! ulx          (nth 1 bounds))
-    (set! uly          (nth 2 bounds))
-    (set! lrx          (nth 3 bounds))
-    (set! lry          (nth 4 bounds))
+    ; Get the corpus-layer, resynthesizer wants a layer, not an image
+    (set! corpus-layer (vector-ref (car (gimp-image-get-selected-layers corpus-image)) 0))
+    (when (null? corpus-layer)
+      (throw "Failed get corpus layer"))
 
+    ; Insure the selection is all (not necessary, resynthesizer will use all if no selection.)
+    (gimp-selection-all corpus-image)
 
-    (when (= TRUE is-selection)
-      (gimp-image-crop temp-image (- lrx ulx) (- lry uly) ulx uly))
-    ;; Resynthesizer will use all if no selection.
-
-    ;; Don't flatten because it turns transparency to background (white usually)
-    (set! work-layer (car (gimp-image-get-active-layer temp-image)))
-    (when (null? work-layer)
-      (throw "Failed get active layer"))
-
-    ;; Insure the selection is all (not necessary, resynthesizer will use all if no selection.)
-    (gimp-selection-all temp-image)
-
-    ;; Settings for making edges suitable for seamless tiling afterwards.
-    ;; That is what these settings mean in the resynthesizer:
-    ;; wrap context probes in the target so that edges of target will be suitable for seamless tiling.
-    ;; I.E. treat the target as a sphere when matching.
+    ; Settings for making edges suitable for seamless tiling afterwards.
+    ; That is what these settings mean in the resynthesizer:
+    ; wrap context probes in the target so that edges of target will be suitable for seamless tiling.
+    ; I.E. treat the target as a sphere when matching.
     (if (= TRUE make-tile)
         (begin
           (set! htile 1)
@@ -210,20 +225,20 @@
           (set! htile 0)
           (set! vtile 0)))
 
-    ;; Call resynthesizer
-    ;; use_border is moot since there is no context (outside the target) in the newImage.
-    ;; The target is the entire new image, the source is the cropped copy of the selection.
-    ;;
-    ;; 9 neighbors (a 3x3 patch) and 200 tries for speed, since new image is probably large
-    ;; and source is probably natural (fractal), where quality is not important.
+    ; Call resynthesizer
+    ; use-border is moot since there is no context (outside the target) in the newImage.
+    ; The target is the entire new image, the source is the cropped copy of the selection.
+    ;
+    ; 9 neighbors (a 3x3 patch) and 200 tries for speed, since new image is probably large
+    ; and source is probably natural (fractal), where quality is not important.
 
-    ;; For version of resynthesizer with uninverted selection
-    ;; !!! Pass -1 for ID of no layer, not None
+    ; For version of resynthesizer with uninverted selection
+    ; !!! Pass -1 for ID of no layer, not None
     (plug-in-resynthesizer
-      new-drawable       ; drawable
-      vtile htile        ; vtile htile
-      0                  ; use-context
-      work-layer         ; corpus
+      result-drawable    ; target drawable
+      vtile htile        ; whether to make tileable
+      0                  ; use-border
+      corpus-layer
       -1                 ; inmask
       -1                 ; outmask
       0.0                ; map-weight
@@ -231,56 +246,44 @@
       9                  ; neighbourhood
       200)               ; trys
 
-    (display-image new-image)
+    (when (not debug)
+      (display-image result-image))
+    ; else debugging displayed the result previously
 
-    ;; Clean up.
-    (gimp-image-delete temp-image)
+    ; Clean up.
+    (when (not debug)
+      (gimp-image-delete corpus-image))
     (gimp-image-undo-enable image)
-    (gimp-image-undo-enable new-image)
+    (gimp-image-undo-enable result-image)))
 
-    new-image))
 
 
 (script-fu-register
- ;; func name
- "script-fu-render-texture"
- ;; menu label
- (SG_"_Texture(scm)...")
- ;; description
- (string-append
-  (SG_"Create a new image with texture from the current image or selection. Optionally, create image edges suited for further, seamless tiling. ")
-  (SG_"New image is the same scale but seamless and irregular.  Use 'Map>Tile' for less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. ")
-  (SG_"Requires separate resynthesizer plugin."))
- ;; author
- "Lloyd Konneker"
- ;; copyright notice
- "Copyright 2010 Lloyd Konneker"
- ;; date created
- "2010"
- ;; image type that the script works on
- "RGB*, GRAY*"
- ;; parameters
- SF-IMAGE    "Image"    0
- SF-DRAWABLE "Drawable" 0
- ;; Spinner is digital and linear, slider is analog but exponential
- SF-ADJUSTMENT (G_"Ratio of size of new image to source selection")
- (list 2   ; value
-       0.5 ; lower
-       10  ; upper
-       0.5 ; step_inc
-       1   ; page_inc
-       1   ; float, one decimal place
-       SF-SPINNER)
- SF-TOGGLE (G_"Make new image edges suitable for seamless tiling") FALSE
- ;; output: [(PF_IMAGE, "new_image", "New, synthesized texture.")]
+  "script-fu-render-texture"
+  _"Texture..." ; menu label
+  _"Create a new image with texture from the current image or selection. Optionally, create image edges suited for further, seamless tiling. "
+  ; "New image is the same scale but seamless and irregular.  Use 'Map>Tile' for less randomness. Use 'Edit>Fill resynthesized pattern' for more randomness. ")
+  ; "Requires separate resynthesizer plugin."))
+  "Lloyd Konneker"
+  "Copyright 2010 Lloyd Konneker"
+  "2010"
+  ; the script works images of all modes, and regardless of transparency
+  "*"
+
+  ; parameters
+  SF-IMAGE    "Image"    0
+  SF-DRAWABLE "Drawable" 0
+  ; Spinner is digital and linear, slider is analog but exponential
+  SF-ADJUSTMENT _"Ratio of size of new image to source selection"
+  (list 2   ; value
+        0.5 ; lower
+        10  ; upper
+        0.5 ; step inc
+        1   ; page inc
+        1   ; float, one decimal place
+        SF-SPINNER)
+  SF-TOGGLE _"Make new image edges suitable for seamless tiling" FALSE
  )
 
 (script-fu-menu-register "script-fu-render-texture"
                          "<Image>/Filters/Render")
-
-(script-fu-menu-register "script-fu-render-texture"
-			 (string-append "<Image>/Filters/"
-					(SG_"Resynthesizer(scm)")))
-
-script-fu-render-texture
-))
