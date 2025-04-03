@@ -115,13 +115,16 @@
     ; Fill with white will make them opaque.
     (gimp-drawable-fill new-drawable FILL-WHITE)
 
-    ; A new layer must be added to the image.
+    ; A new layer must be added to an image.
     (gimp-image-insert-layer 
       new-image new-drawable 
       0  ; parent is zero (not a group)
       0) ; position is 0 (top)
 
-    ; FIXME if indexed mode, need set palette also?
+    ; See gimp-image-new: if indexed mode, need set palette on new image.
+    (when (gimp-drawable-is-indexed new-drawable)
+      ; Set palette of new image to palette of in image.
+      (gimp-image-set-palette new-image (gimp-image-get-palette image)))
 
     ; yield a tuple of new image and drawable
     (list new-image new-drawable)))
