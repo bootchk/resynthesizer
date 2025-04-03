@@ -165,7 +165,7 @@
   (gimp-displays-flush))
 
 
-(define (script-fu-render-texture image drawable resize-ratio make-tile)
+(define (script-fu-render-texture image drawables resize-ratio make-tile)
   
   ; Create a randomized texture image from the selection.
   ; User can choose to make the image be suited for further, seamless tiling.
@@ -179,6 +179,8 @@
 
   ; Use v3 binding of return values from PDB.  Has execution scope
   (script-fu-use-v3)
+
+  ; Note argument drawables is a list, but we don't use it.
 
   (gimp-image-undo-disable image)
 
@@ -267,7 +269,7 @@
 
 
 
-(script-fu-register
+(script-fu-register-filter
   "script-fu-render-texture"
   _"Texture..." ; menu label
   _"Create a new image with texture from the current image or selection. Optionally, create image edges suited for further, seamless tiling. "
@@ -278,10 +280,9 @@
   "2010"
   ; the script works images of all modes, and regardless of transparency
   "*"
+  SF-ONE-DRAWABLE      ; menu item enabled if exactly one drawable selected
 
   ; parameters
-  SF-IMAGE    "Image"    0
-  SF-DRAWABLE "Drawable" 0
   ; Spinner is digital and linear, slider is analog but exponential
   SF-ADJUSTMENT _"Ratio of size of new image to source selection"
   (list 2   ; value
