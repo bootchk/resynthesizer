@@ -25,7 +25,7 @@ IMPROPER: a test file could not be opened, or similar
 
 Reference images are created on the first run.
 Delete a reference image and run testsuite again to create a new reference image.
-OR review the output in temp and if OK, paste it over the reference image.
+OR review the output in temp and when OK, paste it over the reference image.
 
 Note these call a version of the resynthesizer that is repeatable especially its random seed.
 Note that anytime you change the code
@@ -46,7 +46,7 @@ Note that the test harness creates a new image from a file and
 saves the result separately from the input.
 
 Note uses the logging module, mainly to avoid issues with print to stdout on some platforms.
-If you want to see the results in real time, use 'tail -f resynth-test.log'
+when you want to see the results in real time, use 'tail -f resynth-test.log'
 '''
 
 # Since Gimp3, use gi
@@ -231,9 +231,20 @@ def setStandardArgsToConfig (config, image, drawables):
   setConfigObjectArrayProperty (config, 'drawables', drawables)
 
 
+'''
+Get the PDB procedure by name.
+Raise when not found.
+This lets testing continue despite some plugins fail to register in PDB.
+'''
+def findTestedPluginProcedure(name):
+  result = Gimp.get_pdb().lookup_procedure(name)
+  if result is None:
+    raise RuntimeError
+  return result
+
 
 def callHealSelection(targetImage, targetDrawables, corpusWidth, sampleFrom, synthDirection):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-heal-selection')
+  pdb_proc   = findTestedPluginProcedure('plug-in-heal-selection')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   config.set_property('adjustment', corpusWidth)
@@ -243,7 +254,7 @@ def callHealSelection(targetImage, targetDrawables, corpusWidth, sampleFrom, syn
   # TODO result returned?
 
 def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirection):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-heal-transparency')
+  pdb_proc   = findTestedPluginProcedure('plug-in-heal-transparency')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   config.set_property('adjustment', corpusWidth)
@@ -253,7 +264,7 @@ def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirecti
   result = pdb_proc.run(config)
 
 def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-uncrop')
+  pdb_proc   = findTestedPluginProcedure('plug-in-uncrop')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   # No sampleFrom, corpus is always just inside the image edge
@@ -264,7 +275,7 @@ def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
 
 
 def callFillPatternResynth(targetImage, targetDrawables, pattern):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-fill-pattern-resynth')
+  pdb_proc   = findTestedPluginProcedure('plug-in-fill-pattern-resynth')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   config.set_property('pattern', pattern)
@@ -272,7 +283,7 @@ def callFillPatternResynth(targetImage, targetDrawables, pattern):
 
 
 def callRenderTexture(targetImage, targetDrawables, sizeRatio, isTileable):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-render-texture')
+  pdb_proc   = findTestedPluginProcedure('plug-in-render-texture')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   config.set_property('adjustment', sizeRatio)
@@ -286,12 +297,16 @@ def callMapStyle(targetImage, targetDrawables, corpusFilename, percentTransfer=5
 
   # open the corpus
   # open with no selection and no inversion of selection
-  unusedImage, corpusDrawable = openTestFilename (corpusFilename)
+  unusedImage, corpusDrawables = openTestFilename (corpusFilename)
+  # single drawable from a drawables list
+  corpusDrawable = corpusDrawables[0]
 
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-map-style')
+  pdb_proc   = findTestedPluginProcedure('plug-in-map-style')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
-  config.set_property('drawable-2', corpusDrawable)
+  # Arg for target is standard, named "drawables", arg for corpus is just "drawable"
+  # In general, when there are two args of same type, the second has a numeric suffix like "-2"
+  config.set_property('drawable', corpusDrawable)
   config.set_property('adjustment', percentTransfer)
   config.set_property('option', mapBy)
   result = pdb_proc.run(config)
@@ -300,7 +315,7 @@ def callMapStyle(targetImage, targetDrawables, corpusFilename, percentTransfer=5
 
 
 def callSharpen(targetImage, targetDrawables, factor=1.0):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-sharpen-resynthesized')
+  pdb_proc   = findTestedPluginProcedure('plug-in-sharpen-resynthesized')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   config.set_property('adjustment', factor)
@@ -308,7 +323,7 @@ def callSharpen(targetImage, targetDrawables, factor=1.0):
 
 
 def callEnlarge(targetImage, targetDrawables, factor=1.0):
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-enlarge-resynthesized')
+  pdb_proc   = findTestedPluginProcedure('plug-in-enlarge-resynthesized')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   config.set_property('adjustment', factor)
@@ -353,7 +368,7 @@ def callResynthesizer(
   # drawable_of_file_with_anti_selection('"+ zappath + "', select1)
 
 
-  pdb_proc   = Gimp.get_pdb().lookup_procedure('plug-in-resynthesizer')
+  pdb_proc   = findTestedPluginProcedure('plug-in-resynthesizer')
   config = pdb_proc.create_config()
   # Takes a single drawable, not many
   config.set_property('drawable', targetDrawable)
@@ -502,7 +517,7 @@ def runtest(filename, testname, wrapperName, testparameters, select=None):
   logging.info("Elapsed time: " + str(time.time() - start))
 
   '''
-  !!! Note that the test string can assign to image if the test returns a new image
+  !!! Note that the test string can assign to image when the test returns a new image
   (rather than alter the image.)  Special handling here.
   '''
   logging.info("Test target image name" + filename)
@@ -528,7 +543,7 @@ def runtest(filename, testname, wrapperName, testparameters, select=None):
   # Gimp.displays_flush()
 
 
-  # If not reference out exists
+  # when not reference out exists
   if not os.path.exists(referencefilepath) :
     # make a new reference image (the first test run)
 
@@ -812,12 +827,15 @@ def testAll():
 
   initTestPattern()
 
-  # Begin test groups
+  # These are the plugins that typically exist.
+  # Some no longer exist or haven't been ported.
+
+  # This may test each plugin more than once, varying args for varying use cases.
 
   ## testEnginePlugin()
-  ## testMapStyle()
+  testMapStyle()
   testHealSelection()
-  ## testHealTransparency()
+  testHealTransparency()
   testRenderTexture()
   testUncrop()
   testFillPattern()
@@ -850,7 +868,7 @@ def test_resynth(procedure, args, data):
 class TestResynthPlugin (Gimp.PlugIn):
 
     # Copied from pallette-offset.py
-    # Must have a run-mode arg, even if is not an image procedure
+    # Must have a run-mode arg, even when is not an image procedure
 
     ## Parameter: run-mode ##
     @GObject.Property(type=Gimp.RunMode,
