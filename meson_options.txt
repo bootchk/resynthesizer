@@ -6,10 +6,22 @@
 # When using meson build system:
 # Set these options at configuration time using "meson configure -Dfoo"
 #
-# See the top meson.build, it puts these vars, upper-cased,
+# See the top meson.build, it puts some of these vars, upper-cased,
 # into file resynth-config.h in the top of the build dir.
 # But that file is not in the source.
 # And then the source optionally compiles using e.g. "#ifdef SYNTH_THREADED"
+
+
+
+# Option to install translations.
+# Until fix to ScriptFu of GIMP 3.2, and fixes to the outer plugins,
+# translations will not work even if installed.
+option('install-translations', type : 'boolean', value : false)
+
+# Option to install a plugin that tests the resynthesizer.
+# Needed for CI by developers of the resynthesizer.
+option('install-test', type : 'boolean', value : false)
+
 
 
 # Option to build the simple API library
@@ -20,8 +32,7 @@ option('build-libheal', type : 'boolean', value : false)
 
 
 
-# debug
-# Prints call tree and various statistics related to the algorithm
+# Option to log call tree and various statistics related to the algorithm
 # Currently depends on GLib
 option('synth-debug', type : 'boolean', value : false)
 

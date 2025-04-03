@@ -111,7 +111,12 @@ subdir('lib')
 
 subdir('enginePlugin')
 subdir('outerPlugins')
-subdir('test')
 
-# translations
-subdir('po')
+if get_option('install-test')
+  subdir('test')
+endif
+
+# i18n translations
+if get_option('install-translations')
+  subdir('po')
+endif
