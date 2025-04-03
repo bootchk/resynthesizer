@@ -61,8 +61,8 @@
 (define debug #f)
 
 (define (test)
-  (let* ((image (vector-ref (car (cdr (gimp-image-list))) 0))
-         (drawable (vector-ref (car (gimp-image-get-selected-drawables image)) 0)))
+  (let* ((image (vector-ref (gimp-image-list) 0))
+         (drawable (vector-ref (gimp-image-get-selected-drawables image) 0)))
     (script-fu-render-texture image drawable 2 TRUE)))
 
 (define (new-resized-image image resize-ratio)
@@ -80,12 +80,13 @@
          (new-image     '())
          (new-drawable  '()))
 
-    (if (<> TRUE is-selection)
+    ; for v3 binding, is-selection is type boolean, #t or #f
+    (if (not is-selection)
         (begin
           ; Resynthesizer will use the entire source image as corpus.
           ; Resize new image in proportion to entire source image.
-          (set! new-width  (floor (* (car (gimp-image-get-width  image)) resize-ratio)))
-          (set! new-height (floor (* (car (gimp-image-get-height image)) resize-ratio)))
+          (set! new-width  (floor (* (gimp-image-get-width  image) resize-ratio)))
+          (set! new-height (floor (* (gimp-image-get-height image) resize-ratio)))
           (display "Render Texture image from entire image")
           (newline))
         (begin
@@ -94,19 +95,19 @@
           (set! new-height (floor (* (- lry uly) resize-ratio)))
           (display "Render Texture image from selection")))
 
-    (set! new-basetype (car (gimp-image-get-base-type image)))  ; same as source
-    (set! new-layertype (car (gimp-drawable-type (vector-ref (car (gimp-image-get-selected-layers image)) 0))))
+    (set! new-basetype (gimp-image-get-base-type image))  ; same as source
+    (set! new-layertype (gimp-drawable-type (vector-ref (gimp-image-get-selected-layers image) 0)))
 
-    (set! new-image (car (gimp-image-new new-width new-height new-basetype)))
+    (set! new-image (gimp-image-new new-width new-height new-basetype))
 
     ; !!! Note that gimp-layer-new wants a layer type, not an image basetype
-    (set! new-drawable (car (gimp-layer-new 
+    (set! new-drawable (gimp-layer-new 
       new-image
       "Texture"  ; name of layer, arg order changed in PDB API v3
       new-width new-height
       new-layertype
       100  ; full opaque
-      LAYER-MODE-NORMAL)))
+      LAYER-MODE-NORMAL))
       
     ; The new layer has opaque attribute, 
     ; but the new image has transparent pixels (for image modes with alpha)
@@ -136,9 +137,9 @@
         (lrx        '())
         (lry        '()))
 
-    (set! result-image (car (gimp-image-duplicate image)))
-      (when (null? result-image)
-        (throw "Failed duplicate image"))
+    (set! result-image (gimp-image-duplicate image))
+    (when (null? result-image)
+      (throw "Failed duplicate image"))
 
     ; Get bounds, offset of selection
     (set! bounds (gimp-selection-bounds result-image))
@@ -148,8 +149,11 @@
     (set! lrx          (list-ref bounds 3))
     (set! lry          (list-ref bounds 4))
 
-    (when (= TRUE is-selection)
+    (display "here")
+    ; The value is type boolean, #t or #f
+    (when is-selection
       (gimp-image-crop result-image (- lrx ulx) (- lry uly) ulx uly))
+
     ; yield the cropped image
     result-image))
 
@@ -172,6 +176,10 @@
   ; If there is no selection, the resynthesizer will use the entire source image.
   
   ; Its all or nothing, user must delete new image if not happy.
+
+  ; Use v3 binding of return values from PDB.  Has execution scope
+  (script-fu-use-v3)
+
   (gimp-image-undo-disable image)
 
   ; Create new image, optionally resized, and display for it.
@@ -206,7 +214,7 @@
     ; Don't flatten corpus because it turns transparency to background (white usually)
 
     ; Get the corpus-layer, resynthesizer wants a layer, not an image
-    (set! corpus-layer (vector-ref (car (gimp-image-get-selected-layers corpus-image)) 0))
+    (set! corpus-layer (vector-ref (gimp-image-get-selected-layers corpus-image) 0))
     (when (null? corpus-layer)
       (throw "Failed get corpus layer"))
 
@@ -217,6 +225,7 @@
     ; That is what these settings mean in the resynthesizer:
     ; wrap context probes in the target so that edges of target will be suitable for seamless tiling.
     ; I.E. treat the target as a sphere when matching.
+    ; The GUI control value is 0 or 1, not boolean
     (if (= TRUE make-tile)
         (begin
           (set! htile 1)
