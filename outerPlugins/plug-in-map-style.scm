@@ -140,191 +140,199 @@
 (define (plug-in-map-style
           image drawables ; target
           source-drawable 
-          percent-transfer map-mode)
+          percent-transfer 
+          map-mode) ; 1 is brightness only, 0 is color and brightness
 
-; Use v3 binding of return values from PDB calls.
-; !!! Called at run-time, in the script's run function.
-; This means fewer calls of car to unwrap values from lists.
-(script-fu-use-v3)
+  ; Use v3 binding of return values from PDB calls.
+  ; !!! Called at run-time, in the script's run function.
+  ; This means fewer calls of car to unwrap values from lists.
+  (script-fu-use-v3)
 
-(define debug #t)  ; #t if you want to display and retain working, temporary images
+  (define debug #f)  ; #t if you want to display and retain working, temporary images
 
-(define (display-debug-image image)
-  (when debug
-    (catch "do nothing when error"
-           ; if run-mode not interactive, Gimp throws
-           (gimp-display-new image)
-           (gimp-displays-flush))))
-
-
-(define-with-return (make-grayscale-map image drawable)
-  ; Make a grayscale copy for a map.
-  ; Maps must be same size as their parent image.
-  ; If image is already grayscale,  yield it without copying.
-  ; Maps don't need a selection, since the resynthesizer looks at parent drawables for the selection.
-
-  ; v3 PDB name change
-  (when (= GRAY (gimp-image-get-base-type image))
-    (return (list image drawable)))
-
-  ; Save selection, copy entire image, and restore
-  (let ((original-selection (gimp-selection-save image))
-        (temp-image  '())
-        (temp-drawable  '())
-        )
-    (gimp-selection-all image)  ; copy requires selection
-    ; to the clipboard, one drawable
-    (gimp-edit-copy (make-vector 1 drawable))
-
-    ; restore selection in image
-    (gimp-image-select-item image CHANNEL-OP-REPLACE original-selection)
-    ; cleanup the copied selection mask
-    (gimp-image-remove-channel image original-selection)
-    ; !!! Note remove-channel not drawable-delete
-
-    ; Make a copy, greyscale
-    (set! temp-image (gimp-edit-paste-as-new-image))
-    (gimp-image-convert-grayscale temp-image)
-    (display-debug-image temp-image)
-    ; The image could have many drawables.
-    ; One was chosen by the user when this script started.
-    ; But since v3 Gimp supports many selected layers or channels.
-    ; And the selected drawable may not be the one the plugin user chose.
-    ; We want the drawable in the copy that corresponds to one chosen.
-    ; Here we punt, assume the user chose a layer (versus channel)
-    ; and it was the first.
-    ; FIXME a better way of doing this
-    (set! temp-drawable
-      (vector-ref (gimp-image-get-layers temp-image) 0))
-    (return (list temp-image temp-drawable))))
-
-
-; table explaining mode synchronization
-;
-; target    source    target   source
-;   RGB      RGB           no change
-;   RGB      GRAY              =>RGB
-;   RGB      INDEXED           =>RGB
-;   GRAY     RGB      =>RGB
-;   GRAY     GRAY          no change
-;   GRAY     INDEXED           =>GRAY
-;   INDEXED  RGB      =>RGB
-;   INDEXED  GRAY     =>GRAY
-;   INDEXED  INDEXED       no change
-
-(define (synchronize-modes target-image source-image)
-  ; User-friendliness:
-  ; If mode of target is not equal to mode of source source, 
-  ; change modes of target and/or source so they are the same.
-  ; Resynthesizer requires target and source to be same mode.
-  ;
-  ; Target can be any mode, even INDEXED, since v3 of this plugin.
-  ;
-  ; UI decision: quietly make change of mode of target, presume user intends mode change.
-  ;
-  ; Can change mode of source, but only on a copy.
-  ;
-  ; Always upgrade upward INDEXED to GRAY to RGB, not downgrade.
-
-  (let ((target-mode (gimp-image-get-base-type target-image))
-        (source-mode (gimp-image-get-base-type source-image)))
-    (when (<> target-mode source-mode)
-      (when debug
-        (display "Map style: converted mode of source or target\n."))
-      (cond 
-        ((= target-mode RGB)
-           ; source is GRAY or INDEXED, convert to RGB
-          (gimp-image-convert-rgb source-image))
-        ((= target-mode GRAY)
-          (cond
-            ((= source-mode RGB)
-              ; promote target to RGB
-              (gimp-image-convert-rgb target-image))
-            ((= source-mode INDEXED)
-              ; convert source copy to GRAY
-              (gimp-image-convert-grayscale source-image))))
-            ; target and source both gray
-        ((= target-mode INDEXED)
-          (cond
-            ((= source-mode RGB)
-              ; promote target to RGB
-              (gimp-image-convert-rgb target-image))
-            ((= source-mode GRAY)
-              ; promote target to GRAY
-              (gimp-image-convert-grayscale target-image))))))))
-          
-
-
-(define (copy-selection-to-image drawable)
-  ; If image has a selection, copy selection to new image, and prepare it for resynthesizer,
-  ; else  yield a copy of the entire source image.
-  ; This is called for the source image, where it helps performance to reduce size and flatten.
-  (let ((image (gimp-item-get-image drawable))
-        (image-copy  '())
-        (layer-copy  '()))
-    ; copy selection or whole image to clipboard, from one drawable
-    (gimp-edit-copy (make-vector 1 drawable))
-    (set! image-copy (gimp-edit-paste-as-new-image))
-    ; Activate layer, and remove alpha channel
-    (gimp-image-flatten image-copy)
-    ; since flattened, only one layer is selected, use it
-    (set! layer-copy (vector-ref (gimp-image-get-selected-layers image-copy) 0))
-    ; In earlier version, futzed with selection to deal with transparencey
-    (display-debug-image image-copy)
-    (list image-copy layer-copy)))
-
-
-(define (synchronize-contrast ref-drawable source-drawable percent-transfer)
-  ; Adjust contrast of source, to match target.
-  ; Adjustment depends inversely on percent-transfer.
-  ; Very crude histogram matching.
-
-  ; v3 values are floats in range [0,1.0]
-  ; v3 procedure names changed
-
-  ; histogram upper half: typical mean is 0.75. Mean approaching 1.0 means high contrast.
-  ;
-  ; histogram() returns a list, the first element is the mean.
-  (let* ((ref-mean    (car (gimp-drawable-histogram ref-drawable    HISTOGRAM-VALUE 0.5 1.0)))
-         (source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0)))
-         ; Adjust contrast of source.
-         ; Inversely proportional to percent transfer.
-         ; 2.5 is from experimentation with gimp-brightness-contrast which seems linear in its effect.
-         (contrast-control (* (- ref-mean source-mean) 2.5 (- 1 (/ percent-transfer 100)))))
-    (when (and debug (> ref-mean source-mean))
-      (display "synchronize-contrast: target has more contrast than source\n"))
-    ; clamp to valid range (above formula is lazy, ad hoc)
-    (cond ((> -1 contrast-control) (set! contrast-control -1))
-          ((<  1 contrast-control) (set! contrast-control  1)))
-
-    (gimp-drawable-brightness-contrast source-drawable 0 contrast-control)
-
+  (define (display-debug-image image)
     (when debug
-      ; For experimentation, print new values
-      (set! source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0)))
-      (display (list "Map style: Source contrast changed by " contrast-control))
-      (display (list "Map style: Target and source upper half histogram means" ref-mean source-mean))
-    )))
+      (catch "do nothing when error"
+            ; if run-mode not interactive, Gimp throws
+            (gimp-display-new image)
+            (gimp-displays-flush))))
 
 
-(define (calculate-map-weight percent-transfer)
-  ; This is a GUI design discussion.
-  ; Transform percent-transfer to map-weight parameter to resynthesizer.
-  ; For resynthesizer:
-  ; map weight 0 means copy source to target, meaning ALL style.
-  ; map weight 0.5 means just a grainy transfer of style (as little as is possible.)
-  ; Transform from a linear percent GUI, because user more comfortable than with a ratio [.5, 0]
-  ; which is backwards to the usual *less on the left*.
-  ; By experiment, a sinusoid gives good results for linearizing the non-linear map-weight control.
-  (/ (acos (+ -1 (* (/ percent-transfer 100) 2)))
-     (* 2 3.1415926535)))
+  (define-with-return (make-grayscale-map image drawable)
+    ; Make a grayscale copy for a map.
+    ; Maps must be same size as their parent image.
+    ; If image is already grayscale,  yield it without copying.
+    ; Maps don't need a selection, since the resynthesizer looks at parent drawables for the selection.
 
+    ; v3 PDB name change
+    (when (= GRAY (gimp-image-get-base-type image))
+      (return (list image drawable)))
+
+    ; Save selection, copy entire image, and restore
+    (let ((original-selection (gimp-selection-save image))
+          (temp-image  '())
+          (temp-drawable  '())
+          )
+      (gimp-selection-all image)  ; copy requires selection
+      ; to the clipboard, one drawable
+      (gimp-edit-copy (make-vector 1 drawable))
+
+      ; restore selection in image
+      (gimp-image-select-item image CHANNEL-OP-REPLACE original-selection)
+      ; cleanup the copied selection mask
+      (gimp-image-remove-channel image original-selection)
+      ; !!! Note remove-channel not drawable-delete
+
+      ; Make a copy, greyscale
+      (set! temp-image (gimp-edit-paste-as-new-image))
+      (gimp-image-convert-grayscale temp-image)
+      (display-debug-image temp-image)
+      ; The image could have many drawables.
+      ; One was chosen by the user when this script started.
+      ; But since v3 Gimp supports many selected layers or channels.
+      ; And the selected drawable may not be the one the plugin user chose.
+      ; We want the drawable in the copy that corresponds to one chosen.
+      ; Here we punt, assume the user chose a layer (versus channel)
+      ; and it was the first.
+      ; FIXME a better way of doing this
+      (set! temp-drawable
+        (vector-ref (gimp-image-get-layers temp-image) 0))
+      (return (list temp-image temp-drawable))))
+
+
+  ; table explaining mode synchronization
+  ;
+  ; target    source    target   source
+  ;   RGB      RGB           no change
+  ;   RGB      GRAY              =>RGB
+  ;   RGB      INDEXED           =>RGB
+  ;   GRAY     RGB      =>RGB
+  ;   GRAY     GRAY          no change
+  ;   GRAY     INDEXED           =>GRAY
+  ;   INDEXED  RGB      =>RGB
+  ;   INDEXED  GRAY     =>GRAY
+  ;   INDEXED  INDEXED       no change
+
+  (define (synchronize-modes target-image source-image)
+    ; User-friendliness:
+    ; If mode of target is not equal to mode of source source, 
+    ; change modes of target and/or source so they are the same.
+    ; Resynthesizer requires target and source to be same mode.
+    ;
+    ; Target can be any mode, even INDEXED, since v3 of this plugin.
+    ;
+    ; UI decision: quietly make change of mode of target, presume user intends mode change.
+    ;
+    ; Can change mode of source, but only on a copy.
+    ;
+    ; Always upgrade upward INDEXED to GRAY to RGB, not downgrade.
+
+    (let ((target-mode (gimp-image-get-base-type target-image))
+          (source-mode (gimp-image-get-base-type source-image)))
+      (when (<> target-mode source-mode)
+        (when debug
+          (display "Map style: converted mode of source or target\n."))
+        (cond 
+          ((= target-mode RGB)
+            ; source is GRAY or INDEXED, convert to RGB
+            (gimp-image-convert-rgb source-image))
+          ((= target-mode GRAY)
+            (cond
+              ((= source-mode RGB)
+                ; promote target to RGB
+                (gimp-image-convert-rgb target-image))
+              ((= source-mode INDEXED)
+                ; convert source copy to GRAY
+                (gimp-image-convert-grayscale source-image))))
+              ; target and source both gray
+          ((= target-mode INDEXED)
+            (cond
+              ((= source-mode RGB)
+                ; promote target to RGB
+                (gimp-image-convert-rgb target-image))
+              ((= source-mode GRAY)
+                ; promote target to GRAY
+                (gimp-image-convert-grayscale target-image))))))))
+            
+
+
+  (define (copy-selection-to-image drawable)
+    ; If image has a selection, copy selection to new image, and prepare it for resynthesizer,
+    ; else  yield a copy of the entire source image.
+    ; This is called for the source image, where it helps performance to reduce size and flatten.
+    (let ((image (gimp-item-get-image drawable))
+          (image-copy  '())
+          (layer-copy  '()))
+      ; copy selection or whole image to clipboard, from one drawable
+      (gimp-edit-copy (make-vector 1 drawable))
+      (set! image-copy (gimp-edit-paste-as-new-image))
+      ; Activate layer, and remove alpha channel
+      (gimp-image-flatten image-copy)
+      ; since flattened, only one layer is selected, use it
+      (set! layer-copy (vector-ref (gimp-image-get-selected-layers image-copy) 0))
+      ; In earlier version, futzed with selection to deal with transparencey
+      (display-debug-image image-copy)
+      (list image-copy layer-copy)))
+
+
+  (define (synchronize-contrast ref-drawable source-drawable percent-transfer)
+    ; Adjust contrast of source, to match target.
+    ; Adjustment depends inversely on percent-transfer.
+    ; Very crude histogram matching.
+
+    ; v3 values are floats in range [0,1.0]
+    ; v3 procedure names changed
+
+    ; histogram upper half: typical mean is 0.75. Mean approaching 1.0 means high contrast.
+    ;
+    ; histogram() returns a list, the first element is the mean.
+    (let* ((ref-mean    (car (gimp-drawable-histogram ref-drawable    HISTOGRAM-VALUE 0.5 1.0)))
+          (source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0)))
+          ; Adjust contrast of source.
+          ; Inversely proportional to percent transfer.
+          ; 2.5 is from experimentation with gimp-brightness-contrast which seems linear in its effect.
+          (contrast-control (* (- ref-mean source-mean) 2.5 (- 1 (/ percent-transfer 100)))))
+      (when (and debug (> ref-mean source-mean))
+        (display "synchronize-contrast: target has more contrast than source\n"))
+      ; clamp to valid range (above formula is lazy, ad hoc)
+      (cond ((> -1 contrast-control) (set! contrast-control -1))
+            ((<  1 contrast-control) (set! contrast-control  1)))
+
+      (gimp-drawable-brightness-contrast source-drawable 0 contrast-control)
+
+      (when debug
+        ; For experimentation, print new values
+        (set! source-mean (car (gimp-drawable-histogram source-drawable HISTOGRAM-VALUE 0.5 1.0)))
+        (display (list "Map style: Source contrast changed by " contrast-control))
+        (display (list "Map style: Target and source upper half histogram means" ref-mean source-mean))
+      )))
+
+
+  (define (calculate-map-weight percent-transfer)
+    ; This is a GUI design discussion.
+    ; Transform percent-transfer to map-weight parameter to resynthesizer.
+    ; For resynthesizer:
+    ; map weight 0 means copy source to target, meaning ALL style.
+    ; map weight 0.5 means just a grainy transfer of style (as little as is possible.)
+    ; Transform from a linear percent GUI, because user more comfortable than with a ratio [.5, 0]
+    ; which is backwards to the usual *less on the left*.
+    ; By experiment, a sinusoid gives good results for linearizing the non-linear map-weight control.
+    (/ (acos (+ -1 (* (/ percent-transfer 100) 2)))
+      (* 2 3.1415926535)))
+
+
+
+  ; Return whether we need to convert map images to GRAY.
+  (define (is-need-map-conversions map-mode original-source-base-type original-target-base-type)
+    ; map-mode is a string, so we need to use equal? instead of =.
+    ; map-mode is 1 if we are using brightness only, else 0.
+    (or (= map-mode 1)
+        (and (= original-source-base-type RGB)
+             (= original-target-base-type GRAY))))
 
 
 
   ; Main body of plugin to transfer style from one image to another.
-  ;
-  ; !!! Note map-mode is type string, "if map-mode:" will not work.
 
   (gimp-image-undo-group-start image)
   (gimp-message-set-handler MESSAGE-BOX)
@@ -389,16 +397,16 @@
     ; Copy and reduce maps to grayscale: at the option of the user
     ; !!! Or if the target was GRAY and source is RGB, in which case maps give a better result.
     ; Note that if target was not RGB, we might have already upgraded it to RGB.
-    (if (or (= map-mode 1)
-            (and (= original-source-base-type RGB)
-                 (= original-target-base-type GRAY)))
+    (if (is-need-map-conversions map-mode original-source-base-type original-target-base-type)
         (begin
           ; print "Map style: source mode: ", original-source-base-type, " target mode: ", original-target-base-type
           ; print "Map style: Converting maps to grayscale"
+
           ; Convert mode, but in new temp image and drawable
           (set! temp-result (make-grayscale-map image drawable))
           (set! target-map-image    (list-ref temp-result 0))
           (set! target-map-drawable (list-ref temp-result 1))
+
           (set! temp-result (make-grayscale-map source-image source-drawable))
           (set! source-map-image    (list-ref temp-result 0))
           (set! source-map-drawable (list-ref temp-result 1))
@@ -437,12 +445,21 @@
     ; Clean up.
     ; Delete working images: separate map images and copy of source image
     (unless debug
-      (when (= map-mode 1)  ; if made working map images
+      (when (is-need-map-conversions map-mode original-source-base-type original-target-base-type)
+        ; made working map images, that we now delete
         (gimp-image-delete target-map-image)
         (gimp-image-delete source-map-image)
         )
       (when is-source-copy  ; if created a copy earlier
         (gimp-image-delete source-image)))
+
+    ; assert the target and source images still exist
+    ; assert the target image is modified by the plugin
+    ; assert the source image is unmodified by the plugin
+    ; assert the map images were not passed separately, and any created copies are deleted.
+    ; assert when the target and the source were the same image, the source was copied but copy is deleted.
+    ; Not actually assertions: you know they would fail when GIMP says "plugin left stray images"
+    
     (gimp-image-undo-group-end image)
     (gimp-displays-flush)))
 
@@ -491,6 +508,7 @@
        20   ; page inc
        0    ; digits 0 means integer valued
        SF-SLIDER)
+ ; SF_OPTION yields numeric enumeration value
  SF-OPTION _"Map by"
  (list _"Color and brightness"
        _"Brightness only"))
