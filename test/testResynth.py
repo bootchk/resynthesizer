@@ -281,6 +281,9 @@ def callHealSelection(targetImage, targetDrawables, corpusWidth, sampleFrom, syn
   result = pdb_proc.run(config)
   # Side effect: the target image is modified
   # The plugin (unless it is in debug mode) has deleted any temporary images
+
+  # display the result image
+  Gimp.Display.new(resultImage)
   
 
 def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirection):
@@ -294,6 +297,9 @@ def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirecti
   result = pdb_proc.run(config)
   # Side effect: the target image is modified
 
+  # display the result image
+  Gimp.Display.new(resultImage)
+
 def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
   pdb_proc   = findTestedPluginProcedure('plug-in-uncrop')
   config = pdb_proc.create_config()
@@ -305,6 +311,9 @@ def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
   result = pdb_proc.run(config)
   # Side effect: the target image is modified
 
+  # display the result image
+  Gimp.Display.new(resultImage)
+
 
 def callFillPatternResynth(targetImage, targetDrawables, pattern):
   pdb_proc   = findTestedPluginProcedure('plug-in-fill-pattern-resynth')
@@ -315,6 +324,9 @@ def callFillPatternResynth(targetImage, targetDrawables, pattern):
   # Side effect: new image is created
   # TODO is that true
 
+  # display the result image
+  Gimp.Display.new(resultImage)
+
 
 def callRenderTexture(targetImage, targetDrawables, sizeRatio, isTileable):
   pdb_proc   = findTestedPluginProcedure('plug-in-render-texture')
@@ -323,10 +335,12 @@ def callRenderTexture(targetImage, targetDrawables, sizeRatio, isTileable):
   config.set_property('adjustment', sizeRatio)
   config.set_property('toggle', isTileable)
   result = pdb_proc.run(config)
-  # Side effect: new image is created
+  # Side effect: plugin created new image and displayed it
 
   # clean up
   targetImage.delete()
+
+  # The plugin has already display the result image
 
 
 def callMapStyle(targetImage, targetDrawables, corpusFilename, percentTransfer=50, mapBy=0):
@@ -354,6 +368,9 @@ def callMapStyle(targetImage, targetDrawables, corpusFilename, percentTransfer=5
   '''
   corpusImage.delete()
 
+  # display the result image
+  Gimp.Display.new(resultImage)
+
   
 
 
@@ -365,6 +382,9 @@ def callSharpen(targetImage, targetDrawables, factor=1.0):
   result = pdb_proc.run(config)
   # Side effect: the target image is modified
 
+  # display the result image
+  Gimp.Display.new(resultImage)
+
 
 def callEnlarge(targetImage, targetDrawables, factor=1.0):
   pdb_proc   = findTestedPluginProcedure('plug-in-enlarge-resynthesized')
@@ -374,6 +394,8 @@ def callEnlarge(targetImage, targetDrawables, factor=1.0):
   result = pdb_proc.run(config)
   # Side effect: the target image is modified
 
+  # display the result image
+  Gimp.Display.new(resultImage)
 
 '''
 Note passing a single drawable.
@@ -429,6 +451,9 @@ def callResynthesizer(
   config.set_property('trys', trys),
   result = pdb_proc.run(config)
   # Side effect: the target image is modified
+
+  # display the result image
+  Gimp.Display.new(resultImage)
 
 
 '''
@@ -560,7 +585,7 @@ def findUnnamedImage():
         raise RuntimeError("More than one unsaved image found")
       result = image
 
-  # No unsaveed image found
+  # No unsaved image found
   if result is not None:
     # one unsaved image found
     return result
@@ -571,8 +596,10 @@ def findUnnamedImage():
 
 '''
 Post process the result image.
-It is the only image without a display and without a name (is untitled.)
+It is the only image without a name (is untitled.)
 The passed image is the target image: it may be the result image, but not always.
+
+Some plugins have displayed, but not named, the result image. 
 
 flatten and save to .ppm format
 '''
@@ -721,17 +748,12 @@ def runtest(filename, testname, wrapperName, testparameters, select=None):
   
   resultImage is same as targetImage, for plugins which alter targetImage.
   resultImage is a new image, for plugins which generate new image.
+
+  The wrapper function is responsible for displaying the result image.
   '''
 
   # targetImage should not be used again, next test will overwrite it
   targetImage = None
-
-  # Display the result image
-  Gimp.Display.new(resultImage)
-
-  # Update the GUI with filenames on open images
-  # Gimp.displays_flush()
-
 
   # when not reference out exists
   if not os.path.exists(referencefilepath) :

@@ -116,6 +116,7 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 #include "engineParams.h"
 #include "engine.h"
 #include "targetPixels.h"
+#include "stats.h"  // For debugging, statistics
 
 /*
 Source not compiled separately. Is separate to reduce file sizes and coupling.

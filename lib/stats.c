@@ -4,6 +4,7 @@
 #include <glib/gprintf.h>
 
 #include "engineTypes2.h"
+#include "engineParams.h"
 #include "imageSynthConstants.h"
 #include "imageFormat.h"
 #include "imageFormatIndicies.h"
@@ -62,17 +63,6 @@ integrate_color_change(Coordinates position, TFormatIndices *indices, Map *image
     integralColorChange += abs(pixmap_index(image, position)[j] - pixmap_index(corpus, bestMatchCoords)[j]);
 }
 
-#ifdef OLD
-void
-dump_parameters(const Parameters *parameters)
-{
-  g_printf("Parameter: Corpus ID: %d\n", parameters->corpus_id);
-  g_printf("Parameter: Neighbor count: %d\n", parameters->neighbours);
-  g_printf("Parameter: Max tries: %d\n", parameters->trys);
-  g_printf("Parameter: Use border: %d\n", parameters->use_border);
-  g_printf("Parameter: Horiz tile: %d\n",parameters->h_tile);
-}
-#endif
 
 /* Stats for this pass */
 void
@@ -95,10 +85,12 @@ print_processor_time()
 }
 
 
-
-#ifdef OLD
-Don't know where this was called.
-Formerly print_ending_stats
+#ifdef OLD_DEBUG
+  
+This was formerly included source, in a context where the values were defined.
+Now it is compiled separately, and the values are not defined.
+The values now need to be passed.
+And other changes required.
 
 void
 print_final_stats()
@@ -116,6 +108,25 @@ print_final_stats()
 
   g_printf("Perfect matches %d\n", bettermentStats[PERFECT_MATCH]);
   g_printf("Processor seconds %f\n", 1.0 * clock() / CLOCKS_PER_SEC );
+}
+
+
+
+/*
+Dump methods.
+
+These are for debugging, and are not called in release mode.
+They are not statistics, but rather debugging information
+*/
+
+void
+dump_parameters(const TImageSynthParameters *parameters)
+{
+  g_printf("Parameter: Corpus ID: %d\n", parameters->corpus_id);
+  g_printf("Parameter: Neighbor count: %d\n", parameters->neighbours);
+  g_printf("Parameter: Max tries: %d\n", parameters->trys);
+  g_printf("Parameter: Use border: %d\n", parameters->use_border);
+  g_printf("Parameter: Horiz tile: %d\n",parameters->h_tile);
 }
 
 
@@ -155,20 +166,28 @@ dump_target_resynthesis(Coordinates position)
       g_printf("Count neighbors %d max distance %d\n", n_neighbours, distance);
   }
 }
+
 #endif
+
 
 #else
 
-/* Macro define the calls to nothing. */
 
-#define store_betterment_stats(a)
-#define reset_color_change()
-#define integrate_color_change(a)
-#define dump_parameters(a)
-#define print_pass_stats(a,b,c)
-#define print_processor_time()
-#define print_post_stats()
-#define dump_target_points()
-#define dump_target_resynthesis(a)
+/* 
+No debug code.
+Empty functions, that linker will optimize away.
+*/
+
+void store_betterment_stats(tBettermentKind betterment_kind) {};
+void reset_color_change() {};
+void integrate_color_change(Coordinates position, TFormatIndices* indicies, Map *image, Map* corpus, Coordinates bestMatchCoords) {};
+void dump_parameters       (const TImageSynthParameters *parameters) {};
+void print_pass_stats      (gint repeat, gint target_count, gint repeatCountBetters) {};
+void print_processor_time() {};
+void print_final_stats() {};
+void dump_target_points() {};
+void dump_max_grad() {};
+void dump_target_resynthesis(Coordinates position) {};
+
 
 #endif

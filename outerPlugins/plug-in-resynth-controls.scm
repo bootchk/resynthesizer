@@ -249,7 +249,7 @@ if timg == sourceImage and tdrawable == sourceDrawable:
       SF-SLIDER)
  )
 
-(plug-in-menu-register "plug-in-resynth-controls"
+(script-fu-menu-register "plug-in-resynth-controls"
 			 "<Image>/Filters/Map")
 
 
