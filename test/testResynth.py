@@ -283,7 +283,7 @@ def callHealSelection(targetImage, targetDrawables, corpusWidth, sampleFrom, syn
   # The plugin (unless it is in debug mode) has deleted any temporary images
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
   
 
 def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirection):
@@ -298,7 +298,7 @@ def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirecti
   # Side effect: the target image is modified
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
 
 def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
   pdb_proc   = findTestedPluginProcedure('plug-in-uncrop')
@@ -312,7 +312,7 @@ def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
   # Side effect: the target image is modified
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
 
 
 def callFillPatternResynth(targetImage, targetDrawables, pattern):
@@ -325,7 +325,7 @@ def callFillPatternResynth(targetImage, targetDrawables, pattern):
   # TODO is that true
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
 
 
 def callRenderTexture(targetImage, targetDrawables, sizeRatio, isTileable):
@@ -336,11 +336,11 @@ def callRenderTexture(targetImage, targetDrawables, sizeRatio, isTileable):
   config.set_property('toggle', isTileable)
   result = pdb_proc.run(config)
   # Side effect: plugin created new image and displayed it
+  # The plugin has already displayed the result image
 
   # clean up
   targetImage.delete()
 
-  # The plugin has already display the result image
 
 
 def callMapStyle(targetImage, targetDrawables, corpusFilename, percentTransfer=50, mapBy=0):
@@ -369,7 +369,7 @@ def callMapStyle(targetImage, targetDrawables, corpusFilename, percentTransfer=5
   corpusImage.delete()
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
 
   
 
@@ -383,7 +383,7 @@ def callSharpen(targetImage, targetDrawables, factor=1.0):
   # Side effect: the target image is modified
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
 
 
 def callEnlarge(targetImage, targetDrawables, factor=1.0):
@@ -395,7 +395,7 @@ def callEnlarge(targetImage, targetDrawables, factor=1.0):
   # Side effect: the target image is modified
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
 
 '''
 Note passing a single drawable.
@@ -453,7 +453,7 @@ def callResynthesizer(
   # Side effect: the target image is modified
 
   # display the result image
-  Gimp.Display.new(resultImage)
+  Gimp.Display.new(targetImage)
 
 
 '''
@@ -461,8 +461,8 @@ Export image to a .ppm file.
 
 Formerly called Gimp.file_save
 but that now seems to export in PPM "raw" P6 format.
-We want the "ascii" P3 format, for backward compatibility
-with existing referenc images.
+We want the "ascii" P2 (gray) or P3 (RGB) format, 
+for backward compatibility with existing reference images.
 '''
 def exportPPMImage (image, outfilepath):
 
@@ -483,24 +483,67 @@ def exportPPMImage (image, outfilepath):
   
   '''
   Call a specific file export plugin.
-  Since GIMP 3, option to export raw, which we don't want.
+  Since GIMP 3, it has "raw" option, we want "ascii" option.
   '''
-  exportProc   = findTestedPluginProcedure('file-ppm-export')
+  exportProc   = findTestedPluginProcedure('file-pnm-export')
   config = exportProc.create_config()
   config.set_property('run-mode', Gimp.RunMode.NONINTERACTIVE)
   config.set_property('image',    image)
   config.set_property('file',     outfile)
   config.set_property('options',  None)
-  config.set_property('raw',      "ascii-output")  # !!! Want P3, plain format
+  config.set_property('raw',      "ascii-output")  # !!! Want P2 or P3, plain format
   exportProc.run(config)
 
 
 '''
-diff two PPM files, allowing difference of at most one in pixelels
+diff two PPM files, 
+returning boolean indicating similarity.
 
 PPM is ASCII, not UTF-8
+
+This just chooses a similarity measure.
 '''
-def diffPPM (file1, file2):
+def diffPPM(file1, file2):
+  print("Comparing " + file1 + " and " + file2)
+  # return diffPPMSmallDiff (file1, file2)
+  return diffPPMAbsDiff (file1, file2)
+  
+
+'''
+Allowing small Absolute Difference over entire image
+'''
+def diffPPMAbsDiff (file1, file2):
+  absDiff = 0
+  try:
+    with open(file1, 'r', encoding='ascii', errors='replace') as fileFirst:
+      linesFirst = fileFirst.readlines()
+      with open(file2, 'r', encoding='ascii', errors='replace') as fileSecond:
+        linesSecond = fileSecond.readlines()
+        # Compare the two files line by line
+        for index, line in enumerate(linesFirst):
+          # Ignore the first four lines (header)
+          if index in [0, 1, 2, 3]:
+            continue
+          # Each line is a pixelel
+          # Sum the absolute differences
+          absDiff += abs(int(line.split()[0]) - int(linesSecond[index].split()[0]))
+  except Exception as inst:
+    print(f"Error reading files {inst}")
+    return False
+  
+  print("Total absolute difference: " + str(absDiff))
+
+  # If the abs difference is greater than 1000, return False
+  # This is a magic number, but it is not too strict
+  if absDiff > 10000:
+    print("Difference found: " + str(absDiff))
+    return False
+  return True
+
+'''
+Allowing small difference of pixelels, say 2
+'''
+def diffPPMSmallDiff (file1, file2):
   try:
     with open(file1, 'r', encoding='ascii', errors='replace') as fileFirst:
       linesFirst = fileFirst.readlines()
@@ -522,6 +565,7 @@ def diffPPM (file1, file2):
     print("Error reading files")
     return False
   return True
+
 
 '''
 Write an out test result image to a temp file in .ppm format
@@ -1046,9 +1090,9 @@ def testAll():
 
   # Temporarily disabled, to run one at a time
   # testEnginePlugin()
-  #testHealSelection()
+  testHealSelection()
   #testHealTransparency()
-  testRenderTexture()
+  #testRenderTexture()
   #testMapStyle()
 
   # Temporarily disabled, until ported

@@ -126,13 +126,21 @@ raw_bytes_all_zero (guchar *bytes, gint size)
 }
 
 /*
-Copy SOME channels of GimpDrawable to pixmap, possibly offsetting them in the Pixel.
-(Usually called many times, for image, then mask, then other drawables,
-to interleave many drawables into one pixmap.)
+Adapt GimpDrawable to pixmap.
+
+Where drawable is not a selection mask.
+
+Can omit Pixelels (alpha) of the drawable.
+Can offset Pixelels in the Pixel of the pixmap.
+Can convert the format of the drawable to the format of the pixmap (bit depth, color model.)
+
+Usually called many times, for an image, then other drawables,
+to interleave many drawables into one pixmap.
+
 Copy a sub-rect from the drawable.
 */
 static void
-pixmap_from_drawable(
+pixmap_from_nonmask_drawable(
   Map                 map,
   GimpDrawable       *drawable,
   gint                x,                       /* origin of rect to copy. */
@@ -147,7 +155,71 @@ pixmap_from_drawable(
   g_debug ("%s pixel offset %d pixel count %d origin x %d origin y %d", 
     G_STRFUNC, pixelel_offset, pixelel_count_to_copy, x, y);
 
-  raw_image_bytes = byte_sequence_from_drawable (drawable, &raw_bytes_size);
+  raw_image_bytes = byte_sequence_from_drawable_w_conversion (drawable, &raw_bytes_size);
+
+  g_debug ("%s raw bytes empty? %d", G_STRFUNC, raw_bytes_all_zero (raw_image_bytes, raw_bytes_size));
+
+  /* !!! Note our pixmap is same width, height as drawable, but depths may differ. */
+  
+  g_assert(raw_bytes_size > 0);
+
+  /* Will fit in working Pixel */
+  g_assert( pixelel_count_to_copy + pixelel_offset <= map.depth );
+
+  /* 
+  Drawable has enough bytes to copy.
+  !!! This is not very strong, since the byte order may be strange.
+  This prevents us from reading out of range.
+  */
+  g_assert( pixelel_count_to_copy <= get_bytes_per_pixel_for_drawable (drawable) );
+
+  // assert raw_image_bytes holds bytes of pixels from a region of drawable
+
+  set_byte_sequence_to_pixmap (map, drawable, raw_image_bytes,
+    pixelel_count_to_copy,  // e.g. copy only three color bytes
+    pixelel_offset,         // e.g. skip mask byte in destination
+    raw_bytes_size);        // !!! Size of raw_image_bytes
+  
+  // assert map holds expanded pixels from a region of drawable
+  // i.e. we converted format to our working format.
+  // FUTURE can gegl/babl do an equivalent conversion?
+  // Probably not, our format conversion is interleaving image and mask
+  g_free(raw_image_bytes);
+}
+
+
+/*
+Adapt GimpDrawable to pixmap.
+
+Where drawable is a selection mask.
+No format conversion is done, the mask is copied as is.
+
+Can omit Pixelels (alpha) of the drawable.
+Can offset Pixelels in the Pixel of the pixmap.
+
+Copy a sub-rect from the drawable.
+*/
+static void
+pixmap_from_mask_drawable(
+  Map                 map,
+  GimpDrawable       *drawable,
+  gint                x,                       /* origin of rect to copy. */
+  gint                y,
+  gint                pixelel_offset,          /* Which pixelels to copy to. */
+  guint               pixelel_count_to_copy    /* Count of pixels to copy, might omit the alpha. */
+  )
+{
+  guchar *raw_image_bytes;
+  gint    raw_bytes_size;
+
+  g_debug ("%s pixel offset %d pixel count %d origin x %d origin y %d", 
+    G_STRFUNC, pixelel_offset, pixelel_count_to_copy, x, y);
+
+  /* 
+  This is the crux difference from pixmap_from_nonmask_drawable
+  - the mask drawable is not converted to the working format.
+  */
+  raw_image_bytes = byte_sequence_from_mask_no_conversion (drawable, &raw_bytes_size);
 
   g_debug ("%s raw bytes empty? %d", G_STRFUNC, raw_bytes_all_zero (raw_image_bytes, raw_bytes_size));
 
@@ -257,7 +329,7 @@ get_selection_mask_pixmap_from_drawable (
 
   // mask_drawable is a separate drawable, same size but a mask
 
-  pixmap_from_drawable(*mask_pixmap, mask_drawable,
+  pixmap_from_mask_drawable(*mask_pixmap, mask_drawable,
     0, 0,
     MASK_PIXELEL_INDEX, 
     1);
@@ -379,7 +451,7 @@ fetch_image_and_mask(
   new_pixmap(pixmap, width(drawable), height(drawable), pixelel_count);
 
   /* Get color, alpha channels */
-  pixmap_from_drawable(*pixmap, drawable, 0,0, FIRST_PIXELEL_INDEX, 
+  pixmap_from_nonmask_drawable(*pixmap, drawable, 0,0, FIRST_PIXELEL_INDEX, 
                         get_working_pixelels_per_pixel_for_target_or_corpus (drawable));
 
   fetch_mask(drawable, mask, default_mask_value); /* Get mask channel */
@@ -398,7 +470,7 @@ testGegl (
   guchar *raw_image_bytes;
   gint    raw_bytes_size;
 
-  raw_image_bytes = byte_sequence_from_drawable (drawable, &raw_bytes_size);
+  raw_image_bytes = byte_sequence_from_drawable_w_conversion (drawable, &raw_bytes_size);
   byte_sequence_to_drawable(drawable, raw_image_bytes);
   g_free(raw_image_bytes);
 }
@@ -491,7 +563,7 @@ fetch_image_mask_map(
     /* Count map channels excluding alpha. */
     guint pixelels_to_copy = get_working_pixelels_per_pixel_for_weight_map (map_drawable);
     
-    pixmap_from_drawable(*pixmap, map_drawable, 0,0, map_offset, pixelels_to_copy);
+    pixmap_from_nonmask_drawable(*pixmap, map_drawable, 0,0, map_offset, pixelels_to_copy);
   }
 }
 

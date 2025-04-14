@@ -187,10 +187,17 @@ Return the babl format that the resynthesizer engine
 will work with for a given drawable.
 The engine will convert the drawable's data to this format.
 
+!!! This is for images, not masks.
+
 The drawable may be in a different format:
 different color model and higher bit-depths.
 For example "R'G'B' u16" has different color model and more bytes per pixel.
 For example "HSV u16" also is different.
+
+Note the difference between linear and non-linear color models.
+'R'G'B' is non-linear, i.e. sRGB.
+The engine uses the nonlinear sRGB color model, i.e. R'G'B',
+because it is the same as engine used previously in GIMP 2.
 
 The engine uses 8-bits per channel.
 The lower bit-depth means less memory, and better memory locality,
@@ -213,21 +220,32 @@ get_working_format_for_drawable (GimpDrawable *drawable)
   switch (component_count)
   {
     case 1:
-      // Greyscale or indexed or a mask
-      result = babl_format ("Y u8");
+      /*
+      Greyscale.
+      FIXME: this should not be used for mode indexed or a selection mask
+      */ 
+      result = babl_format ("Y' u8");
       break;
     case 2:
-      // Greyscale or indexed, with alpha.
-      // A mask with alpha is not possible.
-      result = babl_format ("YA u8");
+      /*
+      Greyscale with alpha.
+
+      FIXME: this should not be used for mode indexed or a selection mask.
+      A mask with alpha is not possible.
+
+      Note the format has linear alpha, not A'
+      */ 
+      result = babl_format ("Y'A u8");
       break;
     case 3:
-      // RGB
-      result = babl_format ("RGB u8");
+      // RGB. Linear color model is RGB.  Non-linear (sRGB) is R'G'B'.
+      // The engine uses sRGB, the same as GIMP.
+      result = babl_format ("R'G'B' u8");
       break;
     case 4:
       // RGBA with alpha
-      result = babl_format ("RGBA u8");
+      // Note the format has linear alpha, not A'
+      result = babl_format ("R'G'B'A u8");
       break;
     default:
       g_assert_not_reached ();
@@ -243,7 +261,16 @@ get_working_format_for_drawable (GimpDrawable *drawable)
 }
 
 
-/* Return count of color channels, exclude alpha and any other channels. */
+/* 
+Return count of color channels, exclude alpha and any other channels.
+
+This is not the same as the count of components in the format.
+The format may have more channels than the color channels.
+For example, the format may have an alpha channel.
+
+For example, the RGBA format has 4 channels, but only 3 color channels.
+The GRAYA format has 2 channels, but only 1 color channel.
+*/
 guint
 count_color_channels (GimpDrawable *drawable)
 {

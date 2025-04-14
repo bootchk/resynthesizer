@@ -164,6 +164,10 @@ Send seq of Pixelels to GimpDrawable.
 Convert the Pixels to the drawable's format.
 Also flush.
 
+This is only used for color, grayscale Drawables, (possibly with alpha.)
+the target or result of the resynthesizer.
+We don't use this for the mask or weight_map.
+
 Formerly used: gimp_pixel_rgn_set_rect(&region, img, 0,0, width, height);
 */
 void
@@ -204,13 +208,18 @@ byte_sequence_to_drawable(
 /*
 Get a working_byte_sequence from a drawable.
 
-The drawable can be a corpus or target or a mask.
-Not a weight_map!
+The drawable may be in a different format:
+different color model and higher bit-depths.
+This converts to the working format of the engine.
+
+The drawable can be a corpus or target or a weight_map.
+The drawable should not be a selection mask,
+which is never converted, always 1 byte per pixel.
 
 !!! Note not using a shadow buffer, when reading.
 */
 guchar *
-byte_sequence_from_drawable(
+byte_sequence_from_drawable_w_conversion(
   GimpDrawable *drawable,
   gint         *raw_bytes_size  // OUT size of byte_sequence
   )
@@ -247,6 +256,66 @@ byte_sequence_from_drawable(
             NULL, // Entire extent of buffer  GEGL_RECTANGLE(0, 0, width, height),
             1.0,  // scale, float 1.0 is pixel for pixel
             workingFormat,   // convert format of buffer to working format.
+            raw_image_bytes,
+            GEGL_AUTO_ROWSTRIDE,
+            GEGL_ABYSS_NONE);
+
+  g_object_unref (buffer);
+
+  return raw_image_bytes;
+}
+
+/*
+Get a working_byte_sequence from a drawable that is a selection mask.
+
+The drawable must be a selection mask, always 1 byte per pixel.
+
+The format is not converted
+
+!!! Note not using a shadow buffer, when reading.
+*/
+guchar *
+byte_sequence_from_mask_no_conversion(
+  GimpDrawable *mask_drawable,
+  gint         *raw_bytes_size  // OUT size of byte_sequence
+  )
+{
+  GeglBuffer *buffer;
+  const Babl *maskFormat;
+  const gchar *formatEncoding;
+  gint        width = gimp_drawable_get_width (mask_drawable);
+  gint        height = gimp_drawable_get_height (mask_drawable);
+  guchar     *raw_image_bytes;
+
+  buffer        = get_buffer(mask_drawable);
+
+  /*
+  Require is a mask:
+    one component
+    1 byte per pixel
+    not non-linear "Y' u8"
+  We check all this at once by comparing format strings.
+  */ 
+  maskFormat = gegl_buffer_get_format (buffer);
+  formatEncoding = babl_format_get_encoding (maskFormat);
+  g_assert (g_strcmp0 (formatEncoding, "Y u8") == 0);
+  debugBablFormat ("mask", maskFormat);
+  
+
+  *raw_bytes_size = width * height * 1;  // 1 byte per pixel
+  raw_image_bytes = g_malloc(*raw_bytes_size);
+
+  g_debug ("%s w: %d h: %d byte size: %d", G_STRFUNC, width, height, *raw_bytes_size);
+
+  /*
+  Get all the pixelels from drawable into raw_image_bytes sequence.
+  Note x1,y1 are in drawable coords i.e. relative to drawable
+  The drawable may be offset from the canvas and other drawables.
+  */
+  gegl_buffer_get (buffer,
+            NULL, // Entire extent of buffer  GEGL_RECTANGLE(0, 0, width, height),
+            1.0,  // scale, float 1.0 is pixel for pixel
+            maskFormat,   // no conversion, same as format of mask
             raw_image_bytes,
             GEGL_AUTO_ROWSTRIDE,
             GEGL_ABYSS_NONE);

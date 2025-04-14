@@ -18,6 +18,8 @@ get_byte_sequence_from_pixmap (
   guchar       *raw_image_bytes,
   gint          pixelel_offset);
 
+
+
 void
 set_byte_sequence_to_pixmap (
   Map           dest_pixmap, 
@@ -36,7 +38,13 @@ byte_sequence_to_drawable(
   );
 
 guchar*
-byte_sequence_from_drawable(
+byte_sequence_from_drawable_w_conversion(
+  GimpDrawable *drawable,
+  gint         *raw_bytes_size  // OUT size of byte_sequence
+  );
+
+guchar*
+byte_sequence_from_mask_no_conversion (
   GimpDrawable *drawable,
   gint         *raw_bytes_size  // OUT size of byte_sequence
   );
