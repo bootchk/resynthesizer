@@ -25,6 +25,7 @@ resynthesizer_plugin_names = [
   'plug-in-resynth-controls',
   'plug-in-map-style',
   'plug-in-render-texture',
+  'plug-in-uncrop',
 ]
 
 # There is one other plugin: the engine, in C.
@@ -36,7 +37,7 @@ unported_plugin_basenames = [
   'plug-in-resynth-enlarge',
   'plug-in-resynth-fill-pattern',
   'plug-in-resynth-sharpen',
-  'plug-in-uncrop',
+  
 ]
 
 ###### Configuration

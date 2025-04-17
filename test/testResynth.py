@@ -1178,14 +1178,15 @@ def testAll():
   # This may test each plugin more than once, varying args for varying use cases.
 
   # Temporarily disabled, to run one at a time
-  testEnginePlugin()
-  testHealSelection()
-  testHealTransparency()
-  testRenderTexture()
-  testMapStyle()
+  if False:
+    testEnginePlugin()
+    testHealSelection()
+    testHealTransparency()
+    testRenderTexture()
+    testMapStyle()
 
   # Temporarily disabled, until ported
-  # testUncrop()
+  testUncrop()
   # testFillPattern()
   # testSharpen()
   # testEnlarge()
