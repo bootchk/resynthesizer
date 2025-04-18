@@ -15,6 +15,9 @@
 ; The GNU Public License is available at
 ; http://www.gnu.org/copyleft/gpl.html
 
+
+
+
 ; Author:
 ; lloyd konneker, lkk, itr-tert
 
@@ -28,10 +31,13 @@
 ; The effect for users:
 ; widens the field of view, maintaining perspective of original
 ; Should be undoable, except for loss of selection.
-; Should work on any image type, any count of layers and channels (although only selected layer is affected.)
+; Should work on any image type, any count of layers and channels 
+; (although only selected layer is affected.)
 ;
 ; IN: Nothing special.  The selection is immaterial but is not preserved.
 ; OUT larger layer and image.  All other layers not enlarged.
+
+
 
 
 (define (uncrop-test)
@@ -45,38 +51,44 @@
      )))
 
 
-(define (get-image)
-  (vector-ref (car (cdr (gimp-image-list))) 0))
+; Functions supporting anti-erase
 
+; Get list of component names that an image CAN have, based on its base type.
+;
+; Terminology: !!! Use "component" for the standard channels RGBA.
+; Use "channel" to mean other,custom channels.
+; The API has no way to get the components as drawables.
+;
+; Returns the standard component names (not custom channels).
+; The names are not ID's of channel objects.
+; You might call them enumeration values.
+;
+; List has the alpha component, but image might not have alpha component.
+; I.E. don't use unless the image has an alpha component,
+; else the list is not the actual components, but includes alpha.
 
-(define (get-drawable image)
-  (when (null? image)
-    (set! image (get-image)))
-  (car (gimp-image-get-active-drawable image)))
-
-
-(define (get-component-list image)
-  (when (null? image) (set! image (get-image)))
-  (let ((type (car (gimp-image-get-base-type image))))
+(define (get-component-names image)
+  ;(when (null? image) (set! image (get-image)))
+  (let ((type (gimp-image-get-base-type image)))
     (cond ((= type RGB)
-           (list RED-CHANNEL GREEN-CHANNEL BLUE-CHANNEL ALPHA-CHANNEL))
+           (list CHANNEL-RED CHANNEL-GREEN CHANNEL-BLUE CHANNEL-ALPHA))
           ((= type GRAY)
-           (list GRAY-CHANNEL ALPHA-CHANNEL))
+           (list CHANNEL-GRAY CHANNEL-ALPHA))
           ((= type INDEXED)
-           (list INDEXED-CHANNEL ALPHA-CHANNEL))
+           (list CHANNEL-INDEXED CHANNEL-ALPHA))
           (#t
-           (throw "unkwno image base type")))))
+           (throw "unknown image base type")))))
 
-
+; Get list of boolean corresponding to component names that are active
 (define (get-components-active image)
-  (when (null? image) (set! image (get-image)))
-  (map (lambda (channel) (car (gimp-image-get-component-active image channel)))
-       (get-component-list image)))
+  ; (when (null? image) (set! image (get-image)))
+  (map (lambda (component) (gimp-image-get-component-active image component))
+       (get-component-names image)))
 
-
+; Set the given components active
 (define (set-components-active image active-list)
-  (when (null? image) (set! image (get-image)))
-  (let* ((components (get-component-list image))
+  ; (when (null? image) (set! image (get-image)))
+  (let* ((components (get-component-names image))
          (components-length (length components))
          (active-list-length (length active-list)))
 
@@ -85,36 +97,63 @@
 
     (do ((i (- active-list-length 1) (- i 1)))
         ((> 0 i))
-      (gimp-image-set-component-active image
-                                       (nth i components)
-                                       (nth i active-list))))
+      (gimp-image-set-component-active 
+        image
+        (list-ref components i)       ; component name
+        (list-ref active-list i))))   ; boolean value: is active
   )
 
-; FIXME
-; Has no comments about why this is necessary.
-; Not used, for now, until it is ported
-
-(define (drawable-anti-erase-selection drawable)
-  (let* ((image          '())
-         (ch-active-list '())
-         (components     '()))
-    (set! image (if (null? drawable)
-                    (get-image)
-                    (car (gimp-item-get-image drawable))))
-    (set! drawable (if (null? drawable)
-                       (get-drawable image)
-                       drawable))
-    (set! ch-active-list (get-components-active image))
-    (set! components (get-component-list image))
+; set all components inactive except the alpha component
+(define (deactivate-components-except-alpha image)
+  (let* ((components (get-component-names image)))
     (for-each (lambda (ch)
-                (gimp-image-set-component-active image ch
-                                                 (if (= ch ALPHA-CHANNEL) TRUE FALSE)))
-              components)
-    (gimp-image-set-component-active image ALPHA-CHANNEL TRUE)
-    (gimp-edit-bucket-fill drawable FILL-WHITE LAYER-MODE-NORMAL 100 255 FALSE 0 0)
+                (gimp-image-set-component-active 
+                  image 
+                  ch
+                  (if (= ch CHANNEL-ALPHA) TRUE FALSE)))
+              components)))
+
+
+; When the target image has alpha component, and it is transparent at the edges
+; (e.g. wilber.png)
+; uncrop leaves a transparent enlargement.
+; The transparent enlargement has color, synthesized.
+; But the synthed color might not be plausible.
+
+; When the target image has alpha component, but it is all opaque,
+; uncrop leaves a transparent ring, but with synthesized color.
+; Anti-erase it (make the alpha component opaque.)
+
+; Anti-erase the drawable in the selection.
+(define (drawable-anti-erase-selection image drawable)
+  (let* ((ch-active-list '())
+         (components     '())
+         (alphaChannel   '()))
+
+    ; remember prior active component names
+    (set! ch-active-list (get-components-active image))
+
+    (deactivate-components-except-alpha image)
+    
+    ; make the alpha component active
+    (gimp-image-set-component-active image CHANNEL-ALPHA TRUE)
+
+    ; See prior commits for v2 version of fill
+
+    ; Fill drawable with white, masked by selection.
+    ; Since only the alpha component is active, will make all its values opaque.
+    (gimp-drawable-edit-fill 
+      drawable
+      FILL-WHITE)
+
+    ; activate the prior active components
     (set-components-active image ch-active-list)
     ))
 
+
+
+
+; Functions supporting basic uncrop
 
 (define (resizeImageCentered image percentEnlarge)
   ; resize and center image by percent (converted to pixel units)
@@ -129,7 +168,6 @@
     ; if not gimp-image-resize(image, deltaWidth, deltaHeight, centeredOffX, centeredOffY):
     ;     raise RuntimeError, "Failed resize"
     ))
-
 
 (define (shrinkSelectionByPercent image percent)
   ; shrink selection by percent (converted to pixel units)
@@ -146,6 +184,7 @@
     ;    raise RuntimeError,  "Failed shrink selection"
     ))
 
+
 ; Yield the first selected layer, or throw
 (define (get-selected-layer image)
   (let* ((layers (gimp-image-get-selected-layers image))
@@ -153,6 +192,7 @@
     (when (null? layer)
       (throw "Failed get selected layer"))
     layer))
+
 
 ; Prepare target: enlarge canvas and select the new, blank outer ring
 ; Side effects the passed image, the target of resynthesis.
@@ -164,9 +204,9 @@
 
     ; Save original bounds to later select outer band
     (set! selectAllPrior (gimp-selection-save orgImage))
-    ; selectAllPrior is a channel
+    ; selectAllPrior is a selection mask i.e. channel
 
-    ; Enlarge the canvase
+    ; Enlarge the canvas
     (resizeImageCentered orgImage percentEnlargeParam)
     ; Resize image alone doesn't resize layer, so resize layer also
     (gimp-layer-resize-to-image-size orgDrawable)
@@ -189,7 +229,8 @@
 ; Note the width of corpus band is same as width of enlargement band.
 ;
 ; Working with the original size.
-; Could be alpha channel transparency
+;
+; Could be alpha transparency.
 ;
 ; Yields a corpus layer
 (define (prepare-corpus-layer corpusImage percentEnlargeParam)
@@ -197,6 +238,12 @@
     ; Get the selected (active) layer of the copy image.
     ; The same layer as active in the original.
     (set! corpusLayer (get-selected-layer corpusImage))
+
+    ; Ensure layer same size as canvas:
+    ; User might have already resized image (but its not a good idea.)
+    ; User resizing leaves transparent areas on new canvas (but no actual alpha component.)
+    ; Without this, the engine can crash.
+    (gimp-layer-resize-to-image-size corpusLayer)
     
     ; Select outer band:  select all, shrink
     (gimp-selection-all corpusImage)
@@ -251,10 +298,13 @@
      16                 ; neighbourhood
      500)               ; trys
 
+    ; The selection in the target is still the synthesized ring.
+    ; 
+
     ; FIXME added by iter-tert
     ; commented out until ported
-    ; (when (= TRUE (car (gimp-drawable-has-alpha orgDrawable)))
-    ;  (drawable-anti-erase-selection orgDrawable))
+    (when (gimp-drawable-has-alpha orgDrawable)
+      (drawable-anti-erase-selection orgImage orgDrawable))
 
     ; Clean up.
     ; Any errors now are moot.
