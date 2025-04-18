@@ -119,8 +119,8 @@
 (define (resizeImageCentered image percentEnlarge)
   ; resize and center image by percent (converted to pixel units)
   (let* ((deltaFraction (+ (/ percentEnlarge 100) 1.0))
-         (priorWidth  (car (gimp-image-get-width  image)))
-         (priorHeight (car (gimp-image-get-height image)))
+         (priorWidth  (gimp-image-get-width  image))
+         (priorHeight (gimp-image-get-height image))
          (deltaWidth  (* priorWidth  deltaFraction))
          (deltaHeight (* priorHeight deltaFraction))
          (centeredOffX (/ (- deltaWidth  priorWidth)  2))
@@ -135,8 +135,8 @@
   ; shrink selection by percent (converted to pixel units)
   (let* ((deltaFraction (/ percent 100))
          ; convert to pixel dimensions
-         (priorWidth  (car (gimp-image-get-width  image)))
-         (priorHeight (car (gimp-image-get-height image)))
+         (priorWidth  (gimp-image-get-width  image))
+         (priorHeight (gimp-image-get-height image))
          (deltaWidth  (* priorWidth  deltaFraction))
          (deltaHeight (* priorHeight deltaFraction))
          ; !!! Note total shrink percentage is halved (width of band is percentage/2)
@@ -148,7 +148,7 @@
 
 ; Yield the first selected layer, or throw
 (define (get-selected-layer image)
-  (let* ((layers (car (gimp-image-get-selected-layers image)))
+  (let* ((layers (gimp-image-get-selected-layers image))
          (layer (vector-ref layers 0)))
     (when (null? layer)
       (throw "Failed get selected layer"))
@@ -160,6 +160,7 @@
 
   (gimp-message-set-handler MESSAGE-BOX)
 
+  (script-fu-use-v3)
 
   (gimp-image-undo-group-start orgImage)
 
@@ -168,12 +169,12 @@
         (selectAllPrior '())
         (workLayer      '()))
 
-    (when (<> TRUE (car (gimp-item-id-is-layer drawable)))
+    (when (not (gimp-item-id-is-layer drawable))
       (gimp-message _"You must select a layer, not a channel.")
       (quit))
 
     ; copy original into temp for later use
-    (set! tempImage (car (gimp-image-duplicate orgImage)))
+    (set! tempImage (gimp-image-duplicate orgImage))
     (when (null? tempImage)
       (throw "Failed duplicate image"))
 
@@ -183,7 +184,7 @@
 
     ; Save original bounds to later select outer band
     (gimp-selection-all orgImage)
-    (set! selectAllPrior (car (gimp-selection-save orgImage)))
+    (set! selectAllPrior (gimp-selection-save orgImage))
     ; Resize image alone doesn't resize layer, so resize layer also
     (resizeImageCentered orgImage percentEnlargeParam)
     (gimp-layer-resize-to-image-size drawable)
