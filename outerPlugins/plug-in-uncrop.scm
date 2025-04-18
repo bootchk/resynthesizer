@@ -256,7 +256,7 @@
 
 
 
-(define (plug-in-uncrop orgImage drawables percentEnlargeParam)
+(define (plug-in-uncrop orgImage drawables percentEnlargeParam shouldAnti-erase)
   ; Create frisket stencil selection in a temp image to pass as source (corpus) to plugin resynthesizer,
   ; which does the substantive work.
 
@@ -301,9 +301,8 @@
     ; The selection in the target is still the synthesized ring.
     ; 
 
-    ; FIXME added by iter-tert
-    ; commented out until ported
-    (when (gimp-drawable-has-alpha orgDrawable)
+    (when (and (gimp-drawable-has-alpha orgDrawable)
+                (= shouldAnti-erase TRUE))
       (drawable-anti-erase-selection orgImage orgDrawable))
 
     ; Clean up.
@@ -343,7 +342,8 @@
        1    ; step inc
        10   ; page inc
        0    ; integer, zero decimal places
-       SF-SLIDER))
+       SF-SLIDER)
+  SF-TOGGLE _"Anti-erase the enlargment" FALSE)
 
 (script-fu-menu-register "plug-in-uncrop"
                          "<Image>/Filters/Enhance")

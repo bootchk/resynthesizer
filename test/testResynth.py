@@ -195,6 +195,7 @@ ufo  =       'ufo-input'
 ufoAlpha =   'ufo-input-w-alpha'
 ufoAlphaGray = 'ufo-input-w-alpha-gray'
 ufoSmall =   'ufo-input-small'
+wilber =     'wilber-small'
 
 
 
@@ -354,7 +355,7 @@ def callHealTransparency(targetImage, targetDrawables, corpusWidth, synthDirecti
   # display the result image
   Gimp.Display.new(targetImage)
 
-def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
+def callUncrop(targetImage, targetDrawables, percentSizeIncrease, shouldAntierase):
   pdb_proc   = findTestedPluginProcedure('plug-in-uncrop')
   config = pdb_proc.create_config()
   setStandardArgsToConfig (config, targetImage, targetDrawables)
@@ -362,6 +363,7 @@ def callUncrop(targetImage, targetDrawables, percentSizeIncrease):
   # No corpusWidth corpus is always just tens of pixels deep
   # No direction, always outward
   config.set_property('adjustment', percentSizeIncrease)
+  config.set_property('toggle',     shouldAntierase)
   result = pdb_proc.run(config)
   # Side effect: the target image is modified
 
@@ -1102,10 +1104,29 @@ def testRenderTexture():
 def testUncrop():
   ''' Uncrop outer plugin '''
 
-  # Uncrop 20%
+  # Test image w/o alpha
   pluginWrapperName = "callUncrop"
-  parameters = "20"
+  parameters = "20, False"
   runtest(ufo, 'uncrop', pluginWrapperName, parameters, select=None)
+
+  # Test image with alpha, and w/o anti-erase
+  # Wilber has transparent edges, yields transparent enlargement.
+  # Which is plausible.
+  pluginWrapperName = "callUncrop"
+  parameters = "20, False"
+  runtest(wilber, 'uncrop-alpha-no-anti-erase', pluginWrapperName, parameters, select=None)
+
+  # Test image with alpha, and with anti-erase
+  # Wilber has transparent edges, yields opaque enlargement.
+  # But enlargment is weird, not plausible since it surrounds a transparent image.
+  pluginWrapperName = "callUncrop"
+  parameters = "20, True"
+  runtest(wilber, 'uncrop-alpha-anti-erase', pluginWrapperName, parameters, select=None)
+
+  # Note the reference images are flattened before saving,
+  # you can't see, only infer (where white), resultant transparency.
+  # You can Undo the flattening to see the resultant transparency in the displayed images.
+
 
 
 def testFillPattern():
