@@ -154,6 +154,61 @@
       (throw "Failed get selected layer"))
     layer))
 
+; Prepare target: enlarge canvas and select the new, blank outer ring
+; Side effects the passed image, the target of resynthesis.
+(define (enlarge-image-and-select-ring orgImage orgDrawable percentEnlargeParam)
+  (let ((selectAllPrior '()))
+
+    ; Select entire original image. Discard any existing selection.
+    (gimp-selection-all orgImage)
+
+    ; Save original bounds to later select outer band
+    (set! selectAllPrior (gimp-selection-save orgImage))
+    ; selectAllPrior is a channel
+
+    ; Enlarge the canvase
+    (resizeImageCentered orgImage percentEnlargeParam)
+    ; Resize image alone doesn't resize layer, so resize layer also
+    (gimp-layer-resize-to-image-size orgDrawable)
+
+    ; select outer band, the new blank canvas.
+    ; First select the original bounds
+    (gimp-image-select-item orgImage CHANNEL-OP-REPLACE selectAllPrior)
+    ; Then invert
+    (gimp-selection-invert orgImage)
+    ; Selection is now a ring, the area of enlargement.
+
+    ; Cleanup the saved original bounds
+    (gimp-image-remove-channel orgImage selectAllPrior))
+)
+
+; Prepare source (corpus) layer, from the corpusImage.
+; corpusImage is a copy of the original.
+;
+; Select a band around the edge.
+; Note the width of corpus band is same as width of enlargement band.
+;
+; Working with the original size.
+; Could be alpha channel transparency
+;
+; Yields a corpus layer
+(define (prepare-corpus-layer corpusImage percentEnlargeParam)
+  (let ((corpusLayer    '()))
+    ; Get the selected (active) layer of the copy image.
+    ; The same layer as active in the original.
+    (set! corpusLayer (get-selected-layer corpusImage))
+    
+    ; Select outer band:  select all, shrink
+    (gimp-selection-all corpusImage)
+    (shrinkSelectionByPercent corpusImage percentEnlargeParam)
+    (gimp-selection-invert corpusImage)  ; invert interior selection into a frisket
+    ; yield the corpusLayer
+    corpusLayer
+))
+
+
+
+
 (define (plug-in-uncrop orgImage drawables percentEnlargeParam)
   ; Create frisket stencil selection in a temp image to pass as source (corpus) to plugin resynthesizer,
   ; which does the substantive work.
@@ -164,57 +219,31 @@
 
   (gimp-image-undo-group-start orgImage)
 
-  (let ((drawable (vector-ref drawables 0))
-        (tempImage      '())
-        (selectAllPrior '())
-        (workLayer      '()))
+  (let ((orgDrawable (vector-ref drawables 0))
+        (corpusImage    '())
+        (corpusLayer    '()))
 
-    (when (not (gimp-item-id-is-layer drawable))
+    (when (not (gimp-item-id-is-layer orgDrawable))
       (gimp-message _"You must select a layer, not a channel.")
       (quit))
 
-    ; copy original into temp for later use
-    (set! tempImage (gimp-image-duplicate orgImage))
-    (when (null? tempImage)
+    ; copy original for use as corpus
+    (set! corpusImage (gimp-image-duplicate orgImage))
+    (when (null? corpusImage)
       (throw "Failed duplicate image"))
 
-    ;
-    ; Prepare target: enlarge canvas and select the new, blank outer ring
-    ;
+    (enlarge-image-and-select-ring orgImage orgDrawable percentEnlargeParam)
+    ; Assert orgImage, the target, is ready for resynthesis.
 
-    ; Save original bounds to later select outer band
-    (gimp-selection-all orgImage)
-    (set! selectAllPrior (gimp-selection-save orgImage))
-    ; Resize image alone doesn't resize layer, so resize layer also
-    (resizeImageCentered orgImage percentEnlargeParam)
-    (gimp-layer-resize-to-image-size drawable)
-    (gimp-image-select-item orgImage CHANNEL-OP-REPLACE selectAllPrior)
-    ; select outer band, the new blank canvas.
-    (gimp-selection-invert orgImage)
-    ; Assert target image is ready.
-
-    ;
-    ; Prepare source (corpus) layer, a band at edge of original, in a dupe.
-    ; Note the width of corpus band is same as width of enlargement band.
-    ;
-
-    ; Working with the original size.
-    ; Could be alpha channel transparency
-
-    ; Get the selected layer of the copy image.
-    ; The same layer as selected in the original.
-    (set! workLayer (get-selected-layer tempImage))
-    
-    ; Select outer band:  select all, shrink
-    (gimp-selection-all tempImage)
-    (shrinkSelectionByPercent tempImage percentEnlargeParam)
-    (gimp-selection-invert tempImage)  ; invert interior selection into a frisket
+    (set! corpusLayer (prepare-corpus-layer corpusImage percentEnlargeParam))
+    ; corpusLayer is from copy, same size as original.
+    ; corpusLayer has a selection mask that is ring around its edge
 
     (plug-in-resynthesizer
-     drawable           ; drawable
+     orgDrawable        ; target
      0 0                ; vtile htile
      5                  ; use-context ; 5 means inside out direction
-     workLayer          ; corpus
+     corpusLayer
      -1                 ; inmask
      -1                 ; outmask
      0.0                ; map-weight
@@ -224,23 +253,25 @@
 
     ; FIXME added by iter-tert
     ; commented out until ported
-    ; (when (= TRUE (car (gimp-drawable-has-alpha drawable)))
-    ;  (drawable-anti-erase-selection drawable))
+    ; (when (= TRUE (car (gimp-drawable-has-alpha orgDrawable)))
+    ;  (drawable-anti-erase-selection orgDrawable))
 
     ; Clean up.
     ; Any errors now are moot.
 
-    (gimp-selection-none orgImage)
-    (gimp-image-remove-channel orgImage selectAllPrior)
+    (gimp-image-delete corpusImage)
 
-    ; Make drawable the selected one
+    ; Leave the image without any selection mask that existed prior.
+    (gimp-selection-none orgImage)
+
+    ; Make orgDrawable the selected (active) one
     ; Since v3 API, pass a simple vector, without length argument
-    (gimp-image-set-selected-layers orgImage (make-vector 1 drawable))
+    (gimp-image-set-selected-layers orgImage (make-vector 1 orgDrawable))
 
     (gimp-displays-flush)
-    (gimp-image-delete tempImage)
     (gimp-image-undo-group-end orgImage)
     ))
+
 
 (script-fu-register-filter
  "plug-in-uncrop"
