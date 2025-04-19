@@ -15,7 +15,8 @@ gint          height   (GimpDrawable *d) { return gimp_drawable_get_height(d); }
 GimpImageType  imageType(GimpDrawable *d) { return gimp_drawable_type     (d); }
 gboolean       is_rgb   (GimpDrawable *d) { return gimp_drawable_is_rgb   (d); }
 gboolean       is_gray  (GimpDrawable *d) { return gimp_drawable_is_gray  (d); }
-gboolean       has_alpha(GimpDrawable *d) { return gimp_drawable_has_alpha(d); }
+gboolean       is_indexed(GimpDrawable *d) { return gimp_drawable_is_indexed(d); }
+gboolean       has_alpha(GimpDrawable *d)  { return gimp_drawable_has_alpha(d);  }
 
 GeglBuffer *
 get_buffer(GimpDrawable *d)        { return gimp_drawable_get_buffer(d);        }

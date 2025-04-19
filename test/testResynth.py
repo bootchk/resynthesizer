@@ -174,6 +174,7 @@ test_summary = ""
 # selection rects
 select1 = (100, 90, 100, 50)  # ufo
 select2 = (90, 175, 135, 100) # donkey
+selectUfoSmall = (100, 14, 100, 50)  # ufo from ufo-small
 
 # Names of input files
 # They are all in the input directory
@@ -187,15 +188,17 @@ donkey  =    'donkey_original'
 # Not image of angel, but another subject, with colors
 angelTexture = 'angel_texture'
 # Image of angel
-angelTarget = 'angel_target'
-wander  =    'wander-texture'
-zap  =       'zap-texture'
+angelTarget =  'angel_target'
+wander  =      'wander-texture'
+zap  =         'zap-texture'
 zapOutputMap = 'zap-output-map'
-ufo  =       'ufo-input'
-ufoAlpha =   'ufo-input-w-alpha'
+ufo  =         'ufo-input'
+ufoAlpha =     'ufo-input-w-alpha'
 ufoAlphaGray = 'ufo-input-w-alpha-gray'
-ufoSmall =   'ufo-input-small'
-wilber =     'wilber-small'
+ufoSmall =                'ufo-input-small'
+ufoSmallIndexedSepia=     'ufo-small-indexed-sepia'
+wilber =                  'wilber-small'
+wilberSmallIndexedAlpha = 'wilber-small-indexed-alpha'
 
 
 
@@ -1141,6 +1144,8 @@ def testFillPattern():
   
   runtest(ufo, 'fillpattern', pluginWrapperName, parameters, select1)
 
+
+
 '''
 Sharpen with resynthesis
 Too slow to test regularly.
@@ -1171,6 +1176,68 @@ def testEnlarge():
   runtest(ufoSmall, 'enlarge', pluginWrapperName, parameters, select=None)
 
 
+'''
+Test plugins on image of mode INDEXED.
+
+The resynthesizer engine works on several pixel formats.
+It can work on pixels of one byte (the palette index.)
+
+Works best when the palette is ordered by value
+E.G. the palette is monochrome: gray, sepia, etc.
+Otherwise, the results are not as good, not plausible.
+Ordering: values with near index should have near colors/values.
+
+These tests are designed to show plausible results.
+So they use an ordered palette, i.e. sepia, which is monochrome.
+Obtain such an image using Image>Mode>Indexed and Color>Desaturate>Sepia
+'''
+def testIndexedMode():
+
+  # heal selection
+  parameters = "50, 2, 1" # 1 = sample from above and below, 1 = direction inward
+  runtest(ufoSmallIndexedSepia, 'healUfoIndexedSepia', 'callHealSelection', parameters, selectUfoSmall)
+
+  # healTransparency
+  runtest(wilberSmallIndexedAlpha, 'healTransparencyUfoIndexedSepia', 'callHealTransparency', 
+          "50, 2", # pixels of context width, outward
+          select=None)
+  # Result should be wilber with synthesized background
+
+  # uncrop
+  runtest(ufoSmallIndexedSepia, 'uncropUfoIndexedSepia', 'callUncrop', 
+          "20, True", # 20%, True = anti-erase
+          select=None)
+
+  # map style
+  # Note the plugin synchronizes the mode of the target image to the corpus image.
+
+  # Here the target is indexed and corpus is RGB, yielding RGB.
+  # The plugin will convert the target to RGB.
+  runtest(ufoSmallIndexedSepia, 'mapStyleUfoIndexedSepiaFromRGB', 'callMapStyle', 
+          "'" + grass + "'"  + ", 50.0, 0",
+          select=None)
+  
+  # Here the target is indexed and corpus is indexed, yielding indexed
+  runtest(ufoSmallIndexedSepia, 'mapStyleUfoIndexedSepiaFromIndexed', 'callMapStyle', 
+          "'" + wilberSmallIndexedAlpha + "'"  + ", 50.0, 0",
+          select=None)
+
+  # render texture
+  runtest(ufoSmallIndexedSepia, 'renderTextureUfoIndexedSepia', 'callRenderTexture',
+          "2.0, True",
+          select=None)
+  # TODO the ufo object seems to dominate the texture improperly
+  # I think the texture should show other portions of the ufo image
+  
+  # fill pattern
+  runtest(ufoSmallIndexedSepia, 'fillPatternUfoIndexedSepia', 'callFillPatternResynth', 
+          "testPattern",
+          select=None)
+  # Result looks like maple leaves, sepia.
+
+  # Not testing the resynthesizer engine directly, or Sharpen, or Enlarge
+
+
 def configureLog():
   logFilename = tmpDirName + '/resynth-test.log'
   logging.basicConfig(filename=logFilename, level=logging.DEBUG)
@@ -1198,16 +1265,21 @@ def testAll():
   # This may test each plugin more than once, varying args for varying use cases.
 
   # Temporarily disabled, to run one at a time
-  if False:
+  if True:
     testEnginePlugin()
     testHealSelection()
     testHealTransparency()
     testRenderTexture()
     testMapStyle()
     testUncrop()
+    testFillPattern()
 
-  # Temporarily disabled, until ported
-  testFillPattern()
+    testIndexedMode()
+
+  # TODO test high bit-depth images
+
+  # Temporarily disabled, until ported to 3.0 API
+  # Doubt these are worth porting.
   # testSharpen()
   # testEnlarge()
 

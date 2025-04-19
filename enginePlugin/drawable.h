@@ -13,7 +13,8 @@ gint             height(GimpDrawable *d);
 GimpImageType     imageType(GimpDrawable *d);
 gboolean          is_rgb   (GimpDrawable *d);
 gboolean          is_gray  (GimpDrawable *d);
-gboolean          has_alpha(GimpDrawable *d);
+gboolean          is_indexed(GimpDrawable *d);
+gboolean          has_alpha (GimpDrawable *d);
 
 GeglBuffer * get_buffer       (GimpDrawable *d);
 GeglBuffer * get_shadow_buffer(GimpDrawable *d);

@@ -144,11 +144,12 @@ return the count of pixelels in the mask.
 By definition, a mask has only one pixelel.
 This returns 1.
 
-The count of bytes in the pixelel of a mask
+More generally, the count of bytes in a pixelel of a drawable
 depends on the count of bytes in the color pixelels,
 i.e. on the bit-depth of the image encoding.
 !!! The count is not always one, i.e. 8 bits.
-gimp_drawable_get_bpp (mask_drawable) may return 1, 2, or 4.
+gimp_drawable_get_bpp() may return 1, 2, or 4.
+So we don't use it here.
 */
 gint
 get_working_pixelels_per_pixel_for_selection_mask (GimpDrawable *mask_drawable)
@@ -185,13 +186,14 @@ get_bytes_per_pixel_for_drawable (GimpDrawable *drawable)
 /* 
 Return the babl format that the resynthesizer engine
 will work with for a given drawable.
-The engine will convert the drawable's data to this format.
+The engine will convert the drawable's data to this format,
+for data used in the engine.
 
 !!! This is for images, not masks.
 
 The drawable may be in a different format:
 different color model and higher bit-depths.
-For example "R'G'B' u16" has different color model and more bytes per pixel.
+For example "R'G'B' u16" has different color model and higher bit-depth.
 For example "HSV u16" also is different.
 
 Note the difference between linear and non-linear color models.
@@ -204,54 +206,57 @@ The lower bit-depth means less memory, and better memory locality,
 i.e. the hardware memory cache works better.
 This also knows the color model the engine uses: RGB
 
-Note the result format has the same count of components as
-the format of the drawable.
+The result format has the same count of components as the format of the drawable.
 */
 const Babl *
 get_working_format_for_drawable (GimpDrawable *drawable)
 {
-  const Babl *drawable_format;
-  gint        component_count;
   const Babl *result;
 
-  drawable_format = gimp_drawable_get_format (drawable);
-  component_count = babl_format_get_n_components (drawable_format);
-
-  switch (component_count)
+  if (is_indexed (drawable))
   {
-    case 1:
-      /*
-      Greyscale.
-      FIXME: this should not be used for mode indexed or a selection mask
-      */ 
-      result = babl_format ("Y' u8");
-      break;
-    case 2:
-      /*
-      Greyscale with alpha.
+    // Single byte per pixel, 256 colors
+    // !!! Not Y' u8, which is non-linear
+    result = babl_format ("Y u8");
+    return result;
+  }
+  else 
+    {
+      // Gray or RGB image, and not a selection mask
 
-      FIXME: this should not be used for mode indexed or a selection mask.
-      A mask with alpha is not possible.
+      const Babl *drawable_format;
+      gint        component_count;
+      
+      drawable_format = gimp_drawable_get_format (drawable);
+      component_count = babl_format_get_n_components (drawable_format);
 
-      Note the format has linear alpha, not A'
-      */ 
-      result = babl_format ("Y'A u8");
-      break;
-    case 3:
-      // RGB. Linear color model is RGB.  Non-linear (sRGB) is R'G'B'.
-      // The engine uses sRGB, the same as GIMP.
-      result = babl_format ("R'G'B' u8");
-      break;
-    case 4:
-      // RGBA with alpha
-      // Note the format has linear alpha, not A'
-      result = babl_format ("R'G'B'A u8");
-      break;
-    default:
-      g_assert_not_reached ();
+      switch (component_count)
+      {
+        case 1:
+          // Greyscale, non-linear color model is Y' (luminance)
+          result = babl_format ("Y' u8");
+          break;
+        case 2:
+          // Greyscale with alpha.
+          // The format is Y'A, not Y'A'
+          result = babl_format ("Y'A u8");
+          break;
+        case 3:
+          // RGB non-linear (sRGB) is R'G'B'.
+          // The engine uses sRGB, the same as GIMP.
+          result = babl_format ("R'G'B' u8");
+          break;
+        case 4:
+          // RGBA with alpha
+          // The format has linear alpha, not A'
+          result = babl_format ("R'G'B'A u8");
+          break;
+        default:
+          g_assert_not_reached ();
+      }
   }
 
-  g_debug ("%s working babel format %s bytes per pixel %d component count %d", 
+  g_debug ("%s working babl format %s bytes per pixel %d component count %d", 
     G_STRFUNC,
     babl_format_get_encoding (result),
     babl_format_get_bytes_per_pixel (result),
