@@ -107,7 +107,7 @@
 ; It is the entry point for the script.
 ; It is called by GIMP app when the user selects the script from the menu.
 ; It is the function that does the work of the script.
-(define (plug-in-fill-pattern-resynth image drawable pattern)
+(define (plug-in-fill-pattern-resynth image drawables pattern)
   ; The usual user-friendly precondition checking, postcondition cleanup.
 
   ; User-friendly: if no selection, use entire image.
@@ -121,23 +121,24 @@
   (gimp-message-set-handler MESSAGE-BOX)
   (gimp-context-push)
   (gimp-context-set-pattern pattern)
-  (guts image drawable pattern)
+  (let ((drawable (vector-ref drawables 0))) ; only one drawable
+    (guts image drawable pattern))
   (gimp-context-pop)
   (gimp-displays-flush))
 
 
-(script-fu-register
+(script-fu-register-filter
  "plug-in-fill-pattern-resynth"
  _"Fill with Pattern Seamless..."
  _"Seamlessly fill with a pattern using synthesis."
  "Lloyd Konneker"
  "Copyright 2011 Lloyd Konneker"
  "2011"
- ; image type that the script works on
- "RGB* GRAY*"
+ ;script works on all image types
+ "*"
+ SF-ONE-DRAWABLE      ; menu item enabled if exactly one drawable selected
+
  ; parameters
- SF-IMAGE    "Image" 0
- SF-DRAWABLE "Drawable" 0
  SF-PATTERN  _"Pattern" "Maple Leaves"
  )
 
