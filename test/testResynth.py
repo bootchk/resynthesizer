@@ -377,8 +377,7 @@ def callFillPatternResynth(targetImage, targetDrawables, pattern):
   setStandardArgsToConfig (config, targetImage, targetDrawables)
   config.set_property('pattern', pattern)
   result = pdb_proc.run(config)
-  # Side effect: new image is created
-  # TODO is that true
+  # Side effect: targetImage is modified
 
   # display the result image
   Gimp.Display.new(targetImage)
@@ -1132,14 +1131,14 @@ def testUncrop():
 def testFillPattern():
   ''' Fill Pattern outer plugin '''
 
-  # TODO Known to fail issue with SF binding for SF-PATTERN
-  return
-
   pluginName = "plug-in-fill-pattern-resynth"
   pluginWrapperName = "callFillPatternResynth"
 
-  # parameter string refer to pattern object in scope of runtest()
+  # parameter refer to pattern object in scope of runtest()
+  # The pattern is a Python object, not a string.
+  # parameter is name of Python pattern object
   parameters = "testPattern"
+  
   runtest(ufo, 'fillpattern', pluginWrapperName, parameters, select1)
 
 '''
@@ -1205,10 +1204,10 @@ def testAll():
     testHealTransparency()
     testRenderTexture()
     testMapStyle()
+    testUncrop()
 
   # Temporarily disabled, until ported
-  testUncrop()
-  # testFillPattern()
+  testFillPattern()
   # testSharpen()
   # testEnlarge()
 
