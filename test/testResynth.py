@@ -23,6 +23,9 @@ For comparisons to succeed:
    also might depend on platform and build
    also might depend on version of GIMP: 2 gives different results from 3
 
+Also, the context should be the default
+especially the background color white.
+
 The test program leaves the result images visible.
 You can do a human comparison for perceptual identical.
 You must allow for subjective interpretation: the results are plausible if not the same.
@@ -1093,14 +1096,14 @@ def testHealTransparency():
 
 
 def testRenderTexture():
-  ''' "Render texture" outer plugin. '''
 
-  # !!! Note here the plugin returns a new image which we assign to image variable
-  # TODO except scriptFu cannot return a value
+  # without alpha, suitable for seamless tiling
+  runtest(grass, 'rendertexture', "callRenderTexture", "2.0, True")
 
-  pluginWrapperName = "callRenderTexture"
-  parameters = "2.0, True"
-  runtest(grass, 'rendertexture', pluginWrapperName, parameters)
+  # source with alpha, without seamless tiling
+  runtest(wilber, 'rendertexture', "callRenderTexture", "1.5, False")
+  # assert result image has alpha component
+  # assert result image has no transparent pixels.
 
 
 def testUncrop():
@@ -1290,7 +1293,7 @@ def testAll():
   # This may test each plugin more than once, varying args for varying use cases.
 
   # Temporarily disabled, to run one at a time
-  if False:
+  if True:
     testEnginePlugin()
     testHealSelection()
     testHealTransparency()
@@ -1301,9 +1304,8 @@ def testAll():
 
     testIndexedMode()
 
-  testBitDepth()
+    testBitDepth()
 
-  # TODO test high bit-depth images
 
   # Temporarily disabled, until ported to 3.0 API
   # Doubt these are worth porting.
