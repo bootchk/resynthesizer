@@ -197,6 +197,7 @@ ufoAlpha =     'ufo-input-w-alpha'
 ufoAlphaGray = 'ufo-input-w-alpha-gray'
 ufoSmall =                'ufo-input-small'
 ufoSmallIndexedSepia=     'ufo-small-indexed-sepia'
+ufoSmallHighBitDepth=     'ufo-small-high-bit-depth'
 wilber =                  'wilber-small'
 wilberSmallIndexedAlpha = 'wilber-small-indexed-alpha'
 
@@ -915,7 +916,6 @@ def testEnginePlugin():
   Engine plugin tests (without using an outer plugin)
   '''
 
-  pluginName = "plug-in-resynthesizer"
   pluginWrapperName = 'callResynthesizer'
 
   '''
@@ -1038,7 +1038,7 @@ def testMapStyle():
 
 def testHealSelection():
   ''' "Heal selection" outer plugin. '''
-  pluginName = "plug-in-heal-selection"
+
   pluginWrapperName = 'callHealSelection'
 
   # Heal from donut corpus
@@ -1080,7 +1080,7 @@ def testHealSelection():
 
 def testHealTransparency():
   ''' Heal transparency outer plugin. '''
-  pluginName = "plug-in-heal-transparency"
+  
   pluginWrapperName = 'callHealTransparency'
 
   # Heal transparency outward
@@ -1238,6 +1238,31 @@ def testIndexedMode():
   # Not testing the resynthesizer engine directly, or Sharpen, or Enlarge
 
 
+'''
+Test adaption of high-bit depth images to working format of the resynthesizer engine.
+The engine works on 8-bit depth images, but the input image may be higher.
+
+For now, the adaptor writes back to the target image with loss of precision.
+Converting from 8-bit to higher bit depth, e.g. 16-bit.
+Instead, it could use the source coords of the best match
+to get the precise pixel value from the source image.
+
+TODO Get an image with more precision (non-zero values in the lower bits)
+The one used is a 16-bit image with all zeroes in the lower bits.
+Then you can see the difference between the input and output images.
+The output image, where synthesized, for now will have zeroes in the lower bits.
+
+TODO test conversion from a floating format.
+I can not forsee a reason in the resynthesizer it would not work; 
+it would only test that Babl is correct?
+'''
+def testBitDepth():
+  # heal selection
+  parameters = "50, 2, 1" # 1 = sample from above and below, 1 = direction inward
+  runtest(ufoSmallHighBitDepth, 'healUfoHighBitDepth', 'callHealSelection', parameters, selectUfoSmall)
+
+
+
 def configureLog():
   logFilename = tmpDirName + '/resynth-test.log'
   logging.basicConfig(filename=logFilename, level=logging.DEBUG)
@@ -1265,7 +1290,7 @@ def testAll():
   # This may test each plugin more than once, varying args for varying use cases.
 
   # Temporarily disabled, to run one at a time
-  if True:
+  if False:
     testEnginePlugin()
     testHealSelection()
     testHealTransparency()
@@ -1275,6 +1300,8 @@ def testAll():
     testFillPattern()
 
     testIndexedMode()
+
+  testBitDepth()
 
   # TODO test high bit-depth images
 

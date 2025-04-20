@@ -13,4 +13,5 @@ guint count_color_channels                                (GimpDrawable *drawabl
 gint  get_bytes_per_pixel_for_drawable                    (GimpDrawable *drawable);
 
 const Babl * get_working_format_for_drawable              (GimpDrawable *drawable);
+const Babl * get_working_format_for_mask                  (void);
 

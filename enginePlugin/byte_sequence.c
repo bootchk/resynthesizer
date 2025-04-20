@@ -265,43 +265,46 @@ byte_sequence_from_drawable_w_conversion(
   return raw_image_bytes;
 }
 
+/* Assert that a drawable is a mask with one component. 
+ * Not checking that it is not non-linear "Y' u8"
+ */
+static void
+assert_has_mask_format (GimpDrawable *mask_drawable)
+{
+  const Babl *maskFormat;
+  maskFormat = gimp_drawable_get_format (mask_drawable);
+  debugBablFormat ("mask", maskFormat);
+
+  g_assert (babl_format_get_n_components (maskFormat) == 1);
+}
+
+
 /*
 Get a working_byte_sequence from a drawable that is a selection mask.
 
-The drawable must be a selection mask, always 1 byte per pixel.
+The drawable must be a selection mask, having one component.
 
-The format is not converted
+The mask may have higher bit depth than 1 byte per pixel (e.g. 16-bit).
+GIMP seems to allow higher bit depth, but the engine does not use it.
+Convert to 8-bit depth.
 
 !!! Note not using a shadow buffer, when reading.
 */
 guchar *
-byte_sequence_from_mask_no_conversion(
+byte_sequence_from_mask (
   GimpDrawable *mask_drawable,
   gint         *raw_bytes_size  // OUT size of byte_sequence
   )
 {
   GeglBuffer *buffer;
-  const Babl *maskFormat;
-  const gchar *formatEncoding;
   gint        width = gimp_drawable_get_width (mask_drawable);
   gint        height = gimp_drawable_get_height (mask_drawable);
   guchar     *raw_image_bytes;
 
   buffer        = get_buffer(mask_drawable);
 
-  /*
-  Require is a mask:
-    one component
-    1 byte per pixel
-    not non-linear "Y' u8"
-  We check all this at once by comparing format strings.
-  */ 
-  maskFormat = gegl_buffer_get_format (buffer);
-  formatEncoding = babl_format_get_encoding (maskFormat);
-  g_assert (g_strcmp0 (formatEncoding, "Y u8") == 0);
-  debugBablFormat ("mask", maskFormat);
+  assert_has_mask_format (mask_drawable);
   
-
   *raw_bytes_size = width * height * 1;  // 1 byte per pixel
   raw_image_bytes = g_malloc(*raw_bytes_size);
 
@@ -315,7 +318,7 @@ byte_sequence_from_mask_no_conversion(
   gegl_buffer_get (buffer,
             NULL, // Entire extent of buffer  GEGL_RECTANGLE(0, 0, width, height),
             1.0,  // scale, float 1.0 is pixel for pixel
-            maskFormat,   // no conversion, same as format of mask
+            get_working_format_for_mask (),   // conversion to lower bit depth used by engine
             raw_image_bytes,
             GEGL_AUTO_ROWSTRIDE,
             GEGL_ABYSS_NONE);

@@ -266,6 +266,17 @@ get_working_format_for_drawable (GimpDrawable *drawable)
 }
 
 
+/*
+The engine works with a mask of one byte, non-linear.
+*/
+const Babl *
+get_working_format_for_mask (void)
+{
+  return babl_format ("Y u8");
+}
+
+
+
 /* 
 Return count of color channels, exclude alpha and any other channels.
 

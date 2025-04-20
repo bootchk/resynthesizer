@@ -44,7 +44,7 @@ byte_sequence_from_drawable_w_conversion(
   );
 
 guchar*
-byte_sequence_from_mask_no_conversion (
+byte_sequence_from_mask (
   GimpDrawable *drawable,
   gint         *raw_bytes_size  // OUT size of byte_sequence
   );
