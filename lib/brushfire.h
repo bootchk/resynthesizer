@@ -15,9 +15,9 @@ It is complicated by the fact that qsort compare funcs only take two parameters.
 So we create a struct having thing to be sorted (a target point coordinate)
 and having the associated value to be sorted by (proportional distance),
 and pass that to the compare func which sorts on the latter.
+*/
 
-
-
+/*
   Copyright (C) 2010, 2011  Lloyd Konneker
 
   This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@ and pass that to the compare func which sorts on the latter.
 */
 #if FALSE
 static void
-dumpTargetPoints(pointVector targetPoints)
+dumpTargetPoints(PointVector targetPoints)
 {
   guint i;
   for(i=0; i<targetPoints->len; i++)
@@ -71,7 +71,7 @@ grad (Coordinates a)
 /* Array of computed maximum distances over all points along a ray (radius) */
 static void
 prepare_max_cartesian_along_ray(
-    pointVector targetPoints,   // Already offsets from center
+    PointVector targetPoints,   // Already offsets from center
     guint* max_cartesian_along_ray
     )
 {
@@ -125,7 +125,7 @@ Precompute another field to sort on: proportional distance from center.
 */
 static GArray*
 targetPointsToSortArray(
-  pointVector targetPoints
+  PointVector targetPoints
   )
 {
   GArray* sortArray = g_array_sized_new (FALSE, TRUE, sizeof(TSortElementStruct), targetPoints->len);
@@ -150,7 +150,7 @@ targetPointsToSortArray(
 // Extract coordinates from sort array, and free the sort array
 static void
 targetPointsFromSortArray(
-    pointVector targetPoints,
+    PointVector targetPoints,
     GArray* sortArray
   )
 {

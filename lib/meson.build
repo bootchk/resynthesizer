@@ -33,6 +33,9 @@ libresynthesizer_sources = [
   'stats.c',
   'targetPixels.c',
   'map.c',
+  'targetPointsOrder.c',
+  'coordinates.c',
+  'bounds.c',
 ]
 
 # declare headers for the library, so #include <> works for library users

@@ -3,6 +3,7 @@
 #include <glib.h>
 #include <glib/gprintf.h>
 
+#include "coordinates.h"
 #include "engineTypes2.h"
 #include "engineParams.h"
 #include "imageSynthConstants.h"

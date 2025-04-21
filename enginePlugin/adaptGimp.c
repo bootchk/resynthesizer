@@ -19,6 +19,7 @@
 #include <libgimp/gimp.h>
 
 #include "drawable.h"
+#include "coordinates.h"
 #include "engineTypes2.h"
 #include "map.h"
 #include "mapIndex.h"

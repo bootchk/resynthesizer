@@ -70,9 +70,9 @@ typedef struct synthArgsStruct {
   Map* recentProberMap; // IN/OUT
   Map* hasValueMap;     // IN/OUT
   Map* sourceOfMap;     // IN/OUT
-  pointVector targetPoints; // IN
-  pointVector corpusPoints; // IN
-  pointVector sortedOffsets; // IN
+  PointVector targetPoints; // IN
+  PointVector corpusPoints; // IN
+  PointVector sortedOffsets; // IN
   GRand *prng;
   gushort * corpusTargetMetric;   // array pointers TPixelelMetricFunc
   guint * mapsMetric;             // TMapPixelelMetricFunc
@@ -98,9 +98,9 @@ newSynthesisArgs(
   Map* recentProberMap, // IN/OUT
   Map* hasValueMap,     // IN/OUT
   Map* sourceOfMap,     // IN/OUT
-  pointVector targetPoints, // IN
-  pointVector corpusPoints, // IN
-  pointVector sortedOffsets, // IN
+  PointVector targetPoints, // IN
+  PointVector corpusPoints, // IN
+  PointVector sortedOffsets, // IN
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
@@ -148,9 +148,9 @@ synthesisThread(void * uncastArgs)
   Map* recentProberMap                = args->recentProberMap;
   Map* hasValueMap                    = args->hasValueMap;
   Map* sourceOfMap                    = args->sourceOfMap;
-  pointVector targetPoints            = args->targetPoints;
-  pointVector corpusPoints            = args->corpusPoints;
-  pointVector sortedOffsets           = args->sortedOffsets;
+  PointVector targetPoints            = args->targetPoints;
+  PointVector corpusPoints            = args->corpusPoints;
+  PointVector sortedOffsets           = args->sortedOffsets;
   GRand *prng                         = args->prng;
   gushort * corpusTargetMetric        = args->corpusTargetMetric; // array pointers TPixelelMetricFunc
   guint * mapsMetric                  = args->mapsMetric;
@@ -201,9 +201,9 @@ startThread(
   Map* recentProberMap,
   Map* hasValueMap,
   Map* sourceOfMap,
-  pointVector targetPoints,
-  pointVector corpusPoints,
-  pointVector sortedOffsets,
+  PointVector targetPoints,
+  PointVector corpusPoints,
+  PointVector sortedOffsets,
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
@@ -271,9 +271,9 @@ refiner(
   Map* recentProberMap,
   Map* hasValueMap,
   Map* sourceOfMap,
-  pointVector targetPoints,
-  pointVector corpusPoints,
-  pointVector sortedOffsets,
+  PointVector targetPoints,
+  PointVector corpusPoints,
+  PointVector sortedOffsets,
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
@@ -424,9 +424,9 @@ refiner(
   Map* recentProberMap,
   Map* hasValueMap,
   Map* sourceOfMap,
-  pointVector targetPoints,
-  pointVector corpusPoints,
-  pointVector sortedOffsets,
+  PointVector targetPoints,
+  PointVector corpusPoints,
+  PointVector sortedOffsets,
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,

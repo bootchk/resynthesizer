@@ -3,7 +3,8 @@
 
 #include <glib.h>
 
-#include "engineTypes2.h"
+#include "coordinates.h"
+#include "engineTypes2.h"  // Pixelel
 #include "imageSynthConstants.h"
 #include "imageFormat.h"
 #include "map.h"

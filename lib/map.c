@@ -36,7 +36,8 @@ Here, there are separate functions for creating and indexing each type of map.
 
 #include <glib.h>
 
-#include "engineTypes2.h"        // Coordinates, etc.
+#include "coordinates.h"
+#include "engineTypes2.h"        // Pixelel
 #include "imageSynthConstants.h" // MASK_PIXELEL_INDEX
 
 #include "map.h"         

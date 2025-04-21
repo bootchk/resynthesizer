@@ -48,9 +48,9 @@ refiner(
   Map* recentProberMap,
   Map* hasValueMap,
   Map* sourceOfMap,
-  pointVector targetPoints,
-  pointVector corpusPoints,
-  pointVector sortedOffsets,
+  PointVector targetPoints,
+  PointVector corpusPoints,
+  PointVector sortedOffsets,
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,

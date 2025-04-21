@@ -2,7 +2,8 @@
 
 #include <libgimp/gimp.h>
 
-#include "engineTypes2.h"
+#include "engineTypes2.h"  // Pixelel
+#include "coordinates.h"
 #include "map.h"
 #include "adaptGimp.h"
 

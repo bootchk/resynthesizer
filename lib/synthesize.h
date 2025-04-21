@@ -181,7 +181,7 @@ prepare_neighbors(
   Map* targetMap,
   Map* hasValueMap,
   Map* sourceOfMap,
-  pointVector sortedOffsets,
+  PointVector sortedOffsets,
   TNeighbor neighbors[]
   ) 
 {
@@ -422,9 +422,9 @@ synthesize(
   Map* recentProberMap, // IN/OUT
   Map* hasValueMap,     // IN/OUT
   Map* sourceOfMap,     // IN/OUT
-  pointVector targetPoints, // IN
-  pointVector corpusPoints, // IN
-  pointVector sortedOffsets, // IN
+  PointVector targetPoints, // IN
+  PointVector corpusPoints, // IN
+  PointVector sortedOffsets, // IN
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,

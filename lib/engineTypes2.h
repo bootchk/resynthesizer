@@ -7,16 +7,12 @@ Types fundamental to engine.
 typedef guint8 Pixelel;
 
 
-/*
-Coordinates class
 
-!!! These are signed ints, can represent offsets or positive coordinates 
-Similar to GdkPoint.
+/*
+Class 1D array (vector or sequence) of Coordinates.
 */
-typedef struct {
-  gint x;
-  gint y;
-} Coordinates;
+typedef GArray * PointVector;
+
 
 
 

@@ -25,8 +25,42 @@ TODO ordering by a thinning, or brushfire, algorithm, i.e. distance from context
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#include <glib.h>
+#include <math.h>   // brushfire.h needs atan2
 
+#include "coordinates.h"
+#include "engineTypes2.h"  // PointVector, Pixelel
+#include "bounds.h"   // Bounds, inlined
+
+#include "engineParams.h"         // TImageSynthParameters
+#include "imageSynthConstants.h"  // IMAGE_SYNTH_BAND_FRACTION
+
+#include "targetPointsOrder.h"
+
+// Declarations and definitions
 #include "brushfire.h"
+
+
+
+/* swap two elements of PointVector */
+static inline void
+swap_vector_elements(
+  PointVector vector,
+  guint size,
+  guint i, 
+  guint j
+  ) 
+{
+  Coordinates temp;
+  
+  g_assert(i<size);
+  g_assert(j<size);  
+  
+  temp = g_array_index(vector, Coordinates, i);
+  g_array_index(vector, Coordinates, i) = g_array_index(vector, Coordinates, j);
+  g_array_index(vector, Coordinates, j) = temp;
+}
+
 
 /*
 Order vector of target pixels: shuffle randomly
@@ -34,7 +68,7 @@ This is the single, original method of randomizing.
 */
 static void 
 orderTargetPointsRandom(
-  pointVector targetPoints,
+  PointVector targetPoints,
   GRand *prng
   ) 
 {
@@ -59,7 +93,7 @@ elements can only move the band size forward.
 TODO another method of random bands that is symmetric.
 */
 static void randomizeBandsTargetPoints(
-  pointVector targetPoints,
+  PointVector targetPoints,
   GRand *prng
   ) 
 {
@@ -127,7 +161,7 @@ Add or subtract a point (e.g. a center.)
 static void
 targetPoints_to_offsets(
   Coordinates center,
-  pointVector targetPoints
+  PointVector targetPoints
   )
 {
   // Coords => offsets from center
@@ -141,7 +175,7 @@ targetPoints_to_offsets(
 static void
 targetPoints_from_offsets(
   Coordinates center,
-  pointVector targetPoints
+  PointVector targetPoints
   )
   {
   guint i;
@@ -161,7 +195,7 @@ static void
 orderTargetPointsRandomDirectional(
   // c++ bool (*compare) (const Coordinates, const Coordinates)
   gint (*compare)(const void*, const void*),
-  pointVector targetPoints,
+  PointVector targetPoints,
   GRand *prng
   ) 
 {
@@ -191,7 +225,7 @@ static void
 orderTargetPointsRandomBrushfire(
   // c++ bool (*compare) (const Coordinates, const Coordinates)
   gint (*compare)(const void*, const void*),
-  pointVector targetPoints,
+  PointVector targetPoints,
   GRand *prng
   )
 {
@@ -213,12 +247,12 @@ Random squeeze: order the target points both directions, in and out by distance 
 Used if the target is a donut, with context inside and outside.
 */
 static void orderTargetPointsRandomSqueeze(
-  pointVector targetPoints,
+  PointVector targetPoints,
   GRand *prng
   )
 {
   guint i;
-  pointVector target_temp;
+  PointVector target_temp;
   
   Coordinates center = get_center(targetPoints, targetPoints->len);
   
@@ -274,7 +308,7 @@ specified by parameter use_border.
 int 
 orderTargetPoints(
   TImageSynthParameters* parameters,
-  pointVector targetPoints,
+  PointVector targetPoints,
   GRand *prng
   ) 
 {

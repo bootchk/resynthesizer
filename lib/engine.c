@@ -112,21 +112,23 @@ It doesn't make tiles in the target, it makes a target that is suitable as a til
 #include "imageFormat.h"
 #include "imageFormatIndicies.h"
 
+// Order is important 
+#include "coordinates.h"
 #include "map.h"
 #include "engineParams.h"
 #include "engine.h"
 #include "targetPixels.h"
 #include "stats.h"  // For debugging, statistics
+#include "targetPointsOrder.h"
+
 
 /*
 Source not compiled separately. Is separate to reduce file sizes and coupling.
 Also, some functions are inlined.
 */
 
-#include "engineTypes.h"
 #include "mapIndex.h" // inlined, used in innermost loop
 #include "matchWeighting.h"
-#include "orderTarget.h"
 
 
 
@@ -296,7 +298,7 @@ prepareTargetPoints(
   TFormatIndices* indices,
   Map* targetMap,
   Map* hasValueMap,
-  pointVector* targetPoints
+  PointVector* targetPoints
   )
 {
   guint x;
@@ -356,7 +358,7 @@ void
 prepareCorpusPoints (
   TFormatIndices* indices,
   Map* corpusMap,
-  pointVector* corpusPoints
+  PointVector* corpusPoints
   )
 {
   /* Reserve size of pixmap, but excess, includes unselected. */
@@ -388,7 +390,7 @@ prepareCorpusPoints (
 
 static inline Coordinates
 randomCorpusPoint (
-  pointVector corpusPoints,
+  PointVector corpusPoints,
   GRand * prng
   )
 {
@@ -421,7 +423,7 @@ static void
 prepareSortedOffsets(
   Map* targetMap,
   Map* corpusMap,
-  pointVector* sortedOffsets
+  PointVector* sortedOffsets
   )
 {
   // Minimum().  Use smaller dimension of corpus and target.
@@ -532,9 +534,9 @@ engine(
   1-D array (vector) of Coordinates.
   Subsets of image and corpus, subsetted by selection and alpha.
   */
-  pointVector targetPoints;   // For synthesizing target in an order (ie random)
-  pointVector corpusPoints;   // For sampling corpus randomly.
-  pointVector sortedOffsets;  // offsets (signed coordinates) for finding neighbors.
+  PointVector targetPoints;   // For synthesizing target in an order (ie random)
+  PointVector corpusPoints;   // For sampling corpus randomly.
+  PointVector sortedOffsets;  // offsets (signed coordinates) for finding neighbors.
 
   GRand *prng;  // pseudo random number generator
 
