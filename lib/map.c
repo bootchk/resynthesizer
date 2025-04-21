@@ -1,18 +1,21 @@
 /*
 Maps i.e. 2D, coordinate addressable, arrays of element.
 
-lkk I couldn't find a suitable library that implement this.
+lkk I couldn't find a suitable C library that implement this.
 So this is a conventional implementation using pointer arithmentic on a 1-D array.
 Here, the 1-D array is a GArray.
 
 In earlier resynthesizer c++ coding, this used templates.
-That is, a Bitmap was a 2D array class parameterized by the type of the element:
+That is, a Map was a 2D array class parameterized by the type of the element:
   Pixel (byte array) 
   Coordinates
   int
   boolean (represented by single byte)
 Here, there are separate functions for creating and indexing each type of map.
+*/
 
+
+/*
   Copyright (C) 2010, 2011  Lloyd Konneker
 
   This program is free software; you can redistribute it and/or modify
@@ -30,7 +33,17 @@ Here, there are separate functions for creating and indexing each type of map.
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Note, included, not compiled separately
+
+#include <glib.h>
+
+#include "engineTypes2.h"        // Coordinates, etc.
+#include "imageSynthConstants.h" // MASK_PIXELEL_INDEX
+
+#include "map.h"         
+
+#include "mapIndex.h"            // Inlined indexing methods
+
+
 
 void
 free_map (Map *map)

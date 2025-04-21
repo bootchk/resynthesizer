@@ -1,6 +1,4 @@
 /* 
-Fundamental types of the engine.
-
   Copyright (C) 2010, 2011  Lloyd Konneker
 
   This program is free software; you can redistribute it and/or modify
@@ -31,6 +29,11 @@ typedef struct {
   guint depth; 
   GArray * data;
   } Map;
+
+
+
+
+
 
 extern void
 free_map (Map *);

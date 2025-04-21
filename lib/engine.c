@@ -125,7 +125,6 @@ Also, some functions are inlined.
 
 #include "engineTypes.h"
 #include "mapIndex.h" // inlined, used in innermost loop
-#include "mapOps.h"   // definitions for map.h
 #include "matchWeighting.h"
 #include "orderTarget.h"
 
