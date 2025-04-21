@@ -37,42 +37,6 @@ Functions to read and write pixmaps and bytemaps from and to Gimp.
 
 
 
-// TODO move this to the map source
-/*
-Blit (copy a sub-rect) of source map to destination map.
-Here, the entire pixel element of the map is copied.
-
-original c++ code, which only copied a byte:
-    for(gint y=0;y<temp_mask.height;y++)
-      for(gint x=0;x<temp_mask.width;x++)
-        mask.at(x+drawable_relative_x, y+drawable_relative_y)[0] =
-          temp_mask.at(x,y)[0]; // Only one channel (byte)
-*/
-static void
-blit_map(
-  Map* dest_map,
-  Map* source_map,
-  gint offset_x,
-  gint offset_y
-  )
-{
-  guint y;
-  guint x;
-
-  for(y=0;y<source_map->height;y++)
-    for(x=0;x<source_map->width;x++)
-    {
-      Coordinates coords = {x,y};
-      Coordinates dest_coords = {x+offset_x, y+offset_y};
-
-      *pixmap_index(dest_map, dest_coords) = *pixmap_index(source_map, coords);
-    }
-}
-
-
-
-
-
 /*
 Copy some channels of pixmap to GimpDrawable.
 (Usually just the color and alpha channels, omitting the map channel and other channels.)
@@ -447,7 +411,16 @@ fetch_image_and_mask(
 }
 
 
-/* Test Gegl format conversions to and from byte_sequence. */
+/* 
+Test Gegl format conversions to and from byte_sequence. 
+
+Used only during development.
+Get byte sequence from drawable, and then back to drawable.
+The drawable has-a BablFormat.
+The round trip converts to the resynthesizer working format, and back.
+Afterwards, the drawable should have the original format,
+but some accuracy might have been lost.
+*/
 void
 testGegl (
   GimpDrawable *drawable)   
@@ -460,55 +433,6 @@ testGegl (
   g_free(raw_image_bytes);
 }
 
-
-#ifdef OLD_CODE
-void
-testGegl (
-  GimpDrawable *image_drawable)     // IN image: target or corpus drawable
-{
-  GeglBuffer *buffer;
-  const Babl *workingFormat;    // The format that engine works with
-  guint       raw_bytes_size;
-  gint        width = gimp_drawable_get_width (image_drawable);
-  gint        height = gimp_drawable_get_height (image_drawable);
-  guchar     *raw_image_bytes;
-
-  buffer = get_buffer(image_drawable);
-
-  raw_bytes_size = width * height * 4;
-  raw_image_bytes = g_malloc(raw_bytes_size);
-
-  workingFormat = babl_format ("RGBA u8");
-
-  /*
-  Get all the pixelels from drawable into raw_image_bytes sequence.
-  Note x1,y1 are in drawable coords i.e. relative to drawable
-  The drawable may be offset from the canvas and other drawables.
-  */
-  gegl_buffer_get (buffer,
-            GEGL_RECTANGLE(0, 0, width, height),
-            1.0,  // scale, float 1.0 is pixel for pixel
-            workingFormat,   // convert format of drawable to working format.
-            raw_image_bytes,
-            GEGL_AUTO_ROWSTRIDE,
-            GEGL_ABYSS_NONE);
-
-  // When image bit-depth is 16, a conversion was done.
-  // Reverse the get, with opposite conversion.
-
-  gegl_buffer_set(buffer,
-    GEGL_RECTANGLE(0,0, width, height),
-    0,  // mipmap level, 0 => 1:1
-    workingFormat,   // format of the source byte_sequence
-    raw_image_bytes,
-    GEGL_AUTO_ROWSTRIDE);
-
-// unref is documented to flush automatically, but it doesn't, so do it explicitly
-gegl_buffer_flush(buffer);
-
-g_object_unref (buffer);
-}
-#endif
 
 
 /*

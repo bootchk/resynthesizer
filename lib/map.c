@@ -183,4 +183,34 @@ interleave_mask(
 }
 
 
+/*
+Blit (copy a sub-rect) of source map to destination map.
+Here, the entire pixel element of the map is copied.
 
+original c++ code, which only copied a byte:
+    for(gint y=0;y<temp_mask.height;y++)
+      for(gint x=0;x<temp_mask.width;x++)
+        mask.at(x+drawable_relative_x, y+drawable_relative_y)[0] =
+          temp_mask.at(x,y)[0]; // Only one channel (byte)
+*/
+/* Not used. */
+static void
+blit_map(
+  Map* dest_map,
+  Map* source_map,
+  gint offset_x,
+  gint offset_y
+  )
+{
+  guint y;
+  guint x;
+
+  for(y=0;y<source_map->height;y++)
+    for(x=0;x<source_map->width;x++)
+    {
+      Coordinates coords = {x,y};
+      Coordinates dest_coords = {x+offset_x, y+offset_y};
+
+      *pixmap_index(dest_map, dest_coords) = *pixmap_index(source_map, coords);
+    }
+}
