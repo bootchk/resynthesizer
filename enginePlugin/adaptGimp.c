@@ -108,8 +108,6 @@ static void
 pixmap_from_nonmask_drawable(
   Map                 map,
   GimpDrawable       *drawable,
-  gint                x,                       /* origin of rect to copy. */
-  gint                y,
   gint                pixelel_offset,          /* Which pixelels to copy to. */
   guint               pixelel_count_to_copy    /* Count of pixels to copy, might omit the alpha. */
   )
@@ -117,8 +115,8 @@ pixmap_from_nonmask_drawable(
   guchar *raw_image_bytes;
   gint    raw_bytes_size;
 
-  g_debug ("%s pixel offset %d pixel count %d origin x %d origin y %d", 
-    G_STRFUNC, pixelel_offset, pixelel_count_to_copy, x, y);
+  g_debug ("%s pixel offset %d pixel count %d", 
+    G_STRFUNC, pixelel_offset, pixelel_count_to_copy);
 
   raw_image_bytes = byte_sequence_from_drawable_w_conversion (drawable, &raw_bytes_size);
 
@@ -154,23 +152,25 @@ pixmap_from_nonmask_drawable(
 
 
 /*
-Adapt GimpDrawable to pixmap.
-Where drawable is a selection mask.
+Adapt GimpChannel to pixmap.
+Where channel is a selection mask.
 Format conversion can occur, from high bit-depth to bit-depth 8 bits.
-Requires drawable have exactly component: the mask value.
-This copies exactly one component from drawable to pixmap.
+Requires channel is drawable have exactly component: the mask value.
+This copies exactly one component from channel to pixmap.
 
 Can offset Pixelel into the Pixel of the pixmap.
 
-Copy a sub-rect from the drawable.
+Copy a sub-rect from the channel.
+The sub-rect dimensions are taken from the pixmap.
+The sub-rect must be inside the channel: x + sub-rect.width < channel.width
 */
 static void
-pixmap_from_mask_drawable(
-  Map                 map,
-  GimpDrawable       *drawable,
-  gint                x,              /* origin of rect to copy. */
-  gint                y,
-  gint                pixelel_offset  /* Which pixelels to copy to. */
+pixmap_from_mask_channel(
+  Map                 map,          // OUT
+  GimpChannel        *channel,      // IN
+  gint                subrect_ULX,  // origin of rect to copy.
+  gint                subrect_ULY,
+  gint                pixelel_offset  // Which pixelel to copy to.
   /* count of pixelels is NOT an argument, is 1. */
   )
 {
@@ -178,26 +178,31 @@ pixmap_from_mask_drawable(
   gint    raw_bytes_size;
 
   g_debug ("%s pixel offset %d origin x %d origin y %d", 
-    G_STRFUNC, pixelel_offset, x, y);
+    G_STRFUNC, pixelel_offset, subrect_ULX, subrect_ULY);
 
   /* 
   This is the crux difference from pixmap_from_nonmask_drawable:
   get a byte_sequence of one byte per pixel (byte depth), i.e. one component.
+  From a subrect of the SelectionMask channel.
   */
-  raw_image_bytes = byte_sequence_from_mask (drawable, &raw_bytes_size);
+  raw_image_bytes = byte_sequence_from_mask_subrect (
+    (GimpDrawable*)channel,
+    subrect_ULX, subrect_ULY,
+    map.width, map.height,
+    &raw_bytes_size);
 
   g_debug ("%s raw bytes empty? %d", G_STRFUNC, raw_bytes_all_zero (raw_image_bytes, raw_bytes_size));
 
-  /* !!! Note our pixmap is same width, height as drawable, but bit-depths may differ. */
+  /* !!! Note our pixmap is same width, height as channel, but bit-depths may differ. */
   
   g_assert(raw_bytes_size > 0);
 
   /* Require depth of passed map greater then 1 moved byte after offset. */
   g_assert( 1 + pixelel_offset <= map.depth );
 
-  // assert raw_image_bytes holds one byte per pixel from a region of drawable
+  // assert raw_image_bytes holds one byte per pixel from a region of channel
 
-  set_byte_sequence_to_pixmap (map, drawable, raw_image_bytes,
+  set_byte_sequence_to_pixmap (map, (GimpDrawable*) channel, raw_image_bytes,
     1,                      // e.g. copy one byte
     pixelel_offset,         // e.g. skip mask byte in destination
     raw_bytes_size);        // !!! Size of raw_image_bytes
@@ -236,8 +241,10 @@ is_intersecting_selection(
     gint x1, y1, x2, y2;  // Not used, out from selection_bounds
     
     is_selection = selection_bounds(drawable, &x1, &y1, &x2, &y2);
+    /* is_selection is True when there is a selection,
+     * but it doesn't mean it intersects the drawable.
+     */
   }
-  
   {
     // Not used, out from selection_intersect()
     gint drawable_relative_x, drawable_relative_y;
@@ -246,6 +253,9 @@ is_intersecting_selection(
     is_selection_intersect = selection_intersect(drawable,
       &drawable_relative_x, &drawable_relative_y, 
       &intersect_width, &intersect_height);
+    /* is-selection_intersect is True
+     * when (is selection AND intersects) OR is no selection.
+     */
   }
 
   result = ( is_selection && is_selection_intersect);
@@ -266,30 +276,32 @@ is_pixmap_all_zero (Map map)
   return result;
 }
 
+/*
+Fills a Map with the selection's intersection with the drawable.  
+The Map is a ByteMap, bit depth 8.
+The Map is passed in with unknown values. 
+Requires the Map is the same size as the Drawable.
+
+Fills the Map entirely.
+Zero, except non-zero values where the user's selection intersects the drawable.
+Values where selection intersects range from 1-255, allowing shades of selection. 
+
+When the user's selection does not intersect the drawable,
+the ByteMap is all zero.
+
+The user's selection is itself a Drawable.
+*/
 static void
 get_selection_mask_pixmap_from_drawable (
-  Map          *mask_pixmap,
-  GimpDrawable *drawable)
+  Map          *mask_pixmap,  // IN/OUT side effect is filling
+  GimpDrawable *drawable)     
 {
-  GimpDrawable *mask_drawable;
+  GimpChannel *selection_mask_channel;
+  Map          temp_bytemap;
 
-  // Requires selection intersects drawable, else mask_pixmap will be all zero.
-  mask_drawable = get_selection(drawable);
-
-  g_debug ("%s empty? %d", G_STRFUNC, gimp_selection_is_empty (gimp_item_get_image ((GimpItem*)mask_drawable)));
-
-  // mask_drawable is a separate drawable, same size but a mask
-
-  pixmap_from_mask_drawable(*mask_pixmap, mask_drawable,
-    0, 0,
-    MASK_PIXELEL_INDEX);
-
-  #ifdef OLD
-  Map temp_mask;
-  GimpDrawable *mask_drawable;
-  // GeglBuffer *mask_buffer;
-  gint xoff,yoff;
-
+  // !!! The coordinates are in the coordinate system of the drawable, not the image !!!
+  gint intersect_ULX_DCS, intersect_ULY_DCS, intersect_width, intersect_height;
+  
   /* Build a mask_pixmap that is unselected where the selection channel doesn't intersect,
   and having the value of the selection channel where it does intersect.
   */
@@ -297,42 +309,69 @@ get_selection_mask_pixmap_from_drawable (
   /* Initially Unselect full mask_pixmap */
   set_bytemap(mask_pixmap, MASK_UNSELECTED);
 
-  /* Get the selection intersection's bytemap into temp_mask */
-  new_bytemap(&temp_mask, intersect_width, intersect_height);
+  /* Get the bounds of the SelectionMask intersection with drawable. */
+  (void) /* Not use whether the intersection is empty. */
+    gimp_drawable_mask_intersect(
+      drawable, 
+      &intersect_ULX_DCS, &intersect_ULY_DCS,
+      &intersect_width, &intersect_height);
 
-  /* Get Gimp drawable for selection channel.  It is in image coords, i.e. anchored at 0,0 image */
-  // OLD mask_drawable_id = gimp_image_get_selection(gimp_item_get_image(drawable->drawable_id));
-  // mask_drawable = gimp_drawable_get(mask_drawable_id);
-  mask_drawable = get_selection(drawable);
+  /* Get new temp_bytemap the size of the selection intersection's.
+   * temp_bytemap can be smaller than drawable.
+   * temp_bytemap is not initialized.
+   */
+  new_bytemap (&temp_bytemap, intersect_width, intersect_height);
 
-  // g_assert( mask_get_pixelels_per_pixel (mask_drawable) == 1);   /* Masks have one channel. */
+  /* 
+  Get Gimp Channel/Drawable for SelectionMask channel.  
+  It is in image/canvas coords.
+  It can be larger than any drawable in the canvas.
+  It can be smaller than the given drawable.
+  It does NOT cover all drawables, when drawables lie outside the image/canvas.
+  The offset of the drawable is always 0,0 i.e. origin in the image/canvas coordinate system.
 
-  offsets(drawable, &xoff, &yoff); // Offset of layer in image
+  Passing the drawable, but SelectionMask is for the image of the drawable.
+  */
+  selection_mask_channel = (GimpChannel*) get_selection (drawable);
+
+  // Assert the mask is a channel, i.e. a drawable of one component.
+  // But the mask may be high-bit depth.
 
   /*
-  Copy selection intersection bytemap from Gimp to our temp_mask bytemap.
+  Copy selection intersection from Gimp to our temp_bytemap.
 
-  Destination is the first channel.  Assert only one channel in the drawable.
-
-  Since mask_drawable is image size, in image coords, calculate coords of intersection in image coords =
-  (offset of drawable plus drawable relative coords of selection)
+  Destination pixelel is the first. 
+  The source mask has one pixelel per pixel, and so does the destination bytemap.
   */
-  pixmap_from_drawable(temp_mask, mask_drawable,
-    drawable_relative_x+xoff, drawable_relative_y+yoff, 
-    MASK_PIXELEL_INDEX, 
-    1); // !!! Only one channel in mask_pixmap, moving one byte
-    // OLD mask_get_pixelels_per_pixel (mask_drawable));
+  {
+    gint drawable_x_offset_ICS, drawable_y_offset_ICS;
+    gint sub_rect_ULX_ICS, sub_rect_ULY_ICS;
 
-  // Obsolete gimp_drawable_detach(mask_drawable);
+    offsets(drawable, &drawable_x_offset_ICS, &drawable_y_offset_ICS); // Offset of layer in canvas
 
-  /* Blit the selection intersection onto our mask_pixmap, which is only layer size, not image size. */
-  blit_map(mask_pixmap, &temp_mask, drawable_relative_x, drawable_relative_y);
+    /* Mask channel is image size and image coordinate system.
+     * Convert intersection coordinates in Drawable coordinate system to coordinate in Image coordinate system.
+     * Add drawable offset (can be negative) to coordinates in DCS
+     */
+    sub_rect_ULX_ICS = intersect_ULX_DCS + drawable_x_offset_ICS;
+    sub_rect_ULY_ICS = intersect_ULY_DCS + drawable_y_offset_ICS;
+  
+  pixmap_from_mask_channel(temp_bytemap, selection_mask_channel,
+    sub_rect_ULX_ICS, 
+    sub_rect_ULY_ICS, 
+    MASK_PIXELEL_INDEX);  // Dest pixelel is the first.
+  }
 
-  free_map(&temp_mask);
-  #endif
+  /* Blit the selection intersection onto our mask_pixmap, which is layer size, not image size. 
+   * The layer can be larger than image.
+   *
+   * The mask_pixmap and the temp_bytemap are both byte_maps, one byte depth.
+   * blit_map moves the entire Pixel, which is one Pixelel i.e. byte.
+   */
+  blit_map(mask_pixmap, &temp_bytemap, intersect_ULX_DCS, intersect_ULY_DCS);
 
+  free_map(&temp_bytemap);
 }
-
 
 
 
@@ -401,7 +440,7 @@ fetch_image_and_mask(
   new_pixmap(pixmap, width(drawable), height(drawable), pixelel_count);
 
   /* Get color, alpha channels */
-  pixmap_from_nonmask_drawable(*pixmap, drawable, 0,0, FIRST_PIXELEL_INDEX, 
+  pixmap_from_nonmask_drawable(*pixmap, drawable, FIRST_PIXELEL_INDEX, 
                         get_working_pixelels_per_pixel_for_target_or_corpus (drawable));
 
   fetch_mask(drawable, mask, default_mask_value); /* Get mask channel */
@@ -473,7 +512,7 @@ fetch_image_mask_map(
     /* Count map channels excluding alpha. */
     guint pixelels_to_copy = get_working_pixelels_per_pixel_for_weight_map (map_drawable);
     
-    pixmap_from_nonmask_drawable(*pixmap, map_drawable, 0,0, map_offset, pixelels_to_copy);
+    pixmap_from_nonmask_drawable(*pixmap, map_drawable, map_offset, pixelels_to_copy);
   }
 }
 

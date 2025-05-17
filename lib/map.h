@@ -87,4 +87,10 @@ interleave_mask(
   Map *mask
   );
 
-
+extern void
+blit_map(
+  Map* dest_map,
+  Map* source_map,
+  gint offset_x,
+  gint offset_y
+  );

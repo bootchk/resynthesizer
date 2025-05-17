@@ -1,18 +1,15 @@
-
-
 // Functions on GimpDrawable
 
 // Many of these gint should be guint, but Gimp declares gint, so to avoid compiler warnings use gint
 
-// Obsolete concept: bytes per pixel
-// gint             bpp   (GimpDrawable *d);
+// Obsolete concept: bytes per pixel: gint bpp (GimpDrawable *d);
 
 gint             width (GimpDrawable *d);
 gint             height(GimpDrawable *d);
 
-GimpImageType     imageType(GimpDrawable *d);
-gboolean          is_rgb   (GimpDrawable *d);
-gboolean          is_gray  (GimpDrawable *d);
+GimpImageType     imageType (GimpDrawable *d);
+gboolean          is_rgb    (GimpDrawable *d);
+gboolean          is_gray   (GimpDrawable *d);
 gboolean          is_indexed(GimpDrawable *d);
 gboolean          has_alpha (GimpDrawable *d);
 
@@ -20,7 +17,7 @@ GeglBuffer * get_buffer       (GimpDrawable *d);
 GeglBuffer * get_shadow_buffer(GimpDrawable *d);
 gboolean     merge_shadow     (GimpDrawable *d);
 
-void        update(
+void update(
   GimpDrawable *d,
   gint lx,
   gint ly,

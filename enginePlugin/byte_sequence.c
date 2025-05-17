@@ -50,13 +50,17 @@ debugPixmap (char * name, Map *map)
 
 
 /* 
-Return a new, empty, allocated non-sparse ByteSequence 
-of the color and alpha Pixelels from a working Pixmap.
+Return a new, empty, allocated non-sparse ByteSequence
+of the size to hold the color and alpha Pixelels from a working Pixmap.
+The ByteSequence is not initialized.
 Caller must free it.
 
 Note the byte_sequence is the same depth as the pixmap (8-bit)
-but only the color and alpha Pixelels are copied.
+but only will hold the color and alpha Pixelels.
 The byte_sequence is NOT necessarily the same depth as the drawable.
+
+The drawable is only passed because it knows working_pixelels_per_pixel.
+(The pixmap does not know and may hold more pixelels e.g. for mask and map.)
 */
 guchar*
 empty_byte_sequence_for_pixmap(
@@ -111,6 +115,8 @@ skipping some pixelels in the destination pixel.
 
 The pixelel_count_to_copy is the count of Pixelels in the source Pixel.
 Typically 3 for color and 1 for alpha, but can be different.
+
+Requires the dest_pixmap is same size in bytes as the byte_sequence.
 */
 void
 set_byte_sequence_to_pixmap (
@@ -216,7 +222,9 @@ This converts to the working format of the engine.
 
 The drawable can be a corpus or target or a weight_map.
 The drawable should not be a selection mask,
-which is never converted, always 1 byte per pixel.
+masks are handled differently.
+
+This gets the entire contenst of the drawable, not a subrect.
 
 !!! Note not using a shadow buffer, when reading.
 */
@@ -236,6 +244,7 @@ byte_sequence_from_drawable_w_conversion(
 
   *raw_bytes_size = width * height * get_working_pixelels_per_pixel_for_drawable (drawable);
   raw_image_bytes = g_malloc(*raw_bytes_size);
+  /* bytes are unitialized. */
 
   g_debug ("%s w: %d h: %d byte size: %d", G_STRFUNC, width, height, *raw_bytes_size);
 
@@ -267,8 +276,11 @@ byte_sequence_from_drawable_w_conversion(
   return raw_image_bytes;
 }
 
-/* Assert that a drawable is a mask with one component. 
- * Not checking that it is not non-linear "Y' u8"
+
+/* 
+Assert that a drawable is a mask with one component. 
+Not checking that it is not non-linear "Y' u8"
+Not checking that it is one byte i.e. it may be u16.
  */
 static void
 assert_has_mask_format (GimpDrawable *mask_drawable)
@@ -281,10 +293,17 @@ assert_has_mask_format (GimpDrawable *mask_drawable)
 }
 
 
+
 /*
-Get a working_byte_sequence from a drawable that is a selection mask.
+Get a working_byte_sequence from 
+sub rect of drawable that is a selection mask.
+
+Returns the byte_sequence.
 
 The drawable must be a selection mask, having one component.
+
+The selection mask is size of image (canvas)
+and may be larger than other drawables of the image.
 
 The mask may have higher bit depth than 1 byte per pixel (e.g. 16-bit).
 GIMP seems to allow higher bit depth, but the engine does not use it.
@@ -293,32 +312,36 @@ Convert to 8-bit depth.
 !!! Note not using a shadow buffer, when reading.
 */
 guchar *
-byte_sequence_from_mask (
+byte_sequence_from_mask_subrect (
   GimpDrawable *mask_drawable,
+  gint          subrect_origin_X,
+  gint          subrect_origin_Y,
+  gint          subrect_width,
+  gint          subrect_height,
   gint         *raw_bytes_size  // OUT size of byte_sequence
   )
 {
   GeglBuffer *buffer;
-  gint        width = gimp_drawable_get_width (mask_drawable);
-  gint        height = gimp_drawable_get_height (mask_drawable);
   guchar     *raw_image_bytes;
 
-  buffer        = get_buffer(mask_drawable);
+  buffer = get_buffer(mask_drawable);
 
   assert_has_mask_format (mask_drawable);
   
-  *raw_bytes_size = width * height * 1;  // 1 byte per pixel
+  *raw_bytes_size = subrect_width * subrect_height * 1;  // 1 byte per pixel
   raw_image_bytes = g_malloc(*raw_bytes_size);
+  /* Bytes are not initialized. */
 
-  g_debug ("%s w: %d h: %d byte size: %d", G_STRFUNC, width, height, *raw_bytes_size);
+  g_debug ("%s w: %d h: %d byte size: %d", G_STRFUNC, subrect_width, subrect_height, *raw_bytes_size);
 
   /*
-  Get all the pixelels from drawable into raw_image_bytes sequence.
-  Note x1,y1 are in drawable coords i.e. relative to drawable
+  Get subrect from drawable into raw_image_bytes sequence.
+  Converts from any higher bit-depth to 8-bit depth, yields one byte per pixel.
+  Note origin coords are in coordinate system of drawable.
   The drawable may be offset from the canvas and other drawables.
   */
   gegl_buffer_get (buffer,
-            NULL, // Entire extent of buffer  GEGL_RECTANGLE(0, 0, width, height),
+            GEGL_RECTANGLE(subrect_origin_X, subrect_origin_Y, subrect_width, subrect_height),
             1.0,  // scale, float 1.0 is pixel for pixel
             get_working_format_for_mask (),   // conversion to lower bit depth used by engine
             raw_image_bytes,

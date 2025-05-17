@@ -52,15 +52,26 @@ offsets(
   gimp_drawable_get_offsets( d, x, y );
 }
 
+/*
+Returns a drawable of the selection mask,
+for the image of the given drawable.
+The drawable is the same size as the canvas,
+not necessarily the same size as the given drawable.
+The drawable is-a Channel.
+
+The result may be all zeroes (when user has not selected anything.)
+The area that is not all zeroes need not intersect the given drawable
+(when the user has selected an area outside the given drawable.)
+*/
 GimpDrawable *
 get_selection(GimpDrawable * d)
 {
-  // selection is a new drawable derived from image of a drawable
-  // TODO this is not right for v3 ??
-  // return gimp_image_get_selection(gimp_item_get_image(d->drawable_id));
   return (GimpDrawable*)gimp_image_get_selection(gimp_item_get_image((GimpItem*)d));
 }
 
+/*
+See gimp_drawable_mask_bounds
+*/
 gboolean
 selection_bounds(
   GimpDrawable *d,

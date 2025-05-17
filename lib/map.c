@@ -194,8 +194,7 @@ original c++ code, which only copied a byte:
         mask.at(x+drawable_relative_x, y+drawable_relative_y)[0] =
           temp_mask.at(x,y)[0]; // Only one channel (byte)
 */
-/* Not used. */
-static void
+void
 blit_map(
   Map* dest_map,
   Map* source_map,
