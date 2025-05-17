@@ -1,16 +1,28 @@
 NEWS
 ====
 
-The original resynthesizer included a user interface.  In this package, the engine is a separate plugin from the user interface which is its own plugin.  (The user interface plugin is likely to require changes because the GUI toolkit GTK is likely to change.  It already throws warnings about deprecations during compile.  The user interface plugin now written in C should be rewritten in Python so it would be more independent of changes to the GUI toolkit.)
+v3.0 for GIMP API 3.0
 
-The original resynthesizer plugin included several plugins written as interpreted scripts in the Scheme language with the .scm suffix.  In this package, they were renamed and rewritten to the Python language (for example plugin-heal-selection.py is a rewrite of plugin-smart-remove.scm.)
+The outer plugins are in Scheme rather than Python.
 
-This package also includes several additional interpreted plugins (for example plugin-render-texture.py) in the Python language that simplify common uses of the original plugin (using the original user interface.)
+The outer plugins and engine are ported to the GIMP API v3.
 
-In this version the resynthesizer engine suffered a major rewrite; see ChangeLog.
+The user interface plugin (the control panel)
+is in Scheme instead of C and Gtk.
 
-The API (the signature) of the plugin is unchanged from v0.16 although the meaning of one parameter (use_border) is expanded to allow for directional synthesizing.  Older scripts using the resynthesizer MIGHT continue to work but then all that were originally distributed in v0.16 have replacements in this version.  See the ChangeLog for changes that might affect scripts that use the resynthesizer.  
+The build system is meson instead of GNU automake.
 
-One important change is that the resynthesizer now uses the selection in the corpus, not the inverse of the selection.  This affects how a user uses the control panel for resynthesizer, for some use cases (resynthesizing a selection in a layer when the corpus (source) is the same layer.  It also might affect unknown third party plugins that use the resynthesizer.  It also means that some old plugin scripts using the resynthesizer might not work even though the API is unchanged.  The new plugin scripts should be used with the new resynthesizer engine.
+Tests are revised, with new reference images (different from v2.0.)
 
+Fixes for high-bit depth images.
+The engine works in 8-bit depth, with loss of precision.
+
+The Resynthesizer suite now accepts INDEXED images (having a palette.)
+Results depend on the order of the palette being perceptual e.g. grayscale or "Sepia."
+
+The "Sharpen" and "Enlarge and Sharpen" plugins are obsolete: 
+not ported to Scheme and not installed.
+They were little used.
+
+The default build is non-threaded.
 

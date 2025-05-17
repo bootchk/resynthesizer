@@ -3,13 +3,13 @@ ChangeLog for the resynthesizer
 
 2025 Lloyd Konneker
 
-version 3.0 (corresponding to GIMP 3.0 release of libgimp)  (Work in progress.)
+version 3.0 (corresponding to GIMP 3.0 release of libgimp)
 
   Completed port of outer plugins (.scm) to GIMP 3.0 API
-    (Except Enlarge and Sharpen, which are low priority, probably little used.)
+    (Except Enlarge and Sharpen, which are little used.)
 
   Fix adaptor from GIMP to engine: convert high-bit depth formats to internal
-    working format.  Also accept INDEXED image formats.
+    working format.  Also accepts INDEXED image formats.
 
   Outer plugins accept INDEXED mode images.
 
@@ -17,8 +17,7 @@ version 3.0 (corresponding to GIMP 3.0 release of libgimp)  (Work in progress.)
 
   Updated the test program and the set of reference images.
 
-  Change API of engine.
-
+  Default build is non-threaded.
 
 
 2023 Lloyd Konneker bootchk on github, konnekerl on gmail

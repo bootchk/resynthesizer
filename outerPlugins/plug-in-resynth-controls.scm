@@ -189,7 +189,7 @@ if timg == sourceImage and tdrawable == sourceDrawable:
   "Lloyd Konneker"
   "Copyright 2023 Lloyd Konneker"
   "2023"
-  "RGB* GRAY*"
+  "*"
   ; This is a filter: user must first choose target image and layer.
   ; Target image and drawable implicit, not declared.
   SF-ONE-OR-MORE-DRAWABLE      ; arity of defined PDB procedure
