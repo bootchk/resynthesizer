@@ -17,14 +17,29 @@ The plugins do _not_ come with GIMP, they are "third-party" plugins.
 
 ## News
 
-Porting to GIMP 3 is in progress.
-The "resynthesizer3" branch is ready for initial trials with GIMP 3.0rc2.
+The initial release of Resynthesizer for GIMP 3.0 API is tagged v3.0 in the branch "resynthesizer3."
 
-Porting of plugins from GIMP 2 to 3 is not complete.
-Testing is not complete.
+The GIMP API (libgimp) is stable between major releases.
+So Resynthesizer v3.0 should be compatible with future GIMP releases.
+You don't need to update Resynthesizer for every release of GIMP.
+Future releases of Resynthesizer should be compatible with any version of GIMP after 3.0.
+You don't need to update Resynthesizer unless you want bug fixes or new features.
+
+Translations (internationalizations) are not ported yet
+(waiting on a fix to GIMP 3 ScriptFu.)
+
 An MS Windows build is not tested and not in the repo.
+It might be built in this repo when libgimp-3.0 becomes available in an image for runners of build jobs.
 
 [Read about the branches](https://github.com/bootchk/resynthesizer/wiki/The-branches-of-the-repository)
+
+The development model is: the resynthesizer3 branch is the main development branch.
+Fixes and enhancements will be made in that branch.
+You can expect the latest commit will work.
+Occasionally, I will tag a commit as a released version.
+The latest commit in the branch will have less real world testing than a tagged version.
+
+The branch "master" is for GIMP 2.0 API and is essentially frozen.
 
 ## Resources
 
