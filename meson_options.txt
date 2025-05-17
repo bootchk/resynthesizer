@@ -46,7 +46,7 @@ option('synth-debug', type : 'boolean', value : false)
 # THREAD_LIMIT is hardcoded into engine.c at 12
 
 # Engine library use threads?
-option('synth-threaded', type : 'boolean', value : true)
+option('synth-threaded', type : 'boolean', value : false)
 
 # Engine use GLib threads versus posix threads
 # This is moot unless option synth-threaded also chosen.
