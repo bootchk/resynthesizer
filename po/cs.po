@@ -1,0 +1,397 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Resynthesizer 1.0.x\n"
+"POT-Creation-Date: 2019-04-25 21:46-0400\n"
+"PO-Revision-Date: 2025-05-29 21:19+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
+"X-Generator: Poedit 3.6\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: _;N_\n"
+"X-Poedit-SearchPath-0: src\n"
+"X-Poedit-SearchPath-1: PluginScripts\n"
+
+#: PluginScripts/plugin-heal-selection.py:42
+msgid "You must first select a region to heal."
+msgstr "Nejprve vyberte oblast k ošetření."
+
+#: PluginScripts/plugin-heal-selection.py:157
+msgid "Heal the selection from surroundings as if using the heal tool."
+msgstr "Ošetřit výběr z okolí jako při použití nástroje ošetření."
+
+#: PluginScripts/plugin-heal-selection.py:162
+msgid "_Heal Selection..."
+msgstr "_Ošetřit výběr..."
+
+#: PluginScripts/plugin-heal-selection.py:167
+#: PluginScripts/plugin-heal-transparency.py:82
+msgid "Context sampling width (pixels)"
+msgstr "Šířka kontextu vzorkování (v pixelech)"
+
+#: PluginScripts/plugin-heal-selection.py:168
+msgid "Sample from"
+msgstr "Vzorek z"
+
+#: PluginScripts/plugin-heal-selection.py:168
+msgid "All around"
+msgstr "Všude okolo"
+
+#: PluginScripts/plugin-heal-selection.py:168
+msgid "Sides"
+msgstr "Strany"
+
+#: PluginScripts/plugin-heal-selection.py:168
+msgid "Above and below"
+msgstr "Nad a pod"
+
+#: PluginScripts/plugin-heal-selection.py:169
+#: PluginScripts/plugin-heal-transparency.py:83
+msgid "Filling order"
+msgstr "Pořadí plnění"
+
+#: PluginScripts/plugin-heal-selection.py:169
+#: PluginScripts/plugin-heal-transparency.py:83
+msgid "Random"
+msgstr "Náhodné"
+
+#: PluginScripts/plugin-heal-selection.py:170
+#: PluginScripts/plugin-heal-transparency.py:84
+msgid "Inwards towards center"
+msgstr "Z krajů doprostřed"
+
+#: PluginScripts/plugin-heal-selection.py:170
+#: PluginScripts/plugin-heal-transparency.py:84
+msgid "Outwards from center"
+msgstr "Z prostředka do krajů"
+
+#: PluginScripts/plugin-heal-transparency.py:72
+msgid ""
+"Removes alpha channel by synthesis.  Fill outward for edges, inward for "
+"holes."
+msgstr ""
+"Odstraní alfa kanál pomocí syntézy.  Kraje plní od prostředka, díry od krajů."
+
+#: PluginScripts/plugin-heal-transparency.py:77
+msgid "Heal Transparency..."
+msgstr "Ošetřit průhlednost..."
+
+#: PluginScripts/plugin-map-style.py:281
+msgid "The style source cannot be of mode INDEXED"
+msgstr "Zdroj stylu nemůže být módu INDEXED"
+
+#: PluginScripts/plugin-map-style.py:376
+msgid ""
+"Transfer style (color and surface) from a chosen source to the active layer. "
+msgstr "Převeď styl (barvu a povrch) z vybraného zdroje do aktivní vrstvy. "
+
+#: PluginScripts/plugin-map-style.py:381
+msgid "Style..."
+msgstr "Styl..."
+
+#: PluginScripts/plugin-map-style.py:386
+msgid "Source of style"
+msgstr "Zdroj stylu"
+
+#: PluginScripts/plugin-map-style.py:387
+msgid "Percent transfer"
+msgstr "Průběh přenosu"
+
+#: PluginScripts/plugin-map-style.py:388
+msgid "Map by"
+msgstr "Mapovat s"
+
+#: PluginScripts/plugin-map-style.py:388
+msgid "Color and brightness"
+msgstr "Barva a jas"
+
+#: PluginScripts/plugin-map-style.py:388
+msgid "Brightness only"
+msgstr "Pouze jas"
+
+#: PluginScripts/plugin-render-texture.py:183
+msgid ""
+"Create a new image with texture from the current image or selection. "
+"Optionally, create image edges suited for further, seamless tiling. "
+msgstr ""
+"Vytvořit nový obrázek s texturou z aktuálního obrázku nebo výběru. Volitelně "
+"vytvořit okraje obrázku vhodné pro další, bezešvé dlaždicování. "
+
+#: PluginScripts/plugin-render-texture.py:188
+msgid "_Texture..."
+msgstr "_Textura..."
+
+#: PluginScripts/plugin-render-texture.py:194
+msgid "Ratio of size of new image to source selection"
+msgstr "Poměr velikosti nového obrázku k výběru zdroje"
+
+#: PluginScripts/plugin-render-texture.py:195
+msgid "Make new image edges suitable for seamless tiling"
+msgstr "Vytvořit nové okraje obrázku vhodné pro bezešvé dlaždicování"
+
+#: PluginScripts/plugin-resynth-enlarge.py:92
+msgid "Enlarge image and synthesize to sharpen."
+msgstr "Zvětšit obrázek a syntetizovat pro zaostření."
+
+#: PluginScripts/plugin-resynth-enlarge.py:97
+msgid "Enlarge & sharpen..."
+msgstr "Zvětšit a zaostřit..."
+
+#: PluginScripts/plugin-resynth-enlarge.py:102
+msgid "Scale by"
+msgstr "Škálovat v poměru"
+
+#: PluginScripts/plugin-resynth-fill-pattern.py:100
+msgid "Seamlessly fill with a pattern using synthesis."
+msgstr "Bezešvé vyplnění vzorem pomocí syntézy."
+
+#: PluginScripts/plugin-resynth-fill-pattern.py:105
+msgid "_Fill with pattern seamless..."
+msgstr "_Vyplnit vzorem bezešvým..."
+
+#: PluginScripts/plugin-resynth-fill-pattern.py:110
+msgid "Pattern"
+msgstr "Vzor"
+
+#: PluginScripts/plugin-resynth-sharpen.py:94
+msgid "Sharpen image by synthesis."
+msgstr "Zostřit obrázek syntézou."
+
+#: PluginScripts/plugin-resynth-sharpen.py:99
+msgid "Sharpen by synthesis..."
+msgstr "Zostřit syntézou."
+
+#: PluginScripts/plugin-resynth-sharpen.py:103
+msgid "Sharpening"
+msgstr "Zaostření"
+
+#: PluginScripts/plugin-uncrop.py:86
+msgid "A layer must be active, not a channel."
+msgstr "Aktivní musí být vrstva, nikoli kanál."
+
+#: PluginScripts/plugin-uncrop.py:142
+msgid ""
+"Enlarge image by synthesizing a border that matches the edge, maintaining "
+"perspective.  Works best for small enlargement of natural edges. Undo a Crop "
+"instead, if possible! "
+msgstr ""
+"Zvětšit obrázek syntetizováním ohraničení, který odpovídá okraji, ale při "
+"zachování perspektivy.  Funguje nejlépe pro malé zvětšení přirozených "
+"okrajů. Pokud je to možné, zrušit oříznutí! "
+
+#: PluginScripts/plugin-uncrop.py:147
+msgid "Uncrop..."
+msgstr "Doplnit okolí..."
+
+#: PluginScripts/plugin-uncrop.py:152
+msgid "Percent enlargement"
+msgstr "Procento zvětšění"
+
+#: src/resynthesizer-gui/resynth-gui.c:156
+msgid "Make tiles, apply themes, render texture, remove features, etc."
+msgstr ""
+"Vytvořit dlaždicování, aplikovat motivy, vykreslit texturu, odebrat prvky "
+"atd."
+
+#: src/resynthesizer-gui/resynth-gui.c:161
+msgid "_Resynthesize..."
+msgstr "_Resyntetizovat..."
+
+#: src/resynthesizer-gui/resynth-gui.h:115
+msgid "Context"
+msgstr "Kontext"
+
+#: src/resynthesizer-gui/resynth-gui.h:123
+msgid "Random order, without context"
+msgstr "Náhodné pořadí bez kontextu"
+
+#: src/resynthesizer-gui/resynth-gui.h:124
+msgid "Random order, with context"
+msgstr "Náhodné pořadí s kontextem"
+
+#: src/resynthesizer-gui/resynth-gui.h:125
+msgid "Randomized bands, concentric, inwards"
+msgstr "Náhodné pruhy, soustředné, směřující dovnitř"
+
+#: src/resynthesizer-gui/resynth-gui.h:126
+msgid ""
+"Randomized bands, horizontally, inwards (i.e. squeezing from top and bottom)"
+msgstr ""
+"Náhodné pruhy, horizontálně, směrem dovnitř (tj. stlačování shora a zdola)"
+
+#: src/resynthesizer-gui/resynth-gui.h:127
+msgid ""
+"Randomized bands, vertically, inwards (i.e. squeezing from left and right)"
+msgstr "Náhodné pruhy, svisle, směrem dovnitř (tj. stlačování zleva a zprava)"
+
+#: src/resynthesizer-gui/resynth-gui.h:128
+msgid "Randomized bands, concentric, outwards (e.g. for uncrop)"
+msgstr "Náhodné pruhy, soustředné, směrem ven (např. pro rozšíření okolí)"
+
+#: src/resynthesizer-gui/resynth-gui.h:129
+msgid ""
+"Randomized bands, horizontally, outwards, (i.e. expanding to top and bottom)"
+msgstr ""
+"Náhodné pruhy, horizontálně, směrem ven (tj. rozšiřující se nahoru a dolů)"
+
+#: src/resynthesizer-gui/resynth-gui.h:130
+msgid ""
+"Randomized bands, vertically, outwards (i.e. expanding to left and right)"
+msgstr ""
+"Náhodné pruhy, svisle, směrem ven (tj. rozšiřující se doleva a doprava)"
+
+#: src/resynthesizer-gui/resynth-gui.h:131
+msgid ""
+"Randomized bands, concentric, inwards and outwards (i.e. squeezing in and "
+"out a donut)"
+msgstr ""
+"Náhodné pruhy, soustředné, dovnitř a ven (tj. vtlačování a vytahování donutu)"
+
+#: src/resynthesizer-gui/resynth-gui.h:228
+msgid "Resynthesize"
+msgstr "Resyntetizovat"
+
+#: src/resynthesizer-gui/resynth-gui.h:240
+msgid "_OK"
+msgstr "_OK"
+
+#: src/resynthesizer-gui/resynth-gui.h:247
+msgid "_Cancel"
+msgstr "_Zrušit"
+
+#: src/resynthesizer-gui/resynth-gui.h:260
+msgid "Options"
+msgstr "Možnosti"
+
+#: src/resynthesizer-gui/resynth-gui.h:264
+msgid "Tweaks"
+msgstr "Konfigurace"
+
+#: src/resynthesizer-gui/resynth-gui.h:268
+msgid "Input"
+msgstr "Vstup"
+
+#: src/resynthesizer-gui/resynth-gui.h:274
+msgid "Texture source"
+msgstr "Zdroj textury"
+
+#: src/resynthesizer-gui/resynth-gui.h:278
+msgid "Output"
+msgstr "Výstup"
+
+#: src/resynthesizer-gui/resynth-gui.h:286
+msgid "Make horizontally tileable"
+msgstr "Umožnit horizontální dlaždicování"
+
+#: src/resynthesizer-gui/resynth-gui.h:290
+msgid "Make vertically tileable"
+msgstr "Umožnit vertikální dlaždicování"
+
+#: src/resynthesizer-gui/resynth-gui.h:297
+msgid "Texture transfer"
+msgstr "Přenos textury"
+
+#: src/resynthesizer-gui/resynth-gui.h:306
+msgid "Use texture transfer"
+msgstr "Použít přenos textury"
+
+#: src/resynthesizer-gui/resynth-gui.h:312
+msgid "Input map"
+msgstr "Mapa vstupu"
+
+#: src/resynthesizer-gui/resynth-gui.h:317
+msgid "Output map"
+msgstr "Mapa výstupu"
+
+#: src/resynthesizer-gui/resynth-gui.h:322
+msgid "Map importance"
+msgstr "Důležitost mapy"
+
+#: src/resynthesizer-gui/resynth-gui.h:329
+msgid ""
+"Resynthesizer operates by copying pixels, one at a time, from the input to "
+"the output. A neighbourhood of nearby pixels in the output are compared with "
+"neighbourhoods of pixels in the input. The pixel at the center of the best "
+"matching neighbourhood is copied to the output.\n"
+msgstr ""
+"Resyntetizátor funguje tak, že kopíruje pixely jeden po druhém ze vstupu na "
+"výstup. Okolí blízkých pixelů na výstupu je porovnáno s okolím pixelů na "
+"vstupu. Pixel ve středu nejlépe odpovídajícího okolí je zkopírován na "
+"výstup.\n"
+
+#: src/resynthesizer-gui/resynth-gui.h:331
+msgid "Neighbourhood size"
+msgstr "Velikost okolí"
+
+#: src/resynthesizer-gui/resynth-gui.h:334
+msgid "- How many nearby pixels in the output are to be used?\n"
+msgstr "- Kolik blízkých pixelů ve výstupu se má použít?\n"
+
+#: src/resynthesizer-gui/resynth-gui.h:336
+msgid "Search thoroughness"
+msgstr "Důkladnost vyhledávání"
+
+#: src/resynthesizer-gui/resynth-gui.h:339
+msgid "- How many locations in the input are examined?\n"
+msgstr "- Kolik míst na vstupu je prozkoumáno?\n"
+
+#: src/resynthesizer-gui/resynth-gui.h:341
+msgid "Sensitivity to outliers"
+msgstr "Citlivost na odlehlé hodnoty"
+
+#: src/resynthesizer-gui/resynth-gui.h:344
+msgid ""
+"- To what extent does a very bad match on a single pixel disqualify a "
+"location?\n"
+msgstr ""
+"- Do jaké míry diskvalifikuje lokalitu velmi špatná shoda na jediném "
+"pixelu?\n"
+
+#: src/resynthesizer/resynthesizer.c:350
+msgid "Incompatible image mode."
+msgstr "Nekompatibilní režim obrázku."
+
+#: src/resynthesizer/resynthesizer.c:373
+msgid "Resynthesizer failed to get parameters."
+msgstr "Resyntetizátoru se nepodařilo získat parametry."
+
+#: src/resynthesizer/resynthesizer.c:388
+msgid ""
+"The input texture and output image must have the same number of color "
+"channels."
+msgstr ""
+"Vstupní textura a výstupní obrázek musí mít stejný počet barevných kanálů."
+
+#: src/resynthesizer/resynthesizer.c:407
+msgid "The input and output maps must have the same mode"
+msgstr "Vstupní a výstupní mapy musí mít stejný mód"
+
+#: src/resynthesizer/resynthesizer.c:412
+msgid "The input map should be the same size as the input texture image"
+msgstr "Vstupní mapa by měla mít stejnou velikost jako vstupní obrázek textury"
+
+#: src/resynthesizer/resynthesizer.c:417
+msgid "The output map should be the same size as the output image"
+msgstr "Výstupní mapa by měla mít stejnou velikost jako výstupní obrázek"
+
+#: src/resynthesizer/resynthesizer.c:503
+msgid "synthesizing..."
+msgstr "syntetizuji..."
+
+#: src/resynthesizer/resynthesizer.c:517
+msgid ""
+"The texture source is empty. Does any selection include non-transparent "
+"pixels?"
+msgstr "Zdroj textury je prázdný. Obsahuje některý výběr neprůhledné pixely?"
+
+#: src/resynthesizer/resynthesizer.c:521
+msgid ""
+"The output layer is empty. Does any selection have visible pixels in the "
+"active layer?"
+msgstr ""
+"Výstupní vrstva je prázdná. Obsahuje nějaký výběr v aktivní vrstvě viditelné "
+"pixely?"
