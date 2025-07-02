@@ -26,72 +26,65 @@ resynthesizer_sources = [
 
 # define dependencies on libraries
 
-# On macOS, we'll grab the shared libraries from the GIMP App.
 mac_gimp_app = get_option('mac-gimp-app')
-if mac_gimp_app != ''
-  mac_rpath = mac_gimp_app / 'Contents/Resources'
-  mac_dylib_path = mac_rpath / 'lib'
-  mac_inc_dir = get_option('mac-gimp-source')
-  if mac_inc_dir == ''
-    error('Missing reqired option for macOS: mac-gimp-source')
-  endif
-
-  # The dependencies of libgimp-3.0, either Homebrew or MacPorts should work.
-  # These are only needed as header file dependencies of libgimp. Sadly meson
-  # doesn't provide a way to extract just the include paths from a dependency
-  # object.
-  _mac_babl_headers = dependency('babl-0.1')
-  _mac_gegl_headers = dependency('gegl-0.4')
-  _mac_cairo_headers = dependency('cairo')
-  _mac_gexiv_headers = dependency('gexiv2')
-  _mac_pango_headers = dependency('pango')
-  _mac_pixbuf_headers = dependency('gdk-pixbuf-2.0')
-
-  gimp_rpath = {'install_rpath': mac_rpath}
-  gimp_inc = [include_directories(mac_inc_dir)]
-  gimp_dep = [
-    cc.find_library(
-      'gimp-3.0',
-      dirs : [mac_dylib_path],
-      has_headers : ['libgimp/gimp.h', 'libgimpbase/gimpversion.h'],
-      header_include_directories : gimp_inc,
-      required: true),
-    cc.find_library(
-      'glib-2.0',
-      dirs : [mac_dylib_path],
-      required: true),
-    cc.find_library(
-      'gobject-2.0',
-      dirs : [mac_dylib_path],
-      required: true),
-    cc.find_library(
-      'gegl-0.4',
-      dirs : [mac_dylib_path],
-      required: true),
-    cc.find_library(
-      'babl-0.1',
-      dirs : [mac_dylib_path],
-      required: true),
-    cc.find_library(
-      'intl',
-      dirs : [mac_dylib_path],
-      required: true),
-
-    _mac_babl_headers,
-    _mac_gegl_headers,
-    _mac_cairo_headers,
-    _mac_gexiv_headers,
-    _mac_pango_headers,
-    _mac_pixbuf_headers,
-  ]
-else
+if mac_gimp_app == ''
   # libgimp, the API to gimp.
   # Need headers i.e. include file libgimp.h
   # If fails, try install a dev package such as "gimp-3.0-dev"
   # version 2.99 is the beta for v3.0
-  gimp_dep = [dependency('gimp-3.0', version : '>=2.99.0')]
-  gimp_inc = []
+  gimp_dep = dependency('gimp-3.0', version : '>=2.99.0')
   gimp_rpath = {}
+else
+  # On macOS, we'll grab the shared libraries from the GIMP App.
+  gimp_inc_dir = get_option('gimp-source-dir')
+  if gimp_inc_dir == ''
+    error('Missing reqired option for macOS: gimp-source_dir')
+  endif
+
+  mac_rpath = mac_gimp_app / 'Contents/Resources'
+  mac_dylib_path = mac_rpath / 'lib'
+
+  # The dependencies of libgimp-3.0, either Homebrew or MacPorts should work.
+  # These are only needed as header file dependencies of <libgimp/gimp.h>.
+  _babl_includes = dependency('babl-0.1').partial_dependency(compile_args: true)
+  _gegl_includes = dependency('gegl-0.4').partial_dependency(compile_args: true)
+  _cairo_includes = dependency('cairo').partial_dependency(compile_args: true)
+  _gexiv_includes = dependency('gexiv2').partial_dependency(compile_args: true)
+  _pango_includes = dependency('pango').partial_dependency(compile_args: true)
+  _pixbuf_includes = dependency('gdk-pixbuf-2.0').partial_dependency(compile_args: true)
+
+  gimp_inc = include_directories(gimp_inc_dir)
+  gimp_dep = declare_dependency(
+     include_directories: [
+       gimp_inc,
+     ],
+     dependencies: [
+       cc.find_library(
+         'gimp-3.0',
+         dirs : [mac_dylib_path],
+         has_headers : ['libgimp/gimp.h', 'libgimpbase/gimpversion.h'],
+         header_include_directories : [gimp_inc],
+         required: true),
+
+       # The following libraries from GIMP.app must be mentioned explicitly
+       # to the linker, which can't follow transitive dependencies just by
+       # looking at libgimp-3.0.dylib.
+       cc.find_library('glib-2.0',    dirs : [mac_dylib_path], required: true),
+       cc.find_library('gobject-2.0', dirs : [mac_dylib_path], required: true),
+       cc.find_library('gegl-0.4',    dirs : [mac_dylib_path], required: true),
+       cc.find_library('babl-0.1',    dirs : [mac_dylib_path], required: true),
+       cc.find_library('intl',        dirs : [mac_dylib_path], required: true),
+
+       # The include paths.
+       _babl_includes,
+       _gegl_includes,
+       _cairo_includes,
+       _gexiv_includes,
+       _pango_includes,
+       _pixbuf_includes,
+     ],
+  )
+  gimp_rpath = {'install_rpath': mac_rpath}
 endif
 
 # resynthesizer engine plugin calls (depends on)
@@ -107,12 +100,14 @@ endif
 
 executable(plugin_name,
   resynthesizer_sources,
-  dependencies: gimp_dep,
+  dependencies: [
+    gimp_dep,
+  ],
   c_args: [ '-DG_LOG_DOMAIN="Resynthesizer"', '-DGIMP_COMPILATION', ],
   link_with : [
     resynth_lib,
   ],
-  include_directories: [resynthesizer_inc] + gimp_inc,
+  include_directories: resynthesizer_inc,
   install: true,
   install_dir: gimpplugindir / plugin_name,
   kwargs: gimp_rpath,
