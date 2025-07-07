@@ -41,9 +41,6 @@ else
     error('Missing reqired option for macOS: gimp-source_dir')
   endif
 
-  mac_rpath = mac_gimp_app / 'Contents/Resources'
-  mac_dylib_path = mac_rpath / 'lib'
-
   # The dependencies of libgimp-3.0, either Homebrew or MacPorts should work.
   # These are only needed as header file dependencies of <libgimp/gimp.h>.
   _babl_includes = dependency('babl-0.1').partial_dependency(compile_args: true)
@@ -69,11 +66,11 @@ else
        # The following libraries from GIMP.app must be mentioned explicitly
        # to the linker, which can't follow transitive dependencies just by
        # looking at libgimp-3.0.dylib.
-       cc.find_library('glib-2.0',    dirs : [mac_dylib_path], required: true),
-       cc.find_library('gobject-2.0', dirs : [mac_dylib_path], required: true),
-       cc.find_library('gegl-0.4',    dirs : [mac_dylib_path], required: true),
-       cc.find_library('babl-0.1',    dirs : [mac_dylib_path], required: true),
-       cc.find_library('intl',        dirs : [mac_dylib_path], required: true),
+       glib_dep,
+       cc.find_library('gobject-2.0', dirs: [mac_dylib_path], required: true),
+       cc.find_library('gegl-0.4',    dirs: [mac_dylib_path], required: true),
+       cc.find_library('babl-0.1',    dirs: [mac_dylib_path], required: true),
+       cc.find_library('intl',        dirs: [mac_dylib_path], required: true),
 
        # The include paths.
        _babl_includes,
@@ -84,7 +81,11 @@ else
        _pixbuf_includes,
      ],
   )
-  gimp_rpath = {'install_rpath': mac_rpath}
+  mac_rpath = mac_gimp_app / 'Contents/Resources'
+  gimp_rpath = {
+    'build_rpath': mac_rpath,
+    'install_rpath': mac_rpath,
+  }
 endif
 
 # resynthesizer engine plugin calls (depends on)
