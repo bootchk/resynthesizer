@@ -55,4 +55,5 @@ executable(plugin_name,
   include_directories: resynthesizer_inc,
   install: true,
   install_dir: gimpplugindir / plugin_name,
+  win_subsystem: 'windows',
 )
