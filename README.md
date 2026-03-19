@@ -53,8 +53,6 @@ More topics are in the [Resynthesizer wiki](https://github.com/bootchk/resynthes
 
 [install flatpaked Resynthesizer for Linux](https://github.com/bootchk/resynthesizer/wiki/Install-Resynthesizer#flatpak)
 
-[install Resynthesizer for Windows](https://github.com/bootchk/resynthesizer/wiki/Install-Resynthesizer#windows)
-
 [install Resynthesizer for MacOS](https://github.com/bootchk/resynthesizer/wiki/Install-Resynthesizer#mac-osx)
 
 [build from source](https://github.com/bootchk/resynthesizer/wiki/Build-Resynthesizer-from-source)
