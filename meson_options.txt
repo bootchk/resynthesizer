@@ -16,7 +16,7 @@
 # Option to install translations.
 # Until fix to ScriptFu of GIMP 3.2, and fixes to the outer plugins,
 # translations will not work even if installed.
-option('install-translations', type : 'boolean', value : false)
+option('install-translations', type : 'boolean', value : true)
 
 # Option to install a plugin that tests the resynthesizer.
 # Needed for CI by developers of the resynthesizer.
