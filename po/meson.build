@@ -40,9 +40,10 @@ resynthesizer_i18n_languages = [
   'cs',  # Czech
   'es',  # spanish
   'fr',
+  'pl',  # polish
   'ru',
   'pt_BR', # Brazilian Portugese
-  # TODO Turkish and Polish, need to cherrypick from master branch
+  'tr',  # turkish
 ]
 
 
