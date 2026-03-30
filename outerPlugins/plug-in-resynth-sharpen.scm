@@ -142,3 +142,6 @@
 
 script-fu-sharpen-resynthesized
 ))
+
+(script-fu-register-i18n "plug-in-sharpen-resynthesized" "resynthesizer3")
+

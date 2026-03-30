@@ -252,4 +252,5 @@ if timg == sourceImage and tdrawable == sourceDrawable:
 (script-fu-menu-register "plug-in-resynth-controls"
 			 "<Image>/Filters/Map")
 
+(script-fu-register-i18n "plug-in-resynth-controls" "resynthesizer3")
 

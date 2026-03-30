@@ -333,3 +333,25 @@
 (script-fu-menu-register "plug-in-heal-selection"
 			  "<Image>/Filters/Enhance")
 
+; This plugin can not use a single i18n catalog installed with a sibling plugin in this suite.
+; Catalog path: ./resynthesizer3/locale/ does not work.
+; GIMP requires the catalog path:
+;     is not absolute, only relative
+;     is a subdirectory of the plugin's root dir
+
+; The plugin installs the conventional i.e. standard way, to:
+; /usr/local/lib/x86_64-linux-gnu/gimp/3.0/plug-ins/plug-in-heal-selection   parent,root directory
+;                                                  /heal-selection.scm       script
+;                                                  /locale                   catalog subdirectory
+;                                                  /locale/en/LC_MESSAGES/resynthesizer3.mo
+
+;(script-fu-register-i18n "plug-in-heal-selection"
+;                         "Standard")
+(script-fu-register-i18n "plug-in-heal-selection"
+                         "resynthesizer3")  ; domain name, matches .mo file name, without .mo suffix
+
+; Signature
+; script-fu-register-i18n ( procedureName,
+;                          domainName | "Standard" | "None",
+;                          relativePathToCatalogSubdirectoryContainingMOFile )
+

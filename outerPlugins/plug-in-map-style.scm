@@ -515,3 +515,6 @@
 
 (script-fu-menu-register "plug-in-map-style"
                          "<Image>/Filters/Map")
+
+(script-fu-register-i18n "plug-in-map-style" "resynthesizer3")
+
