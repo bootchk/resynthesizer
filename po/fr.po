@@ -127,8 +127,8 @@ msgstr ""
 "sélection actuelle. Vous pouvez aussi créer des bords d’image raccordables."
 
 #: PluginScripts/plugin-render-texture.py:188
-msgid "_Texture..."
-msgstr "_Texture..."
+msgid "Texture..."
+msgstr "Texture..."
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
@@ -155,8 +155,8 @@ msgid "Seamlessly fill with a pattern using synthesis."
 msgstr "Remplir avec un motif raccordable en utilisant la synthèse."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
-msgid "_Fill with pattern seamless..."
-msgstr "_Remplir avec un motif raccordable..."
+msgid "Fill with Pattern Seamless..."
+msgstr "Remplir avec un motif raccordable..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
 msgid "Pattern"

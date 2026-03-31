@@ -347,3 +347,5 @@
 
 (script-fu-menu-register "plug-in-uncrop"
                          "<Image>/Filters/Enhance")
+
+(script-fu-register-i18n "plug-in-uncrop" "resynthesizer3")

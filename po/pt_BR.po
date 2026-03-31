@@ -28,16 +28,16 @@ msgstr ""
 "Restaurar a seleção dos arredores como se estivesse usando a ferramenta de restauração."
 
 #: PluginScripts/plugin-heal-selection.py:162
-msgid "_Heal selection..."
+msgid "_Heal Selection..."
 msgstr "_Restaurar seleção..."
 
 #: PluginScripts/plugin-heal-selection.py:167 PluginScripts/plugin-heal-transparency.py:82
-msgid "Context sampling width (pixels):"
-msgstr "Largura de amostragem do contexto (pixels):"
+msgid "Context sampling width (pixels)"
+msgstr "Largura de amostragem do contexto (pixels)"
 
 #: PluginScripts/plugin-heal-selection.py:168
-msgid "Sample from:"
-msgstr "Amostra de:"
+msgid "Sample from"
+msgstr "Amostra de"
 
 #: PluginScripts/plugin-heal-selection.py:168
 msgid "All around"
@@ -52,8 +52,8 @@ msgid "Above and below"
 msgstr "Acima e abaixo"
 
 #: PluginScripts/plugin-heal-selection.py:169 PluginScripts/plugin-heal-transparency.py:83
-msgid "Filling order:"
-msgstr "Pedido de preenchimento:"
+msgid "Filling order"
+msgstr "Pedido de preenchimento"
 
 #: PluginScripts/plugin-heal-selection.py:169 PluginScripts/plugin-heal-transparency.py:83
 msgid "Random"
@@ -74,7 +74,7 @@ msgstr ""
 "furos."
 
 #: PluginScripts/plugin-heal-transparency.py:77
-msgid "Heal transparency..."
+msgid "Heal Transparency..."
 msgstr "Restaurar transparência..."
 
 #: PluginScripts/plugin-map-style.py:281
@@ -90,16 +90,16 @@ msgid "Style..."
 msgstr "Estilo..."
 
 #: PluginScripts/plugin-map-style.py:386
-msgid "Source of style:"
-msgstr "Fonte do estilo:"
+msgid "Source of style"
+msgstr "Fonte do estilo"
 
 #: PluginScripts/plugin-map-style.py:387
-msgid "Percent transfer:"
-msgstr "Transferência percentual:"
+msgid "Percent transfer"
+msgstr "Transferência percentual"
 
 #: PluginScripts/plugin-map-style.py:388
-msgid "Map by:"
-msgstr "Mapear por:"
+msgid "Map by"
+msgstr "Mapear por"
 
 #: PluginScripts/plugin-map-style.py:388
 msgid "Color and brightness"
@@ -118,8 +118,8 @@ msgstr ""
 "imagem adequadas para ladrilhos contínuos. "
 
 #: PluginScripts/plugin-render-texture.py:188
-msgid "_Texture..."
-msgstr "_Textura..."
+msgid "Texture..."
+msgstr "Textura..."
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
@@ -138,20 +138,20 @@ msgid "Enlarge & sharpen..."
 msgstr "Ampliação & nitidez..."
 
 #: PluginScripts/plugin-resynth-enlarge.py:102
-msgid "Scale by:"
-msgstr "Escalar por:"
+msgid "Scale by"
+msgstr "Escalar por"
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:100
 msgid "Seamlessly fill with a pattern using synthesis."
 msgstr "Preencha perfeitamente com um padrão usando síntese."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
-msgid "_Fill with pattern seamless..."
+msgid "Fill with Pattern Seamless..."
 msgstr "_Preencher com padrão sem emenda..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
-msgid "Pattern:"
-msgstr "Padrão:"
+msgid "Pattern"
+msgstr "Padrão"
 
 #: PluginScripts/plugin-resynth-sharpen.py:94
 msgid "Sharpen image by synthesis."
@@ -162,8 +162,8 @@ msgid "Sharpen by synthesis..."
 msgstr "Nitidez por síntese..."
 
 #: PluginScripts/plugin-resynth-sharpen.py:103
-msgid "Sharpening:"
-msgstr "Nitidez:"
+msgid "Sharpening"
+msgstr "Nitidez"
 
 #: PluginScripts/plugin-uncrop.py:86
 msgid "A layer must be active, not a channel."
@@ -195,8 +195,8 @@ msgid "_Resynthesize..."
 msgstr "_Ressintetizar..."
 
 #: src/resynthesizer-gui/resynth-gui.h:115
-msgid "Context: "
-msgstr "Contexto: "
+msgid "Context"
+msgstr "Contexto"
 
 #: src/resynthesizer-gui/resynth-gui.h:123
 msgid "Random order, without context"
@@ -267,8 +267,8 @@ msgid "Input"
 msgstr "Entrada"
 
 #: src/resynthesizer-gui/resynth-gui.h:274
-msgid "Texture source: "
-msgstr "Fonte de textura: "
+msgid "Texture source"
+msgstr "Fonte de textura"
 
 #: src/resynthesizer-gui/resynth-gui.h:278
 msgid "Output"
@@ -291,16 +291,16 @@ msgid "Use texture transfer"
 msgstr "Usar transferência de textura"
 
 #: src/resynthesizer-gui/resynth-gui.h:312
-msgid "Input map: "
-msgstr "Mapa de entrada: "
+msgid "Input map"
+msgstr "Mapa de entrada"
 
 #: src/resynthesizer-gui/resynth-gui.h:317
-msgid "Output map: "
-msgstr "Mapa de saída: "
+msgid "Output map"
+msgstr "Mapa de saída"
 
 #: src/resynthesizer-gui/resynth-gui.h:322
-msgid "Map importance:"
-msgstr "Importância do mapa:"
+msgid "Map importance"
+msgstr "Importância do mapa"
 
 #: src/resynthesizer-gui/resynth-gui.h:329
 msgid ""
@@ -314,24 +314,24 @@ msgstr ""
 "no centro da melhor vizinhança correspondente é copiado para a saída.\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:331
-msgid "Neighbourhood size:"
-msgstr "Tamanho da vizinhança:"
+msgid "Neighbourhood size"
+msgstr "Tamanho da vizinhança"
 
 #: src/resynthesizer-gui/resynth-gui.h:334
 msgid "- How many nearby pixels in the output are to be used?\n"
 msgstr "- Quantos pixels próximos na saída devem ser usados?\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:336
-msgid "Search thoroughness:"
-msgstr "Pesquisa exaustiva:"
+msgid "Search thoroughness"
+msgstr "Pesquisa exaustiva"
 
 #: src/resynthesizer-gui/resynth-gui.h:339
 msgid "- How many locations in the input are examined?\n"
 msgstr "- Quantas localizações na entrada são examinadas?\n"
 
 #: src/resynthesizer-gui/resynth-gui.h:341
-msgid "Sensitivity to outliers:"
-msgstr "Sensibilidade á discrepantes:"
+msgid "Sensitivity to outliers"
+msgstr "Sensibilidade á discrepantes"
 
 #: src/resynthesizer-gui/resynth-gui.h:344
 msgid "- To what extent does a very bad match on a single pixel disqualify a location?\n"

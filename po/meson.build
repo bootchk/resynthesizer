@@ -3,101 +3,92 @@
 # Outputs are .mo files, binary, only machine readable.
 
 # Resynthesizer is a group, or suite, of plugins.
+# But it does not install i18n data like for other groups of plugins.
+# Because GIMP does not support that, for third party groups of plugins.
+# GIMP only supports that for its own groups of plugins.
+
+# How GIMP installs i18n for its own groups of plugins i18n
+#
 # The usual naming for a .mo file for a group of plugins
 # is like gimp30-script-fu.mo.
 # "gimp30-script-fu" is in the role of a "domain name".
 # And the plugin overrides its usual domain name
 # (the name of the plugin)
 # by calling set_i18n( ..., "gimp30-script-fu", ..).
-# The plugin named "script-fu" does that,
-# it is the server for all /script plugins.
+# The plugin named "script-fu" does that, to serve all /script plugins.
 
-# i18n is a module of meson.  gettext is a method of that module
-# This would generate .mo for all LINGUAS and install them.
-# But we don't use this, we have a special installation.
-# i18n.gettext('resynthesizer3', preset: 'glib')
-# That also seems to install to e.g. /usr/local/share/locale/es/LC_MESSAGES
-# which is not where GIMP looks?
+# Again, GIMP does not support such an installation for
+# third-party groups of plugins.
 
-# We have one .po file covering all the plugins of the group.
-# We generate one .mo file, and install it with each plugin, under a different name.
-# In the place where the plugin machinery looks: 
-# in the subdir "locale" of the plugin's dir,
-# in a file foo.mo where foo is the same name as the plugin and it's dir.
-# <GIMP install path>/plug-ins/<plugin>/locale/<language>/LC_MESSAGES/<plugin>.mo
 
-# Alternatively, each script should point to the shared .mo
-# by calling set_i18n() but that is not in SF yet.
 
-# po/[es, fr, ..].po
-#     msgfmt=>
-# <GIMP install path> plug-ins/resynthesizer3/locale/[es, fr, ..]/LC_MESSAGES/resynthesizer3.mo
-#     cp at install time =>
-# <GIMP install path> plug-ins/[plugin-name, etc.]/local/[es, fr, ..]/LC_MESSAGES/plugin-name.mo
+
+# This generates a .mo for each LINGUAS e.g. for es
+# in a file "resynthesizer3.mo"
+# installed to e.g. /usr/local/share/locale/es/LC_MESSAGES.
+# Later, we copy/fan this out.
+# Not actually used at runtime from its installed location.
+# We could delete it after the build, but we don't.
+# i18n is a module of meson.  gettext is a method of that module.
+i18n.gettext('resynthesizer3', preset: 'glib')
+
 
 
 # Should match the .po file names
+# Later we iterate over this.
 resynthesizer_i18n_languages = [
+  'cs',  # Czech
   'es',  # spanish
   'fr',
+  'pl',  # polish
   'ru',
-  'pt_BR',
-  # TODO Turkish and Polish
+  'pt_BR', # Brazilian Portugese
+  'tr',  # turkish
 ]
 
-# Remember what files we installed.
-custom_install_files = []
+
+# As discussed above, this does not install a single catalog (directory of 18n .mo files)
+# to be shared by the group of resynthesizer plugins,
+# but instead installs the same catalog in many places (in a locale subdirectory of each plugin.)
+# I.E. copy and fan out shared group resynthesizer.mo file to each plugin's locale directory
+# 
+# This seems clunky, wasteful, and fragile.
+# But probably the best we can do given how GIMP does i18n.
+
 
 foreach language_tag : resynthesizer_i18n_languages
 
-  # target for a .mo e.g. es.mo and fr.mo
-  # Note that we do install it, to .../plug-ins/resynthesizer3/locale/...
-  # I think GIMP should ignore it as extraneous folder in /plug-ins.
-  # Alternatively, build the artifact but don't install it.
-  # We only install it because then we know where it is
-  # unlike most built artifacts in the build dir.
-
-  # a_language_target mutates in this for loop
-  a_language_target = custom_target(
-      # target name unique
-      'target-' + language_tag ,
-
-      # input is e.g. es.po in the current source directory, a .po for the group
-      input: language_tag + '.po',
-
-      # output e.g. is  es.mo
-      output: language_tag + '.mo', 
-
-      command: ['msgfmt', '@INPUT@', '-o', '@OUTPUT@'], 
-      install: true,
-      install_dir: gimpplugindir / 'resynthesizer3' / 'locale' / language_tag / 'LC_MESSAGES')
-
-  # Copy and rename the shared .mo file to each of a group of plugin's locale directories
-  foreach plugin_name : resynthesizer_plugin_names
-
-    # Variables holding from and to paths for copy at install time.
-    # The paths are platform portable.
+  # for each outer plugin filename and also the engine plugin filename 'resynthesizer'
+  foreach plugin_name : resynthesizer_plugin_names + 'resynthesizer'
     
-    # The from file was previously installed by meson.  Copy from the installed file.
-    # full path to installed file is gimpplugindir / 'resynthesizer3' / 'locale' / 'es' / 'LC_MESSAGES' / 'resynthesizer3.mo'
-    from_file = a_language_target.full_path()
+    # The source of the copy was previously installed by meson to the platform's shared locale dir.
+    # We copy from the installed file.
+    # Typical full path to source_file is /usr/local/share/locale/es/LC_MESSAGES/resynthesizer3.mo
+    #                                     prefix    localedir    language_tag    group name
 
-    to_dir = gimpplugindir / plugin_name / 'locale' / language_tag / 'LC_MESSAGES'
-    to_file = to_dir / plugin_name + '.mo'
+    # get_option('localedir') == 'share/locale' and MUST be prefixed
+    source_file = get_option('prefix') / get_option('localedir') / language_tag / 'LC_MESSAGES' / 'resynthesizer3.mo'
 
+    # When copying, distribute or fan out the group file
+    # to a subdirectory "locale/" under each plugin's root directory
+    # in GIMP's directory of all plugins "gimp/3.0/plug-ins/"
+    dest_dir = gimpplugindir / plugin_name / 'locale' / language_tag / 'LC_MESSAGES'
 
-    # Copy an installed resynthesizer3.mo to a specific plugin's directory, renaming it to match the plugin name.
+    # When copying, do not rename the file "resynthesizer3.mo".
+    # Each plugin declares it uses the shared domain "resynthesizer3", not named for itself.
+    dest_file = dest_dir / 'resynthesizer3.mo'
+
+    # Copy the shared .mo to a specific plugin's directory.
     # cp does not have option to create destination dirs, so create directory first.
-    # The @0@ are placeholders for a format string.
     meson.add_install_script(
       'sh', '-c',
-      'mkdir -p "@0@" && cp -f "@1@" "@2@"'.format(to_dir, from_file, to_file ))
+      'mkdir -p "@0@" && cp -f "@1@" "@2@"'.format(dest_dir, source_file, dest_file ))
 
-    custom_install_files += to_file
   endforeach
 endforeach
 
+# !!! The i18n data installed to platform locale directory is not actually used
+# and could be deleted.
 
-summary('Installing i18n for plugins:', resynthesizer_plugin_names)
+summary('Installing i18n for plugins:', resynthesizer_plugin_names + 'resynthesizer')
 summary('Installing i18n for languages:', resynthesizer_i18n_languages)
-summary('Installing custom i18n files:', custom_install_files)

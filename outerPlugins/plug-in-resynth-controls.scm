@@ -15,8 +15,31 @@ It does some checking of user choices, for user friendliness.
 
 Generally one-to-one correspondence between GUI widgets and engine parameters.
 Except for the FUTURE generate vector field checkbox
+"
+
 
 "
+This is not user friendly.
+The original GTK implementation enabled and disabled widgets to prevent user from making invalid choices.
+Here, we have not implemented that enabling/disabling of widgets, because it is not possible in Script-Fu.
+
+Also the terminology is not understandable to users, and the labels are not clear.
+But we retained the original labels, which are already translated, to avoid breaking translation.
+
+The rationale is: very few users will use this plugin, 
+and those who do will be advanced users who are more likely to understand the terminology 
+and less likely to be confused by the lack of enabling/disabling of widgets.
+"
+
+
+"
+Filling order choices are even more problematic for translations.
+Some filling order choices were added after original implementation and translations.
+The choices are in one enumeration, but they are about different things, and hard to understand.
+Paul Harrion's original implementation had only the first two filling order choices, which are not about bands.
+The band filling order choices were added later.
+"
+
 
 "
 Engine requires:
@@ -29,8 +52,6 @@ Engine requires:
   target and source drawables must be same base type
   e.g. not one RGB and the other gray.
   They can differ in bpp i.e. one can have alpha channel.
-
-
 "
 
 "
@@ -180,6 +201,12 @@ if timg == sourceImage and tdrawable == sourceDrawable:
 ; Spinner is digital and linear, slider is analog but exponential
 ; Use slider for floats?
 
+; FUTURE: improve labels of widgets, requiring translation, 
+; and also add tooltips, to make it more clear to users what the widgets do.
+; In trailing comments below
+; are better labels for the widgets
+; but they break translation, so for now we use the less clear labels that are already translated.
+
 (script-fu-register-filter
   "plug-in-resynth-controls"
   _"_Resynthesize..."
@@ -191,33 +218,34 @@ if timg == sourceImage and tdrawable == sourceDrawable:
   "2023"
   "*"
   ; This is a filter: user must first choose target image and layer.
-  ; Target image and drawable implicit, not declared.
+  ; Target image and drawable implicit, not declared. 
   SF-ONE-OR-MORE-DRAWABLE      ; arity of defined PDB procedure
   ; User can choose a different image for source.
-  SF-DRAWABLE  _"Source (corpus)"  0
+  SF-DRAWABLE  _"Texture source" 0  ;  _"Source (corpus)"
   SF-OPTION    _"Randomized filling order"
     (list
-      _"Without context"
-      _"Without bands"
-      _"Bands concentric, inward (squeeze)"
-      _"Bands horizontal, inward (squeeze from top and bottom)"
-      _"Bands vertical, inward (squeeze from left and right)"
-      _"Bands concentric, outward (e.g. for uncrop)"
-      _"Bands horizontal, outward (expand to top and bottom)"
-      _"Bands vertical, outward (expand to left and right)"
-      _"Bands concentric, inward and outward (squeeze donut)")
+      _"Random order, without context" ; "Without context"
+      _"Random order, with context"    ; "Without bands"
+      _"Randomized bands, concentric, inwards"                                        ; "Bands concentric, inward (squeeze)"
+      _"Randomized bands, horizontally, inwards (i.e. squeezing from top and bottom)" ; "Bands horizontal, inward (squeeze from top and bottom)"
+      _"Randomized bands, vertically, inwards (i.e. squeezing from left and right)"   ; "Bands vertical, inward (squeeze from left and right)"
+      _"Randomized bands, concentric, outwards (e.g. for uncrop)"                     ; "Bands concentric, outward (e.g. for uncrop)"
+      _"Randomized bands, horizontally, outwards, (i.e. expanding to top and bottom)" ; "Bands horizontal, outward (expand to top and bottom)"
+      _"Randomized bands, vertically, outwards (i.e. expanding to left and right)"   ; "Bands vertical, outward (expand to left and right)"
+      _"Randomized bands, concentric, inwards and outwards (i.e. squeezing in and out a donut)") ; "Bands concentric, inward and outward (squeeze donut)")
 
-  SF-TOGGLE _"Output seamlessly tileable horizontally" 0
-  SF-TOGGLE _"Output seamlessly tileable vertically"   0
+  SF-TOGGLE _"Make horizontally tileable" 0 ; _"Output seamlessly tileable horizontally"
+  SF-TOGGLE _"Make vertically tileable" 0 ; _"Output seamlessly tileable vertically"
 
-  ; formerly, latter widgets disabled until first widget chosen
-  ; Now, indentation of label intended to indicate grouping.
-  ; Justification of labels by GIMP is inconsistent currently,
-  ; so indentation is haphazard.
-  SF-TOGGLE     _"Use weight maps"                  0
-  SF-DRAWABLE   _"     Weight map for matching"     0
-  SF-DRAWABLE   _"     Weight map for transferring" 0
-  SF-ADJUSTMENT _"     Map importance"
+  ; Formerly, latter widgets disabled until first widget chosen.
+  ; I.E. the map choosers disabled until "use weight maps" checkbox chosen.
+  ; In the conversion from GTK to Script-Fu, we have not implemented that enabling/disabling of widgets.
+  ; We might use indentation of label intended to indicate grouping, but that breaks translation.
+  
+  SF-TOGGLE     _"Use texture transfer" 0  ; _"Use weight maps for matching and transferring"
+  SF-DRAWABLE   _"Input map"            0  ; _"Weight map for matching"
+  SF-DRAWABLE   _"Output map"           0  ; _"Weight map for transferring"
+  SF-ADJUSTMENT _"Map importance"
      (list
        0.5
        0.01 1.0
@@ -225,7 +253,7 @@ if timg == sourceImage and tdrawable == sourceDrawable:
        2 ; decimal places
        SF-SLIDER)
   ; formerly in the "tweaks" tab
-  SF-ADJUSTMENT _"Neighborhood size"
+  SF-ADJUSTMENT _"Neighbourhood size"  ; _"Size of neighborhood considered for matching, in pixels"
     (list
       30      ; default
       1 100   ; lower, upper
@@ -252,4 +280,5 @@ if timg == sourceImage and tdrawable == sourceDrawable:
 (script-fu-menu-register "plug-in-resynth-controls"
 			 "<Image>/Filters/Map")
 
+(script-fu-register-i18n "plug-in-resynth-controls" "resynthesizer3")
 

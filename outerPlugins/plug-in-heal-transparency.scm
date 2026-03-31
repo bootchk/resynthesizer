@@ -160,3 +160,5 @@
 (script-fu-menu-register "plug-in-heal-transparency"
 			 "<Image>/Filters/Enhance")
 
+(script-fu-register-i18n "plug-in-heal-transparency" "resynthesizer3")
+
