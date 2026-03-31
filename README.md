@@ -25,8 +25,8 @@ You don't need to update Resynthesizer for every release of GIMP.
 Future releases of Resynthesizer should be compatible with any version of GIMP after 3.0.
 You don't need to update Resynthesizer unless you want bug fixes or new features.
 
-Translations (internationalizations) are not ported yet
-(waiting on a fix to GIMP 3 ScriptFu.)
+Translations (internationalizations) are fixed as of 3.0.1.
+Resynthesizer 3.0.1 is compatible with GIMP 3.0 or later.
 
 An MS Windows build is not tested and not in the repo.
 It might be built in this repo when libgimp-3.0 becomes available in an image for runners of build jobs.
