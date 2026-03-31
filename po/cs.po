@@ -122,8 +122,8 @@ msgstr ""
 "vytvořit okraje obrázku vhodné pro další, bezešvé dlaždicování. "
 
 #: PluginScripts/plugin-render-texture.py:188
-msgid "_Texture..."
-msgstr "_Textura..."
+msgid "Texture..."
+msgstr "Textura..."
 
 #: PluginScripts/plugin-render-texture.py:194
 msgid "Ratio of size of new image to source selection"
@@ -150,7 +150,7 @@ msgid "Seamlessly fill with a pattern using synthesis."
 msgstr "Bezešvé vyplnění vzorem pomocí syntézy."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:105
-msgid "_Fill with pattern seamless..."
+msgid "Fill with Pattern Seamless..."
 msgstr "_Vyplnit vzorem bezešvým..."
 
 #: PluginScripts/plugin-resynth-fill-pattern.py:110
