@@ -254,9 +254,11 @@ resynthesizer_set_i18n (GimpPlugIn   *plug_in,
                         gchar       **catalog_dir)    // out
 {
   /* domain name is the name of the .mo file without the .mo suffix.
-  Follow convention that domain name is same as plug-in executable file name.
+  Usual convention is that domain name is same as plug-in executable file name.
+  Here we used the domain "resynthesizer3", the name for the suite of resynthesizer plugins,
+  to share the same .mo file among them.
   */ 
-  *gettext_domain = g_strdup ("resynthesizer");
+  *gettext_domain = g_strdup ("resynthesizer3");
 
   /* When not return a catalog directory, GIMP will use a default directory.
   Which is the "locale" subdirectory of the plug-in's root installation directory.
