@@ -1,0 +1,78 @@
+name: Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/windows-build.yaml'
+  pull_request:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/windows-build.yaml'
+
+jobs:
+  build-windows:
+    name: Build on Windows (MSYS2 UCRT64)
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            git
+            base-devel
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-meson
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-glib2
+
+      - name: Install GIMP development package
+        run: |
+          # Package name can differ across MSYS2 snapshots.
+          pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-gimp || \
+          pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-gimp3
+
+      - name: Show tool versions
+        run: |
+          gcc --version
+          meson --version
+          ninja --version
+          pkg-config --modversion glib-2.0
+          pkg-config --modversion gimp-3.0
+
+      - name: Configure
+        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=false
+
+      - name: Compile
+        run: meson compile -C builddir -v
+
+      - name: Stage install tree
+        run: meson install -C builddir --destdir "$PWD/stage"
+
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resynthesizer-windows-ucrt64
+          path: |
+            stage/
+            builddir/meson-logs/meson-log.txt
+          if-no-files-found: error
+          retention-days: 14
