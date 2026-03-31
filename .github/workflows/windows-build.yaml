@@ -19,7 +19,7 @@ on:
 
 jobs:
   build-windows:
-    name: Build on Windows (MSYS2 UCRT64)
+    name: Build and Package on Windows (MSYS2 UCRT64)
     runs-on: windows-latest
 
     defaults:
@@ -58,14 +58,73 @@ jobs:
           pkg-config --modversion glib-2.0
           pkg-config --modversion gimp-3.0
 
+      - name: Derive project version from meson.build
+        run: |
+          app_version="$(sed -n "s/.*version:[[:space:]]*'\([^']\+\)'.*/\1/p" meson.build | head -n 1)"
+          if [[ -z "$app_version" ]]; then
+            echo "Failed to parse project version from meson.build"
+            exit 1
+          fi
+          echo "APP_VERSION=$app_version" >> "$GITHUB_ENV"
+          echo "Using project version: $app_version"
+
       - name: Configure
-        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=false
+        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=true
 
       - name: Compile
         run: meson compile -C builddir -v
 
       - name: Stage install tree
         run: meson install -C builddir --destdir "$PWD/stage"
+
+      - name: Prepare installer payload
+        run: |
+          plugin_root="$(find stage -type d -path '*/gimp/3.0/plug-ins' | head -n 1)"
+          if [[ -z "$plugin_root" ]]; then
+            echo "Could not find staged GIMP plug-ins directory under stage/."
+            exit 1
+          fi
+          mkdir -p installer_payload/plug-ins
+          cp -R "$plugin_root"/. installer_payload/plug-ins/
+
+      - name: Create Inno Setup script
+        run: |
+          cat > resynthesizer-installer.iss << EOF
+          [Setup]
+          AppId={{A6A57352-7A90-4D84-9CE2-71C2782693B1}
+          AppName=Resynthesizer Suite for GIMP 3
+          AppVersion=${APP_VERSION}
+          AppPublisher=Resynthesizer Project
+          DefaultDirName={userappdata}\GIMP\3.0\plug-ins
+          DisableProgramGroupPage=yes
+          Compression=lzma
+          SolidCompression=yes
+          OutputDir=dist
+          OutputBaseFilename=resynthesizer-suite-gimp3-windows-${APP_VERSION}
+          WizardStyle=modern
+          PrivilegesRequired=lowest
+
+          [Files]
+          Source: "installer_payload\\plug-ins\\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
+          EOF
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Qp "resynthesizer-installer.iss"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resynthesizer-installer-windows-ucrt64
+          path: |
+            dist/*.exe
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload Windows build artifact
         uses: actions/upload-artifact@v4
