@@ -22,7 +22,7 @@
 foreach basename : resynthesizer_plugin_names
   src_file_name = basename + '.scm'
   install_data(src_file_name,
-               install_dir: gimpplugindir / basename,
+               install_dir: get_option('prefix') / gimpplugindir / basename,
                install_mode: 'rwxr-xr-x')
 endforeach
 

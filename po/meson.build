@@ -70,7 +70,7 @@ foreach language_tag : resynthesizer_i18n_languages
 
       command: ['msgfmt', '@INPUT@', '-o', '@OUTPUT@'], 
       install: true,
-      install_dir: gimpplugindir / 'resynthesizer3' / 'locale' / language_tag / 'LC_MESSAGES')
+      install_dir: get_option('prefix') / gimpplugindir / 'resynthesizer3' / 'locale' / language_tag / 'LC_MESSAGES')
 
   # Copy and rename the shared .mo file to each of a group of plugin's locale directories
   foreach plugin_name : resynthesizer_plugin_names
@@ -88,10 +88,7 @@ foreach language_tag : resynthesizer_i18n_languages
 
     # Copy an installed resynthesizer3.mo to a specific plugin's directory, renaming it to match the plugin name.
     # cp does not have option to create destination dirs, so create directory first.
-    # The @0@ are placeholders for a format string.
-    meson.add_install_script(
-      'sh', '-c',
-      'mkdir -p "@0@" && cp -f "@1@" "@2@"'.format(to_dir, from_file, to_file ))
+    meson.add_install_script('install.sh', get_variable('to_dir'), get_variable('from_file'), get_variable('to_file'))
 
     custom_install_files += to_file
   endforeach

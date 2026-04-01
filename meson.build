@@ -76,9 +76,6 @@ configure_file(
 
 
 
-
-prefix = get_option('prefix')
-
 # We don't install libresynthesizer, only static link to it.
 
 # Define meson var for libresynthesizer headers
@@ -98,8 +95,8 @@ resynthesizer_inc = include_directories('lib')
 
 # TODO this is platform specific, for Ubuntu
 # TODO should install to user specific location (customizations) ???
-# define the location to install gimp plugins.
-gimpplugindir = prefix / get_option('libdir') / 'gimp/3.0/plug-ins'
+# define the library path to install gimp plugins without the prefix.
+gimpplugindir = get_option('libdir') / 'gimp/3.0/plug-ins'
 
 
 
