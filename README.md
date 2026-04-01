@@ -9,10 +9,9 @@ See README.md in branch "master" for more general information about the Resynthe
 
 See NEWS and ChangeLog in this branch for discussion of what changed from Resynthesizer v2.
 
-This branch will not build or install localization data (i18n) until about GIMP 3.2, 
-since ScriptFu in GIMP needs a fix to support translation of Scheme scripts.
-In other words, the language of the GUI is English, until a future release.
-The translations for Resynthesizer exist for a few languages, but they won't work, and they need editing.
+Version 3.0.1 builds and install localization data (i18n).
+A build on the Windows platform that installs i18n might not work.
+Since 3.0.1 the build defaults to installing i18n data.
 
 This is the development branch for Resynthesizer version 3, for GIMP version 3.
 The "master" branch is for GIMP 2.
