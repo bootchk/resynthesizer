@@ -151,7 +151,7 @@ msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/pl.po
 cp resynthesizer3.mo $GimpPluginDir/resynthesizer/locale/pl/LC_MESSAGES
 cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-selection/locale/pl/LC_MESSAGES
 cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-transparency/locale/pl/LC_MESSAGES
-cp resynthesizerer3.mo $GimpPluginDir/plug-in-uncrop/locale/pl/LC_MESSAGES
+cp resynthesizer3.mo $GimpPluginDir/plug-in-uncrop/locale/pl/LC_MESSAGES
 cp resynthesizer3.mo $GimpPluginDir/plug-in-map-style/locale/pl/LC_MESSAGES
 cp resynthesizer3.mo $GimpPluginDir/plug-in-render-texture/locale/pl/LC_MESSAGES
 cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-fill-pattern/locale/pl/LC_MESSAGES
