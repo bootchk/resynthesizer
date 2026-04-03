@@ -77,7 +77,7 @@ jobs:
           echo "Using project version: $app_version"
 
       - name: Configure
-        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=false
+        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=true
 
       - name: Compile
         run: meson compile -C builddir -v
