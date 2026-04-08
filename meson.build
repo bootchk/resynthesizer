@@ -1,7 +1,7 @@
 project('resynthesizer',
   'c',
-  version: '3.0.0',
-  meson_version: '>=0.53.0',
+  version: '3.0.2',
+  meson_version: '>=0.60.0',
   default_options: [
     'cpp_std=gnu++14',
     'buildtype=debugoptimized',
