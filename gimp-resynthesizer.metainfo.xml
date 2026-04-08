@@ -2,14 +2,23 @@
 <!-- Copyright 2016 Lloyd Konneker
 -->
 <component type="addon">
-<id>gimp-resynthesizer</id>
-<extends>gimp.desktop</extends>
+<id>org.gimp.GIMP.Plugin.Resynthesizer</id>
+<extends>org.gimp.GIMP</extends>
 <name>Resynthesizer</name>
-<summary>Set of GIMP plug-ins that heal (in-paint), synthesize texture, theme an image, and more</summary>
+<summary>Resynthesizer GIMP Plugins</summary>
+<description>
+  <p>Set of GIMP plug-ins that heal (in-paint), synthesize texture,
+  theme an image, and more</p>
+</description>
 <url type="homepage">https://github.com/bootchk/resynthesizer/wiki</url>
 <url type="bugtracker">https://bugzilla.gnome.org/enter_bug.cgi?product=gimp&amp;component=Plugins</url>
 <url type="faq">https://github.com/bootchk/resynthesizer.git</url>
 <metadata_license>CC0-1.0</metadata_license>
 <project_license>GPL-3.0+</project_license>
-<updatecontact>konnekerl_AT_gmail.com</updatecontact>
+<update_contact>konnekerl_AT_gmail.com</update_contact>
+<releases>
+  <release date="2026-03-31"  version="3.0.1"/>
+  <release date="2025-05-22"  version="3.0"/>
+  <release date="2018-01-09"  version="2.0.3"/>
+</releases>
 ​</component>
