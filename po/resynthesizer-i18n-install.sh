@@ -7,6 +7,11 @@
 # to the appropriate directories where GIMP can find them at runtime.
 
 # Requires the 'msgfmt' tool from GNU gettext to compile .po files into .mo files.
+if ! command -v msgfmt >/dev/null 2>&1
+then
+  echo "msgfmt from GNU gettext is not available."
+  return 1
+fi
 
 # The arguments passed to this script are:
 # 1. LIBDIR: The destination directory for installation, platform-specific, 
