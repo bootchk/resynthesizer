@@ -34,14 +34,15 @@ jobs:
       - name: Install tools and dependencies
         run: |
           brew update
-          brew install pkg-config glib gettext gimp
+          brew install pkg-config glib gettext 
+          brew install --cask gimp
           python -m pip install --upgrade pip
           python -m pip install meson ninja
 
       - name: Prepare pkg-config for Homebrew dependencies
         run: |
           # Ensure Homebrew-provided .pc files are visible to pkg-config.
-          echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix)/share/pkgconfig:$(brew --prefix gimp)/lib/pkgconfig:${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
+          ## echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix)/share/pkgconfig:$(brew --prefix gimp)/lib/pkgconfig:${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
 
       - name: Validate gimp-3.0 pkg-config module
         env:
