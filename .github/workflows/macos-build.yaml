@@ -1,0 +1,68 @@
+name: macOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/macos-build.yaml'
+  pull_request:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/macos-build.yaml'
+
+jobs:
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install tools and dependencies
+        run: |
+          brew update
+          brew install pkg-config glib gettext gimp
+          python -m pip install --upgrade pip
+          python -m pip install meson ninja
+
+      - name: Show tool versions
+        run: |
+          clang --version
+          meson --version
+          ninja --version
+          pkg-config --modversion glib-2.0
+          pkg-config --modversion gimp-3.0
+
+      - name: Configure
+        env:
+          CC: clang
+        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=true
+
+      - name: Compile
+        run: meson compile -C builddir -v
+
+      - name: Stage install tree
+        run: meson install -C builddir --destdir "$PWD/stage"
+
+      - name: Upload macOS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resynthesizer-macos
+          path: |
+            stage/
+            builddir/meson-logs/meson-log.txt
+          if-no-files-found: error
+          retention-days: 14
