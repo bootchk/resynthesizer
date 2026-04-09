@@ -52,31 +52,40 @@ jobs:
         run: |
           # Ensure Homebrew-provided .pc files are visible to pkg-config.
 
-          # Homebrew installs libraries and headers to the application bundle.
-          # It does NOT install pkg-config .pc files for GIMP, 
-          # so we cannot rely on pkg-config to find GIMP.
-          # The resynthesizer meson.build finds dependencies on GIMP without pkg-config.
-
-          # List various directories to debug issues finding GIMP libraries and headers.
-          echo "Contents of /Applications/GIMP.app/Contents/Resources/lib:"
-          ls -al /Applications/GIMP.app/Contents/Resources/lib
-          # headers are in Frameworks???
-          echo "Contents of /Applications/GIMP.app/Contents/Frameworks"
-          ls -al /Applications/GIMP.app/Contents/Frameworks
-
-          # enginePlugin/meson.build expects these options on macOS.
-          echo "MAC_GIMP_APP=/Applications/GIMP.app" >> "$GITHUB_ENV"
-
-          gimp_source_dir="$(find /Applications/GIMP.app/Contents/Resources/include -type d -name libgimp -print | head -n 1 | xargs dirname)"
-          if [[ -z "$gimp_source_dir" ]]; then
-            echo "Could not find libgimp headers under /Applications/GIMP.app/Contents/Resources/include"
-            # Eager build: don't fail at first error
-            ## exit 1
-          fi
-          echo "GIMP_SOURCE_DIR=$gimp_source_dir" >> "$GITHUB_ENV"
-
           # Keep generic Homebrew pkg-config directories.
           echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix)/share/pkgconfig:${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
+
+      - name: Configure GIMP headers
+        run: |
+          # Homebrew GIMP cask provides runtime libraries in the app bundle,
+          # but not the full development headers needed by Meson.
+          # There is no Resources/include/ directory in the GIMP app bundle, and no .pc file for gimp-3.0.
+          echo "Contents of /Applications/GIMP.app/Contents/Resources/lib:"
+          ls -al /Applications/GIMP.app/Contents/Resources/lib
+
+      - name: Download GIMP source
+        run: |
+          gimp_src_dir="$RUNNER_TEMP/gimp-source"
+          git clone --depth 1 https://gitlab.gnome.org/GNOME/gimp.git "$gimp_src_dir"
+
+          # !!! Note that the checked out GIMP source may not match the version of the GIMP
+          # libraries provided by Homebrew, which could lead to build issues.
+
+          # Meson expects a directory containing libgimp/ and libgimpbase/.
+          if [[ ! -f "$gimp_src_dir/libgimp/gimp.h" ]]; then
+            echo "Downloaded source does not contain libgimp/gimp.h at expected path"
+            exit 1
+          fi
+
+          echo "GIMP_SOURCE_DIR=$gimp_src_dir" >> "$GITHUB_ENV"
+
+      - name: Configure env vars for meson build
+        run: |
+          # enginePlugin/meson.build expects these options on macOS.
+
+          # Resynthesizer meson.build looks here for libraries to link against.
+          # The libraries bundled with the Homebrew GIMP cask.
+          echo "MAC_GIMP_APP=/Applications/GIMP.app" >> "$GITHUB_ENV"
 
       - name: Show tool versions
         env:
