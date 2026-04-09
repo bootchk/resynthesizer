@@ -11,6 +11,20 @@
 # But that file is not in the source.
 # And then the source optionally compiles using e.g. "#ifdef SYNTH_THREADED"
 
+# Option to set the plugin install path. If not set, these wil go into
+#  prefix / libdir / 'gimp/3.0/plug-ins'
+option('gimp-plugin-dir', type : 'string', value : '')
+
+# Option to set the search path for GIMP include files.
+# Use this to point at a GIMP source checkout to get
+# headers if you don't have a standalone libgimp-3.0 package.
+# This option is required on macOS, along with mac-gimp-app.
+option('gimp-source-dir', type : 'string', value : '')
+
+# macOS: Option to point at the installed GIMP App, which contains all
+# the dynamic libraries required by this plugin.
+# Usually /Applications/GIMP.app
+option('mac-gimp-app', type : 'string', value : '')
 
 
 # Option to install translations.

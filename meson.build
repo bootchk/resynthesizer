@@ -97,7 +97,6 @@ resynthesizer_inc = include_directories('lib')
 # (instead of extension-script-fu)
 
 
-
 # Define the location to install gimp plugins.
 # This is the system-wide location, for all users.
 # This is the location where GIMP loads plugins, by default.
@@ -128,8 +127,13 @@ resynthesizer_inc = include_directories('lib')
 # When a GIMP app user relocates a plugin (to other than the default location)
 # they can configure GIMP to find it using GIMP's menu: Edit>Preferences>Folders/Plug-ins.
 
-gimpplugindir = prefix / get_option('libdir') / 'gimp/3.0/plug-ins'
+# A build-time meson option to choose an unconventional install location.
+# This is necessary on a MacOS build
+gimpplugindir = get_option('gimp-plugin-dir')
 
+if gimpplugindir == ''
+  gimpplugindir = prefix / get_option('libdir') / 'gimp/3.0/plug-ins'
+endif
 
 
 # Is the order important to meson?

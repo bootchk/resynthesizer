@@ -62,6 +62,32 @@ math_dep = cc.find_library('m', required : false)
 if get_option('synth-use-glib')
   # Might work with earlier versions, choosing 2.54 somewhat
   glib_dep = dependency('glib-2.0', version : '>=2.54.0')
+
+  mac_gimp_app = get_option('mac-gimp-app')
+  if mac_gimp_app != ''
+    # On macOS, we'll use the shared library from the GIMP App and
+    # keep only the headers from the glib_dep we just found.
+    mac_dylib_path = mac_gimp_app / 'Contents/Resources/lib'
+    glib_dep = declare_dependency(
+      compile_args: [
+        # Current versions of GIMP.app use glib 2.78. If the headers we find
+        # are for version >= 2.80, the G_DEFINE_TYPE macro uses a g_once_init
+        # symbol that isn't available in GIMP.app's glib-2.0.dylib.
+        # Here, we limit this to 2.54 <= version <= 2.79.
+        # The value is defined in glib/gversionmacros.h as:
+        #
+        #     ((major << 16) | (minor << 8))
+        #
+        # The 2.54 lower bound comes from the depencency() call, above.
+        '-DGLIB_VERSION_MIN_REQUIRED=0x23600',
+        '-DGLIB_VERSION_MAX_ALLOWED=0x24f00',
+      ],
+      dependencies: [
+        glib_dep.partial_dependency(compile_args: true),
+        cc.find_library('glib-2.0', dirs: [mac_dylib_path], required: true),
+      ],
+    )
+  endif
 else
   glib_dep = dependency('', required: false)
   libresynthesizer_sources +=  'glibProxy.c'
