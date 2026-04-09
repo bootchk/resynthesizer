@@ -56,7 +56,13 @@ jobs:
           # It does NOT install pkg-config .pc files for GIMP, 
           # so we cannot rely on pkg-config to find GIMP.
           # The resynthesizer meson.build finds dependencies on GIMP without pkg-config.
+
+          # List various directories to debug issues finding GIMP libraries and headers.
+          echo "Contents of /Applications/GIMP.app/Contents/Resources/lib:"
           ls -al /Applications/GIMP.app/Contents/Resources/lib
+          # headers are in Frameworks???
+          echo "Contents of /Applications/GIMP.app/Contents/Frameworks"
+          ls -al /Applications/GIMP.app/Contents/Frameworks
 
           # enginePlugin/meson.build expects these options on macOS.
           echo "MAC_GIMP_APP=/Applications/GIMP.app" >> "$GITHUB_ENV"
@@ -64,7 +70,8 @@ jobs:
           gimp_source_dir="$(find /Applications/GIMP.app/Contents/Resources/include -type d -name libgimp -print | head -n 1 | xargs dirname)"
           if [[ -z "$gimp_source_dir" ]]; then
             echo "Could not find libgimp headers under /Applications/GIMP.app/Contents/Resources/include"
-            exit 1
+            # Eager build: don't fail at first error
+            ## exit 1
           fi
           echo "GIMP_SOURCE_DIR=$gimp_source_dir" >> "$GITHUB_ENV"
 
