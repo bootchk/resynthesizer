@@ -35,7 +35,8 @@ jobs:
         run: |
           brew update
 
-          # These are required for build, but usually already installed and up-to-date on the macOS runner. 
+          # These are required for build, but usually already installed 
+          # and up-to-date on the macOS runner. 
           ## brew install pkg-config glib gettext
 
           # Homebrew has no formula for gimp, but has "casks"
@@ -51,22 +52,24 @@ jobs:
         run: |
           # Ensure Homebrew-provided .pc files are visible to pkg-config.
 
-          # Homebrew installs the libraries to the application bundle
+          # Homebrew installs libraries and headers to the application bundle.
+          # It does NOT install pkg-config .pc files for GIMP, 
+          # so we cannot rely on pkg-config to find GIMP.
+          # The resynthesizer meson.build finds dependencies on GIMP without pkg-config.
           ls -al /Applications/GIMP.app/Contents/Resources/lib
 
-          echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix)/share/pkgconfig:$(brew --prefix gimp)/lib/pkgconfig:${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
+          # enginePlugin/meson.build expects these options on macOS.
+          echo "MAC_GIMP_APP=/Applications/GIMP.app" >> "$GITHUB_ENV"
 
-      - name: Validate gimp-3.0 pkg-config module
-        env:
-          PKG_CONFIG_PATH: ${{ env.PKG_CONFIG_PATH }}
-        run: |
-          if ! pkg-config --exists gimp-3.0; then
-            echo "Expected pkg-config module 'gimp-3.0' was not found."
-            echo "Current PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
-            echo "Available gimp-related .pc files under Homebrew:"
-            find "$(brew --prefix)" -path '*/pkgconfig/*.pc' -name '*gimp*.pc' -print | sort || true
+          gimp_source_dir="$(find /Applications/GIMP.app/Contents/Resources/include -type d -name libgimp -print | head -n 1 | xargs dirname)"
+          if [[ -z "$gimp_source_dir" ]]; then
+            echo "Could not find libgimp headers under /Applications/GIMP.app/Contents/Resources/include"
             exit 1
           fi
+          echo "GIMP_SOURCE_DIR=$gimp_source_dir" >> "$GITHUB_ENV"
+
+          # Keep generic Homebrew pkg-config directories.
+          echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix)/share/pkgconfig:${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
 
       - name: Show tool versions
         env:
@@ -75,14 +78,26 @@ jobs:
           clang --version
           meson --version
           ninja --version
+          # glib-2.0 is a dependency of resynthesizer, and is provided by Homebrew
+          # so should be found by pkg-config
           pkg-config --modversion glib-2.0
+
+          # gimp-3.0 is a dependency of resynthesizer, and is provided by Homebrew
+          # but Homebrew does not provide a .pc file for it, so pkg-config cannot find it
           #pkg-config --modversion gimp-3.0
 
       - name: Configure
         env:
           CC: clang
           PKG_CONFIG_PATH: ${{ env.PKG_CONFIG_PATH }}
-        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=true
+          MAC_GIMP_APP: ${{ env.MAC_GIMP_APP }}
+          GIMP_SOURCE_DIR: ${{ env.GIMP_SOURCE_DIR }}
+        run: |
+          meson setup builddir \
+            -Dinstall-test=false \
+            -Dinstall-translations=true \
+            -Dmac-gimp-app="$MAC_GIMP_APP" \
+            -Dgimp-source-dir="$GIMP_SOURCE_DIR"
 
       - name: Compile
         run: meson compile -C builddir -v
