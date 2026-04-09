@@ -39,6 +39,8 @@ jobs:
           # and up-to-date on the macOS runner. 
           ## brew install pkg-config glib gettext
 
+          brew install babl gegl cairo gexiv pango pixbuf
+
           # Homebrew has no formula for gimp, but has "casks"
           # We need the library gimp-3.0 to build resynthesizer against.
           # See https://formulae.brew.sh/cask/gimp
