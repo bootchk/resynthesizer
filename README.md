@@ -1,7 +1,9 @@
 # Resynthesizer Plugins for GIMP 3
 
+[![Ubuntu Meson Build](https://github.com/bootchk/resynthesizer/actions/workflows/ubuntu-build.yaml/badge.svg)](https://github.com/bootchk/resynthesizer/actions/workflows/ubuntu-build.yaml)
+[![Windows Build](https://github.com/bootchk/resynthesizer/actions/workflows/windows-build.yaml/badge.svg)](https://github.com/bootchk/resynthesizer/actions/workflows/windows-build.yaml)
+[![macOS Build](https://github.com/bootchk/resynthesizer/actions/workflows/macos-build.yaml/badge.svg)](https://github.com/bootchk/resynthesizer/actions/workflows/macos-build.yaml)
 
-[![Build Status](https://travis-ci.org/bootchk/resynthesizer.svg?branch=master)](https://travis-ci.org/bootchk/resynthesizer)
 
 This is the branch for development of Resynthesizer compatible with the GIMP application v3.0.0 and later.
 
