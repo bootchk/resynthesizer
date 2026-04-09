@@ -34,12 +34,15 @@ jobs:
       - name: Install tools and dependencies
         run: |
           brew update
-          brew install pkg-config glib gettext
-          # Homebrew's gimp formula should provide the necessary development files for building against gimp-3.0.
-          # We use --build-from-source to ensure we get the latest version
-          # and avoid any potential issues with pre-built bottles.
-          # Not using the cask, a pre-built binary, because it may not include the necessary development files for building against gimp-3.0.
-          brew install --build-from-source gimp
+
+          # These are required for build, but usually already installed and up-to-date on the macOS runner. 
+          ## brew install pkg-config glib gettext
+
+          # Homebrew has no formula for gimp, but has "casks"
+          # We need the development files for gimp-3.0 to build against, a special cask.
+          # See https://formulae.brew.sh/cask/gimp@dev
+          brew install --cask gimp@dev
+
           python -m pip install --upgrade pip
           python -m pip install meson ninja
 
