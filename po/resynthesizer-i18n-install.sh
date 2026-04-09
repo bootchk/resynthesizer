@@ -7,6 +7,11 @@
 # to the appropriate directories where GIMP can find them at runtime.
 
 # Requires the 'msgfmt' tool from GNU gettext to compile .po files into .mo files.
+if ! command -v msgfmt >/dev/null 2>&1
+then
+  echo "msgfmt from GNU gettext is not available."
+  return 1
+fi
 
 # The arguments passed to this script are:
 # 1. LIBDIR: The destination directory for installation, platform-specific, 
@@ -36,158 +41,56 @@ echo "Arg LIBDIR: $@"
 GimpPluginDir="${MESON_INSTALL_DESTDIR_PREFIX}/$1/gimp/3.0/plug-ins"
 echo "GimpPluginDir: ${GimpPluginDir}"
 
-# Make the destination directory if it doesn't exist (-p)
-# The destination directory is the destination for one languages .mo file, for one plugin.
-#     where GIMP installs plugins: 
-#        libdir/
-#        gimp/3.0/plug-ins/
-#     a particular plugin root dir: resynthesizer/
-#     where gettext looks for translations for a language: locale/<language code>/LC_MESSAGES
 
-# Repeat the above for each plugin that needs translations 
-# (8 total in this case, including the engine plugin), 
-# and for each language you want to support (6 total in this case).
-
+# POSIX equivalent of an array (sort of...)
+# which is used to define the components which have translations
+#
 # The "engine" plugin is the "resynthesizer" plugin, 
 # which is the core/helper/engine of the suite,
 # and has translations for error messages.
-mkdir -p $GimpPluginDir/resynthesizer/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/resynthesizer/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/resynthesizer/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/resynthesizer/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/resynthesizer/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/resynthesizer/locale/tr/LC_MESSAGES
-
-mkdir -p $GimpPluginDir/plug-in-heal-selection/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-selection/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-selection/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-selection/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-selection/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-selection/locale/tr/LC_MESSAGES
-
-mkdir -p $GimpPluginDir/plug-in-heal-transparency/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-transparency/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-transparency/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-transparency/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-transparency/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-heal-transparency/locale/tr/LC_MESSAGES
-
-mkdir -p $GimpPluginDir/plug-in-uncrop/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-uncrop/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-uncrop/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-uncrop/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-uncrop/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-uncrop/locale/tr/LC_MESSAGES
-
-mkdir -p $GimpPluginDir/plug-in-map-style/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-map-style/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-map-style/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-map-style/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-map-style/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-map-style/locale/tr/LC_MESSAGES
-
-mkdir -p $GimpPluginDir/plug-in-render-texture/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-render-texture/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-render-texture/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-render-texture/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-render-texture/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-render-texture/locale/tr/LC_MESSAGES
-
-mkdir -p $GimpPluginDir/plug-in-resynth-fill-pattern/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-fill-pattern/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-fill-pattern/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-fill-pattern/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-fill-pattern/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-fill-pattern/locale/tr/LC_MESSAGES
-
+#
 # The "controls" plugin is the plugin that provides a GUI 
 # for the raw/bare/not-nested engine plugin
-mkdir -p $GimpPluginDir/plug-in-resynth-controls/locale/cs/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-controls/locale/fr/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-controls/locale/pl/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-controls/locale/pt_BR/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-controls/locale/ru/LC_MESSAGES
-mkdir -p $GimpPluginDir/plug-in-resynth-controls/locale/tr/LC_MESSAGES
+set -- "resynthesizer" \
+       "plug-in-heal-selection" \
+       "plug-in-heal-transparency" \
+       "plug-in-uncrop" \
+       "plug-in-map-style" \
+       "plug-in-render-texture" \
+       "plug-in-resynth-fill-pattern" \
+       "plug-in-resynth-controls"
 
+# Get available translations directly from the source folder
+# Alternatively LINGUAS could be used for that
+for lang in $(ls -1 ${MESON_SOURCE_ROOT}/po/*.po)
+do
+  LangBase=$(basename $lang .po)
+  echo "Installing $LangBase translations"
+  # Compile one languages .po file into a .mo file using msgfmt.
+  # The input is in the source directory,
+  # and the output is a temporary .mo file in the current build directory,
+  # which we will copy to the final destination in the following loop.
+  # The input is named for a language, e.g., 'cs' for Czech,
+  # and the output is named 'resynthesizer3.mo' which is a "domain" name
+  # shared by the suite of plugins, and is the name that matches the domain name in the source code,
+  # that gettext uses to find the translations at runtime.
+  msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/$LangBase.po
 
+  # Do the placement work for the listed plugins
+  for plugin in $@;
+  do
+    # Make the destination directory if it doesn't exist (-p)
+    # The destination directory is the destination for one languages .mo file, for one plugin.
+    #     where GIMP installs plugins:
+    #        libdir/
+    #        gimp/3.0/plug-ins/
+    #     a particular plugin root dir: resynthesizer/
+    #     where gettext looks for translations for a language: locale/<language code>/LC_MESSAGES
+    mkdir -p $GimpPluginDir/$plugin/locale/$LangBase/LC_MESSAGES
 
-echo "Installing Czech translations"
-# Compile one languages .po file into a .mo file using msgfmt.
-# The input is in the source directory, 
-# and the output is a temporary .mo file in the current build directory, 
-# which we will move to the final destination in the next step.
-# The input is named for a language, e.g., 'cs' for Czech, 
-# and the output is named 'resynthesizer3.mo' which is a "domain" name
-# shared by the suite of plugins, and is the name that matches the domain name in the source code,
-# that gettext uses to find the translations at runtime.
-msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/cs.po
-
-# The output was temporarily placed in the current build directory.
-# Now we move it to the final destinations (one for each plugin)
-cp resynthesizer3.mo $GimpPluginDir/resynthesizer/locale/cs/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-selection/locale/cs/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-transparency/locale/cs/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-uncrop/locale/cs/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-map-style/locale/cs/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-render-texture/locale/cs/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-fill-pattern/locale/cs/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-controls/locale/cs/LC_MESSAGES
-
-# Repeat the above for each language
-
-echo "Installing French translations"
-msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/fr.po
-cp resynthesizer3.mo $GimpPluginDir/resynthesizer/locale/fr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-selection/locale/fr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-transparency/locale/fr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-uncrop/locale/fr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-map-style/locale/fr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-render-texture/locale/fr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-fill-pattern/locale/fr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-controls/locale/fr/LC_MESSAGES
-
-echo "Installing Polish translations"
-msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/pl.po
-cp resynthesizer3.mo $GimpPluginDir/resynthesizer/locale/pl/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-selection/locale/pl/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-transparency/locale/pl/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-uncrop/locale/pl/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-map-style/locale/pl/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-render-texture/locale/pl/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-fill-pattern/locale/pl/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-controls/locale/pl/LC_MESSAGES
-
-echo "Installing Portuguese (Brazil) translations"
-msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/pt_BR.po
-cp resynthesizer3.mo $GimpPluginDir/resynthesizer/locale/pt_BR/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-selection/locale/pt_BR/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-transparency/locale/pt_BR/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-uncrop/locale/pt_BR/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-map-style/locale/pt_BR/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-render-texture/locale/pt_BR/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-fill-pattern/locale/pt_BR/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-controls/locale/pt_BR/LC_MESSAGES
-
-echo "Installing Russian translations"
-msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/ru.po
-cp resynthesizer3.mo $GimpPluginDir/resynthesizer/locale/ru/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-selection/locale/ru/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-transparency/locale/ru/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-uncrop/locale/ru/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-map-style/locale/ru/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-render-texture/locale/ru/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-fill-pattern/locale/ru/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-controls/locale/ru/LC_MESSAGES
-
-echo "Installing Turkish translations"
-msgfmt -o resynthesizer3.mo ${MESON_SOURCE_ROOT}/po/tr.po
-cp resynthesizer3.mo $GimpPluginDir/resynthesizer/locale/tr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-selection/locale/tr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-heal-transparency/locale/tr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-uncrop/locale/tr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-map-style/locale/tr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-render-texture/locale/tr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-fill-pattern/locale/tr/LC_MESSAGES
-cp resynthesizer3.mo $GimpPluginDir/plug-in-resynth-controls/locale/tr/LC_MESSAGES
+    # Now we copy it to the final destination for the respective language
+    cp resynthesizer3.mo $GimpPluginDir/$plugin/locale/$LangBase/LC_MESSAGES
+  done
+done
 
 echo "Finished installing translations for resynthesizer suite."
