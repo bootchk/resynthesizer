@@ -144,3 +144,6 @@
 
 (script-fu-menu-register "plug-in-fill-pattern-resynth"
                          "<Image>/Edit")
+
+(script-fu-register-i18n "plug-in-fill-pattern-resynth" "resynthesizer3")
+

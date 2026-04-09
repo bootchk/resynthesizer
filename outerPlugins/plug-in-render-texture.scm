@@ -300,3 +300,5 @@
 
 (script-fu-menu-register "plug-in-render-texture"
                          "<Image>/Filters/Render")
+
+(script-fu-register-i18n "plug-in-render-texture" "resynthesizer3")

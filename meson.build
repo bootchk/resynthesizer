@@ -1,7 +1,7 @@
 project('resynthesizer',
   'c',
-  version: '3.0.0',
-  meson_version: '>=0.53.0',
+  version: '3.0.2',
+  meson_version: '>=0.60.0',
   default_options: [
     'cpp_std=gnu++14',
     'buildtype=debugoptimized',
@@ -10,8 +10,8 @@ project('resynthesizer',
 
 # Get Meson module for translation
 i18n = import('i18n')
-# unique name of gettext package
-# gettext_package = 'resynthesizer3'
+# unique name of gettext domain
+# gettext_domain = 'resynthesizer3'
 
 ###### List names
 
@@ -30,7 +30,7 @@ resynthesizer_plugin_names = [
 ]
 
 # There is one other plugin: the engine, in C.
-# It is in the PDB, but not in GIMP menus.
+# It is in the GIMP PDB, but not in GIMP menus.
 
 # Not ported yet, so not installed.
 # As ported, move to the list above.
@@ -96,14 +96,44 @@ resynthesizer_inc = include_directories('lib')
 # and executed by the standalone SF interpreter
 # (instead of extension-script-fu)
 
-# TODO this is platform specific, for Ubuntu
-# TODO should install to user specific location (customizations) ???
-# define the location to install gimp plugins.
+
+# Define the location to install gimp plugins.
+# This is the system-wide location, for all users.
+# This is the location where GIMP loads plugins, by default.
+#
+# This definition is parameterized by meson options
+# and should be portable across platforms.
+# But it does depend on the location coded into the GIMP app.
+#
+# E.G. on Ubuntu, this resolves to /usr/local/lib/x86_64-linux-gnu/gimp/3.0/plug-ins
+#
+# If you, a builder, want to install to another location, you edit this line.
+# For example, to install to a user-specific location,
+# this should resolve to ~/.config/GIMP/3.x/plug-ins or similar.
+# For example, if you are packaging a relocatable/sandboxed bundle,
+# this might resolve to a sandbox location.
+#
+# See also po/resynthesizer-i18n-install.sh, a custom install script,
+# which has a similar definition that should match.
+#
+# GIMP requires a plugin is installed all in its own directory.
+# GIMP requires the directory have the same name as the plugin's executable file.
+# Thus it is easily relocatable.
+# Example:
+# .../gimp/3.0/plug-ins/heal-selection/heal-selection.scm
+#                                     /locale/fr/LC_MESSAGES/resynthesizer3.po etc.
+# etc. for the other resynthesizer plugins
+#
+# When a GIMP app user relocates a plugin (to other than the default location)
+# they can configure GIMP to find it using GIMP's menu: Edit>Preferences>Folders/Plug-ins.
+
+# A build-time meson option to choose an unconventional install location.
+# This is necessary on a MacOS build
 gimpplugindir = get_option('gimp-plugin-dir')
+
 if gimpplugindir == ''
   gimpplugindir = prefix / get_option('libdir') / 'gimp/3.0/plug-ins'
 endif
-
 
 
 # Is the order important to meson?

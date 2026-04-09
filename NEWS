@@ -1,6 +1,47 @@
 NEWS
 ====
 
+v3.0.1
+
+Fixes i18n/internationalization/localization.
+User facing text for all plugins is now in the native language of the user,
+for the languages for which translators have previously contributed a .po file.
+
+This release has no other functional changes.
+If you don't need translations, you don't need this release.
+
+This is compatible with GIMP 3.0 or later.
+The fixes are all to the Resynthesizer.
+The changes are to the translation data, the build system, and to the plugins (to declare i18n.)
+Resynthesizer still uses the GIMP 3.0 API; no changes to GIMP were required.
+
+The build system installs translation data (the catalog)
+to GIMP's system wide directory for installed plugins, not to a user specific directory,
+and not to the platform's usual locale directory.
+In the way that GIMP supports: to a "locale" subdirectory beneath the root directory of each plugin.
+
+The translations data (a .po) for the set of Resynthesizer plugins, for a language, is in one file.
+The one file covers the set of Resynthesizer plugins: seven "outer" plugins and one "engine" plugin.
+The compiled translations data is named "resynthesizer3.mo."
+That is, the translation_domain_name is "resynthesizer3."
+The build installs the same file many places, duplicated for each plugin.
+(A better way would be to install the file once, to the platform's locale directory,
+but that seems to require a future change to GIMP.)
+
+Packagers can move the plugin's installation, 
+including the subdirectory "locale" containing the translation catalog,
+to a user specific or sandbox directory.
+
+Corrects some translations required by changes to Resynthesizer texts.
+E.g. "Heal selection..." => "Heal Selection..." in the translation pairs,
+because the plugin source files since 3.0  use newly capitalized texts
+to conform with GNOME standards for menu capitalization.
+A few texts new to 3.0 are still untranslated, e.g. "Anti-erase etc."
+Some improved texts of the engine control plugin introduced in Resynthesizer 3.0 
+have been reverted to their original 2.0 texts,
+so that existing translations from 2.0 still work.
+
+
 v3.0 for GIMP API 3.0
 
 The outer plugins are in Scheme rather than Python.

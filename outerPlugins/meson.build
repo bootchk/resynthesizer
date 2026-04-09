@@ -26,4 +26,4 @@ foreach basename : resynthesizer_plugin_names
                install_mode: 'rwxr-xr-x')
 endforeach
 
-summary('Installed plugin names', resynthesizer_plugin_names)
+summary('Installed outer plugin names', resynthesizer_plugin_names)

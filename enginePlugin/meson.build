@@ -112,4 +112,5 @@ executable(plugin_name,
   install: true,
   install_dir: gimpplugindir / plugin_name,
   kwargs: gimp_rpath,
+  win_subsystem: 'windows',
 )

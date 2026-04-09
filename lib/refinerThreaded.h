@@ -76,7 +76,7 @@ typedef struct synthArgsStruct {
   GRand *prng;
   gushort * corpusTargetMetric;   // array pointers TPixelelMetricFunc
   guint * mapsMetric;             // TMapPixelelMetricFunc
-  void (*deepProgressCallback)();         // void func(void)
+  void (*deepProgressCallback)(ProgressRecordT*);         // void func(void)
   ProgressRecordT *progressRecord;
   int* cancelFlag;  // flag set when canceled
 } SynthArgs;
@@ -104,7 +104,7 @@ newSynthesisArgs(
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
-  void (*deepProgressCallback)(),
+  void (*deepProgressCallback)(ProgressRecordT*),
   ProgressRecordT* progressRecord,
   int* cancelFlag
   )
@@ -154,7 +154,7 @@ synthesisThread(void * uncastArgs)
   GRand *prng                         = args->prng;
   gushort * corpusTargetMetric        = args->corpusTargetMetric; // array pointers TPixelelMetricFunc
   guint * mapsMetric                  = args->mapsMetric;
-  void (*deepProgressCallback)()      = args->deepProgressCallback;
+  void (*deepProgressCallback)(ProgressRecordT*)      = args->deepProgressCallback;
   ProgressRecordT * progressRecord    = args->progressRecord;
   int* cancelFlag                     = args->cancelFlag;
 
@@ -207,7 +207,7 @@ startThread(
   GRand *prng,
   TPixelelMetricFunc corpusTargetMetric,  // array pointers
   TMapPixelelMetricFunc mapsMetric,
-  void (*deepProgressCallback)(),
+  void (*deepProgressCallback)(ProgressRecordT*),
   ProgressRecordT *progressRecord,
   int* cancelFlag
   )
@@ -466,7 +466,7 @@ refiner(
    * Note synthesis may quit early: then progress makes a large jump.
    */
   void
-  deepProgressCallback()
+  deepProgressCallback(ProgressRecordT*)
   {
     completedPixelCount += IMAGE_SYNTH_CALLBACK_COUNT;
     guint percentComplete = ((float)completedPixelCount/estimatedPixelCountToCompletion)*100;

@@ -225,30 +225,12 @@ inner_run(
   start_time = clock();
   #endif
 
-  // internationalization i18n is done earlier, for Gimp 3
-  // See DEFINE_STD_SET_I18N in gimp repo
-  // Plugin at init time needs
-  // plug_in_class->set_i18n         = STD_SET_I18N;
-  // Note these constants are defined in the build environment.
+  /*
+  In GIMP 2, internationalization i18n init was done here.
+  In GIMP 3 i18n init is done by overriding class method set_18n,
+  in the engine subclass of GimpPlugin.
+  */
 
-  /*  Initialize i18n support  */
-// TODO revise for Gimp 3
-#ifdef GIMP2
-// TODO maybe newer is INIT_I18N ();
-/*
-#if defined(G_OS_WIN32)
-  bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
-#else
-  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
-#endif
-*/
-// TODO temporarily always call gimp
-bindtextdomain (GETTEXT_PACKAGE, gimp_locale_directory());
-#ifdef HAVE_BIND_TEXTDOMAIN_CODESET
-  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-#endif
-  textdomain (GETTEXT_PACKAGE);
-#endif
 
 
 

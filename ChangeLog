@@ -1,6 +1,13 @@
 ChangeLog for the resynthesizer
 
 
+2026 Lloyd Konneker
+
+version 3.0.1
+
+  Fix i18n.  See NEWS.
+
+
 2025 Lloyd Konneker
 
 version 3.0 (corresponding to GIMP 3.0 release of libgimp)

@@ -64,7 +64,10 @@ GType                   resynthesizer_get_type         (void) G_GNUC_CONST;
 static GList          * resynthesizer_query_procedures (GimpPlugIn           *plug_in);
 static GimpProcedure  * resynthesizer_create_procedure (GimpPlugIn           *plug_in,
                                                         const gchar          *name);
-
+static gboolean         resynthesizer_set_i18n         (GimpPlugIn           *plug_in,
+                                                        const gchar          *procedure_name,
+                                                        gchar               **gettext_domain,
+                                                        gchar               **catalog_dir);
 static GimpValueArray * resynthesizer_run     (GimpProcedure        *procedure,
 #ifdef IMAGE_PROCEDURE
                                                GimpRunMode           run_mode,
@@ -89,6 +92,7 @@ resynthesizer_class_init (ResynthesizerClass *klass)
 
   plug_in_class->query_procedures = resynthesizer_query_procedures;
   plug_in_class->create_procedure = resynthesizer_create_procedure;
+  plug_in_class->set_i18n         = resynthesizer_set_i18n;
 }
 
 static void
@@ -234,6 +238,33 @@ resynthesizer_create_procedure (GimpPlugIn  *plug_in,
   return procedure;
 }
 
+/* 
+A callback from GIMP plugin machinery that initializes i18n, internationalization.
+
+Returns a domain name for i18n, and optionally a catalog directory.
+The declared domain name and catalog directory must match the actual .mo file and its location,
+as created by the build/install process, else the i18n machinery will not translate messages.
+
+The engine plugin has no GUI, but has error and progress messages that are i18n.
+*/
+static gboolean
+resynthesizer_set_i18n (GimpPlugIn   *plug_in,
+                        const gchar  *procedure_name,
+                        gchar       **gettext_domain, // out
+                        gchar       **catalog_dir)    // out
+{
+  /* domain name is the name of the .mo file without the .mo suffix.
+  Usual convention is that domain name is same as plug-in executable file name.
+  Here we used the domain "resynthesizer3", the name for the suite of resynthesizer plugins,
+  to share the same .mo file among them.
+  */ 
+  *gettext_domain = g_strdup ("resynthesizer3");
+
+  /* When not return a catalog directory, GIMP will use a default directory.
+  Which is the "locale" subdirectory of the plug-in's root installation directory.
+  */
+  return TRUE;
+};
 
 static GError *
 new_gerror_for_resynthesizer_and_string(const char * msg)

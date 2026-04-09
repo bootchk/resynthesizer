@@ -146,3 +146,6 @@
 (script-fu-menu-register
   "plug-in-enlarge-resynthesized"
   "<Image>/Filters/Enhance")
+
+(script-fu-register-i18n "plug-in-enlarge-resynthesized" "resynthesizer3")
+
