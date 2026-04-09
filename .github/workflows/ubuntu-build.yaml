@@ -1,0 +1,66 @@
+name: Ubuntu Meson Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/ubuntu-build.yaml'
+  pull_request:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/ubuntu-build.yaml'
+
+jobs:
+  build-ubuntu:
+    # lkk Github does not yet have 25.10 runners, so use 24.04 runner with 25.10 container
+    # 24.04 does not have GIMP 3.0 packages, so use the container to get correct dependencies
+    name: Build on Ubuntu 25.10 container
+    runs-on: ubuntu-24.04
+    container:
+      image: ubuntu:25.10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            build-essential \
+            meson \
+            ninja-build \
+            pkg-config \
+            gettext \
+            libglib2.0-dev \
+            libgimp-3.0-dev
+
+      - name: Show toolchain and pkg-config versions
+        run: |
+          gcc --version
+          meson --version
+          ninja --version
+          pkg-config --modversion glib-2.0
+          pkg-config --modversion gimp-3.0
+
+      - name: Configure
+        run: meson setup builddir -Dinstall-test=false -Dinstall-translations=true
+
+      - name: Compile
+        run: meson compile -C builddir -v
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-build-logs
+          path: builddir/meson-logs/meson-log.txt
+          if-no-files-found: ignore
+          retention-days: 14
