@@ -107,9 +107,10 @@ jobs:
           # Check that pkg-config can find the dependencies provided by Homebrew.
 
           pkg-config --modversion glib-2.0
+          pkg-config --list-all | grep gexiv2
           pkg-config --modversion gexiv2
           pkg-config --modversion gegl-0.4
-          pkg-config --list-all | grep gexiv2
+          
 
           # gimp-3.0 is a dependency of resynthesizer, and is provided by Homebrew
           # but Homebrew does not provide a .pc file for it, so pkg-config cannot find it
