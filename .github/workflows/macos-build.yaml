@@ -61,7 +61,10 @@ jobs:
         run: |
           # Homebrew GIMP cask provides runtime libraries in the app bundle,
           # but not the full development headers needed by Meson.
-          # There is no Resources/include/ directory in the GIMP app bundle, and no .pc file for gimp-3.0.
+          # There is no Resources/include/ directory in the GIMP app bundle, and no .pc file
+          # There might be a /Headers/ directory with some headers.
+          echo "Contents of /Applications/GIMP.app/Contents/Resources:"
+          ls -l /Applications/GIMP.app/Contents/Resources
           echo "Contents of /Applications/GIMP.app/Contents/Resources/lib:"
           ls -al /Applications/GIMP.app/Contents/Resources/lib
 
@@ -96,13 +99,24 @@ jobs:
           clang --version
           meson --version
           ninja --version
-          # glib-2.0 is a dependency of resynthesizer, and is provided by Homebrew
-          # so should be found by pkg-config
+          
+      - name: Preflight pkg-config finds libraries
+        env:
+          PKG_CONFIG_PATH: ${{ env.PKG_CONFIG_PATH }}
+        run: |
+          # Check that pkg-config can find the dependencies provided by Homebrew.
+
           pkg-config --modversion glib-2.0
+          pkg-config --modversion gexiv2
+          pkg-config --modversion gegl-0.4
+          pkg-config --list-all | grep gexiv2
 
           # gimp-3.0 is a dependency of resynthesizer, and is provided by Homebrew
           # but Homebrew does not provide a .pc file for it, so pkg-config cannot find it
           #pkg-config --modversion gimp-3.0
+
+
+
 
       - name: Configure
         env:
