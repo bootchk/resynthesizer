@@ -68,7 +68,8 @@ else
        cc.find_library(
          'gimp-3.0',
          dirs : [mac_dylib_path],
-         has_headers : ['libgimp/gimp.h', 'libgimpbase/gimpversion.h'],
+         # only depend on the one header that resynthesizer includes
+         has_headers : ['libgimp/gimp.h', ],
          header_include_directories : [gimp_inc],
          required: true),
 
