@@ -42,11 +42,20 @@ else
   endif
 
   # The dependencies of libgimp-3.0, either Homebrew or MacPorts should work.
+  
+  # The explicit includes in libgimp/gimp.h are:
+  # cairo, glib-obj, gegl, gdk-pixbuf, pango
+  # But gegl.h includes babl.h (transitive dependency)
+  # ??? What includes gexiv2.h???
+  #
+  # !!! These are pkg-config module names.
+  # Often, a specific version or range of versions is specified.
+  #
   # These are only needed as header file dependencies of <libgimp/gimp.h>.
   _babl_includes = dependency('babl-0.1').partial_dependency(compile_args: true)
   _gegl_includes = dependency('gegl-0.4').partial_dependency(compile_args: true)
   _cairo_includes = dependency('cairo').partial_dependency(compile_args: true)
-  _gexiv_includes = dependency('gexiv2').partial_dependency(compile_args: true)
+  _gexiv_includes = dependency('gexiv2-0.16').partial_dependency(compile_args: true)
   _pango_includes = dependency('pango').partial_dependency(compile_args: true)
   _pixbuf_includes = dependency('gdk-pixbuf-2.0').partial_dependency(compile_args: true)
 
@@ -72,13 +81,14 @@ else
        cc.find_library('babl-0.1',    dirs: [mac_dylib_path], required: true),
        cc.find_library('intl',        dirs: [mac_dylib_path], required: true),
 
-       # The include paths.
-       _babl_includes,
-       _gegl_includes,
+       # Header file dependencies
        _cairo_includes,
-       _gexiv_includes,
-       _pango_includes,
+       _gegl_includes,
        _pixbuf_includes,
+       _pango_includes,
+       # transitive
+       _babl_includes,
+       _gexiv_includes,
      ],
   )
   mac_rpath = mac_gimp_app / 'Contents/Resources'
