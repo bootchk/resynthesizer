@@ -108,7 +108,7 @@ jobs:
 
           pkg-config --modversion glib-2.0
           pkg-config --list-all | grep gexiv2
-          pkg-config --modversion gexiv2
+          pkg-config --modversion gexiv2-0.16
           pkg-config --modversion gegl-0.4
           
 
