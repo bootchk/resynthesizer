@@ -1,0 +1,111 @@
+name: macOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/macos-build.yaml'
+  pull_request:
+    paths:
+      - '**/*.c'
+      - '**/*.h'
+      - '**/meson.build'
+      - 'meson_options.txt'
+      - '.github/workflows/macos-build.yaml'
+
+jobs:
+  build-macos-macports:
+    name: Build on macOS with MacPorts
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install MacPorts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          latest_release_url="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/macports/macports-base/releases/latest)"
+          tag="${latest_release_url##*/}"
+          api_url="https://api.github.com/repos/macports/macports-base/releases/tags/${tag}"
+
+          pkg_urls="$(curl -fsSL "$api_url" | grep -Eo 'https://[^"]+MacPorts-[^"]+\.pkg')"
+          if [[ -z "$pkg_urls" ]]; then
+            echo "Could not find any MacPorts .pkg assets in release ${tag}."
+            exit 1
+          fi
+
+          macos_major="$(sw_vers -productVersion | cut -d. -f1)"
+          arch="$(uname -m)"
+
+          pkg_url="$(printf '%s\n' "$pkg_urls" | grep -E -- "-${macos_major}-.*${arch}.*\\.pkg$" | head -n 1 || true)"
+          if [[ -z "$pkg_url" ]]; then
+            pkg_url="$(printf '%s\n' "$pkg_urls" | grep -E -- "-${macos_major}-.*\\.pkg$" | head -n 1 || true)"
+          fi
+          if [[ -z "$pkg_url" ]]; then
+            pkg_url="$(printf '%s\n' "$pkg_urls" | head -n 1)"
+          fi
+
+          echo "Using MacPorts installer: $pkg_url"
+          curl -fL "$pkg_url" -o /tmp/MacPorts.pkg
+          sudo installer -pkg /tmp/MacPorts.pkg -target /
+
+          echo "/opt/local/bin" >> "$GITHUB_PATH"
+          echo "/opt/local/sbin" >> "$GITHUB_PATH"
+
+      - name: Install build dependencies via MacPorts
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo port -N selfupdate
+          sudo port -N install \
+            meson \
+            ninja \
+            pkgconfig \
+            gettext \
+            glib2 \
+            gimp3
+
+      - name: Show toolchain and pkg-config versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcc --version
+          meson --version
+          ninja --version
+          pkg-config --modversion glib-2.0
+          pkg-config --modversion gimp-3.0
+
+      - name: Configure
+        shell: bash
+        run: |
+          set -euo pipefail
+          meson setup builddir -Dinstall-test=false -Dinstall-translations=true
+
+      - name: Compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          meson compile -C builddir -v
+
+      - name: Stage install tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          meson install -C builddir --destdir "$PWD/stage"
+
+      - name: Upload macOS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resynthesizer-macos-macports
+          path: |
+            stage/
+            builddir/meson-logs/meson-log.txt
+          if-no-files-found: error
+          retention-days: 14
