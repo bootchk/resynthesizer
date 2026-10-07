@@ -28,8 +28,7 @@ You don't need to update Resynthesizer unless you want bug fixes or new features
 Translations (internationalizations) are fixed as of 3.0.1.
 Resynthesizer 3.0.1 is compatible with GIMP 3.0 or later.
 
-An MS Windows build is not tested and not in the repo.
-It might be built in this repo when libgimp-3.0 becomes available in an image for runners of build jobs.
+An MS Windows build is available — see [windows/INSTALL-WINDOWS.md](windows/INSTALL-WINDOWS.md) for installation instructions and [windows/build-cross-compile.sh](windows/build-cross-compile.sh) for cross-compilation from Linux.
 
 [Read about the branches](https://github.com/bootchk/resynthesizer/wiki/The-branches-of-the-repository)
 
@@ -50,6 +49,8 @@ The branch "master" is for GIMP 2.0 API and is essentially frozen.
 More topics are in the [Resynthesizer wiki](https://github.com/bootchk/resynthesizer/wiki)
 
 ## Installation
+
+[install Resynthesizer for Windows (GIMP 3)](windows/INSTALL-WINDOWS.md)
 
 [install flatpaked Resynthesizer for Linux](https://github.com/bootchk/resynthesizer/wiki/Install-Resynthesizer#flatpak)
 
